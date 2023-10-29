@@ -1,10 +1,10 @@
-import { Client } from '@notionhq/client'
-import { consola } from 'consola'
+import { Client } from '@notionhq/client';
+import { consola } from 'consola';
 
-const notion = new Client({ auth: process.env.NOTION_API_KEY })
+const notion = new Client({ auth: process.env.NOTION_API_KEY });
 
 export default defineEventHandler(async () => {
-  const databaseId = '5d619652040e4c9788e6cf0bd7aa6ed5'
+  const databaseId = '5d619652040e4c9788e6cf0bd7aa6ed5';
 
   const databasePages = await notion.databases.query({
     database_id: databaseId,
@@ -14,37 +14,38 @@ export default defineEventHandler(async () => {
         direction: 'descending'
       }
     ],
-    page_size: 25
-  })
+    page_size: 30
+  });
 
-  const pages = databasePages.results || []
+  const pages = databasePages.results || [];
 
-  consola.log('PAGES', databasePages)
-
-  const allBlocks = await Promise.all(
-    pages.map(async (block) => {
+  const pagesWithBlocks = await Promise.all(
+    pages.map(async (pageBlock) => {
       const childrenBlocksResp = await notion.blocks.children.list({
-        block_id: block.id
-      })
+        block_id: pageBlock.id
+      });
 
-      consola.log('CHILDREN', childrenBlocksResp)
+      consola.log('PAGE', pageBlock);
 
-      const childrenBlocks = childrenBlocksResp.results.filter((childBlock) => {
+      const checkboxBlocks = childrenBlocksResp.results.filter((childBlock) => {
         // @ts-ignore
-        return childBlock.type === 'to_do'
-      })
+        return childBlock.type === 'to_do';
+      });
 
-      return childrenBlocks
+      consola.log('CHECKBOXES', checkboxBlocks);
+
+      const item = {
+        page: pageBlock,
+        checkboxes: checkboxBlocks
+      };
+
+      return item;
     })
-  )
+  );
 
-  // const todos = []
+  const pagesWithCheckboxes = pagesWithBlocks.filter((block) => {
+    return block.checkboxes.length > 0;
+  });
 
-  // for (const item of allBlocks) {
-  //   if (item.type === 'to_do') {
-  //     todos.push(item)
-  //   }
-  // }
-
-  return allBlocks
-})
+  return pagesWithCheckboxes;
+});
