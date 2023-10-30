@@ -1,4 +1,4 @@
-import pkg from './package.json'
+import pkg from './package.json';
 
 export default defineNuxtConfig({
   devtools: true,
@@ -17,7 +17,8 @@ export default defineNuxtConfig({
     '@pinia/nuxt',
     '@nuxtjs/i18n',
     '@nuxt/content',
-    '@vueuse/nuxt'
+    '@vueuse/nuxt',
+    'nuxt-primevue'
   ],
   content: {
     highlight: {
@@ -36,11 +37,33 @@ export default defineNuxtConfig({
     ],
 
     vueI18n: './vue-i18n.options.ts'
-
   },
   primevue: {
     config: {
       ripple: true
+    },
+    usePrimeVue: true,
+    options: {
+      // PrimeVue Config Options
+      // ripple, pt etc.
+    },
+    components: {
+      prefix: '',
+      name: undefined,
+      include: undefined,
+      exclude: undefined
+    },
+    directives: {
+      prefix: '',
+      name: undefined,
+      include: undefined,
+      exclude: undefined
+    },
+    composables: {
+      prefix: '',
+      name: undefined,
+      include: undefined,
+      exclude: undefined
     }
   },
   css: [
@@ -61,4 +84,4 @@ export default defineNuxtConfig({
     client: false,
     server: true
   }
-})
+});

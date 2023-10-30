@@ -1,7 +1,15 @@
-import { Client } from '@notionhq/client';
+import { Client, isFullBlock } from '@notionhq/client';
+import { ToDoBlockObjectResponse } from '@notionhq/client/build/src/api-endpoints';
 import { consola } from 'consola';
 
 const notion = new Client({ auth: process.env.NOTION_API_KEY });
+
+type CheckboxBlock = ToDoBlockObjectResponse & {
+  // to_do: {
+  //   checked: boolean;
+  //   rich_text: any[]
+  // };
+};
 
 export default defineEventHandler(async () => {
   const databaseId = '5d619652040e4c9788e6cf0bd7aa6ed5';
@@ -28,9 +36,10 @@ export default defineEventHandler(async () => {
       consola.log('PAGE', pageBlock);
 
       const checkboxBlocks = childrenBlocksResp.results.filter((childBlock) => {
-        // @ts-ignore
-        return childBlock.type === 'to_do';
-      });
+        if (isFullBlock(childBlock)) {
+          return childBlock.type === 'to_do';
+        }
+      }) as CheckboxBlock[];
 
       consola.log('CHECKBOXES', checkboxBlocks);
 

@@ -41,12 +41,14 @@
     "eslint": "^8.51.0",
     "jsdom": "^22.1.0",
     "nuxt": "3.7.4",
+    "nuxt-primevue": "^0.1.0",
     "sass": "^1.69.3",
     "typescript": "^5.2.2",
     "unstorage": "^1.9.0",
     "vitest": "^0.34.6"
   },
   "dependencies": {
-    "@notionhq/client": "^2.2.13"
+    "@notionhq/client": "^2.2.13",
+    "primevue": "^3.38.1"
   }
 }
