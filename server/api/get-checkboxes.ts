@@ -22,7 +22,7 @@ export default defineEventHandler(async () => {
         direction: 'descending'
       }
     ],
-    page_size: 30
+    page_size: 60
   });
 
   const pages = databasePages.results || [];
