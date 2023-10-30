@@ -1,4 +1,4 @@
-<!-- <script setup lang="ts">
+<script setup lang="ts">
 import TipTap from '~/components/tiptap/TipTap.vue'
 const startText = '<p>I’m running Tiptap with Vue.js and Nuxt. 🎉</p>'
 const editorValue = ref(startText)
@@ -19,4 +19,4 @@ function resetText () {
   </div>
 </template>
 
-<style scoped></style> -->
+<style scoped></style>
