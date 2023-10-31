@@ -1,15 +1,13 @@
 import { Client, isFullBlock } from '@notionhq/client';
-import { ToDoBlockObjectResponse } from '@notionhq/client/build/src/api-endpoints';
+import {
+  ToDoBlockObjectResponse,
+  PageObjectResponse
+} from '@notionhq/client/build/src/api-endpoints';
 import { consola } from 'consola';
 
 const notion = new Client({ auth: process.env.NOTION_API_KEY });
 
-type CheckboxBlock = ToDoBlockObjectResponse & {
-  // to_do: {
-  //   checked: boolean;
-  //   rich_text: any[]
-  // };
-};
+type CheckboxBlock = ToDoBlockObjectResponse & {};
 
 export default defineEventHandler(async () => {
   const databaseId = '5d619652040e4c9788e6cf0bd7aa6ed5';
@@ -44,7 +42,7 @@ export default defineEventHandler(async () => {
       consola.log('CHECKBOXES', checkboxBlocks);
 
       const item = {
-        page: pageBlock,
+        page: pageBlock as PageObjectResponse,
         checkboxes: checkboxBlocks
       };
 
