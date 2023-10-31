@@ -8,7 +8,6 @@ definePageMeta({
 const { data, pending, error, refresh, status } = await useFetch(
   '/api/get-checkboxes',
   {
-    server: false,
     lazy: true
   }
 );
