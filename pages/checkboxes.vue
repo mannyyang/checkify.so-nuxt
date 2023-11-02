@@ -34,6 +34,10 @@ const metrics = computed(() => {
   return { checked: 0, unchecked: 0, total: 0 };
 });
 
+const percentage = computed(() => {
+  return (metrics.value.checked / metrics.value.total) * 100 || 0;
+});
+
 const showChecked = ref(false);
 
 // refresh every 60 minutes
@@ -91,24 +95,15 @@ console.log(resp);
       <Card class="shadow-none rounded-2 border-1 border-solid border-gray-400">
         <template #title> Todos </template>
         <template #content>
-          <div class="border-1 border-round">
-            <span class="text-gray-900 font-medium text-3xl">
-              {{ (metrics.checked / metrics.total) * 100 || 0 }}%
-              <span class="text-gray-600">
-                ({{ metrics.checked }}/{{ metrics.total }})</span
-              >
+          <span class="text-gray-900 font-medium text-3xl">
+            {{ percentage }}%
+            <span class="text-gray-600">
+              ({{ metrics.checked }}/{{ metrics.total }})
             </span>
-            <div class="mt-3">
-              <ProgressBar class="pb-4" :value="50" />
-            </div>
-          </div>
-
-          <div class="flex justify-content-between">
-            <div>
-              <div class="text-xl font-medium">
-                {{ metrics.unchecked }} Remaining
-              </div>
-            </div>
+          </span>
+          <ProgressBar class="my-3 pb-2" :value="percentage" />
+          <div class="text-xl font-medium">
+            {{ metrics.unchecked }} Remaining
           </div>
         </template>
       </Card>
