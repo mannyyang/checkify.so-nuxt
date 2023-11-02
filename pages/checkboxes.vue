@@ -71,7 +71,7 @@ console.log(resp);
       </div>
     </div>
 
-    <div class="actions-container w-sm pl-8">
+    <div class="actions-container max-w-sm pl-8">
       <Toolbar class="mb-4 rounded-2">
         <template #start>
           <Button
