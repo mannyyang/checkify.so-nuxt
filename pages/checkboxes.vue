@@ -53,7 +53,7 @@ console.log(resp);
 <template>
   <div class="flex p4">
     <div class="todos-container flex-1">
-      <div class="page pb-lg" v-for="page in resp">
+      <div class="page pb-lg" v-for="page in resp" :key="page.page.id">
         <h4>
           {{ page.page.properties['Name'].title[0].plain_text }}
         </h4>
