@@ -12,6 +12,30 @@ const { data, pending, error, refresh, status } = await useFetch(
   }
 );
 
+const metrics = computed(() => {
+  if (data.value) {
+    return data.value.reduce(
+      (acc, page) => {
+        page.checkboxes.forEach((checkbox) => {
+          if (checkbox.to_do.checked) {
+            acc.checked++;
+          } else {
+            acc.unchecked++;
+          }
+
+          acc.total++;
+        });
+        return acc;
+      },
+      { checked: 0, unchecked: 0, total: 0 }
+    );
+  }
+
+  return { checked: 0, unchecked: 0, total: 0 };
+});
+
+const showChecked = ref(false);
+
 // refresh every 60 minutes
 setTimeout(() => {
   refresh();
@@ -23,26 +47,71 @@ console.log(resp);
 </script>
 
 <template>
-  <div class="p4">
-    <Button label="Refresh" @click="() => refresh()" />
-
-    <div class="" v-if="pending">loading...</div>
-    <div class="pages" v-for="page in resp" v-else>
-      <h3 class="pt-4">{{ page.page.properties['Name'].title[0].plain_text }}</h3>
-      <div
-        class="flex align-items-center mb-2"
-        v-for="checkbox in page.checkboxes"
-      >
-        <Checkbox
-          v-model="checkbox.to_do.checked"
-          :inputId="checkbox.id"
-          :value="checkbox.to_do.checked"
-          binary
-        />
-        <label :for="checkbox.id" class="ml-2">
-          {{ checkbox.to_do.rich_text[0].plain_text }}
-        </label>
+  <div class="flex p4">
+    <div class="todos-container flex-1">
+      <div class="page pb-lg" v-for="page in resp">
+        <h4>
+          {{ page.page.properties['Name'].title[0].plain_text }}
+        </h4>
+        <div
+          class="flex align-items-center mb-2"
+          v-for="checkbox in page.checkboxes"
+          :key="checkbox.id"
+        >
+          <Checkbox
+            v-model="checkbox.to_do.checked"
+            :inputId="checkbox.id"
+            :value="checkbox.to_do.checked"
+            binary
+          />
+          <label :for="checkbox.id" class="ml-2">
+            {{ checkbox.to_do.rich_text[0].plain_text }}
+          </label>
+        </div>
       </div>
+    </div>
+
+    <div class="actions-container w-sm pl-8">
+      <Toolbar class="mb-4 rounded-2">
+        <template #start>
+          <Button
+            icon="pi pi-refresh"
+            label="Refresh"
+            :loading="pending"
+            @click="() => refresh()"
+          />
+        </template>
+
+        <template #end>
+          <span class="mr-2">Show Checked</span>
+          <InputSwitch v-model="showChecked" />
+        </template>
+      </Toolbar>
+
+      <Card class="shadow-none rounded-2 border-1 border-solid border-gray-400">
+        <template #title> Todos </template>
+        <template #content>
+          <div class="border-1 border-round">
+            <span class="text-gray-900 font-medium text-3xl">
+              {{ (metrics.checked / metrics.total) * 100 || 0 }}%
+              <span class="text-gray-600">
+                ({{ metrics.checked }}/{{ metrics.total }})</span
+              >
+            </span>
+            <div class="mt-3">
+              <ProgressBar class="pb-4" :value="50" />
+            </div>
+          </div>
+
+          <div class="flex justify-content-between">
+            <div>
+              <div class="text-xl font-medium">
+                {{ metrics.unchecked }} Remaining
+              </div>
+            </div>
+          </div>
+        </template>
+      </Card>
     </div>
   </div>
 </template>
