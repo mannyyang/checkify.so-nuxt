@@ -28,7 +28,8 @@ export default defineEventHandler(async () => {
   const pagesWithBlocks = await Promise.all(
     pages.map(async (pageBlock) => {
       const childrenBlocksResp = await notion.blocks.children.list({
-        block_id: pageBlock.id
+        block_id: pageBlock.id,
+        page_size: 100
       });
 
       consola.log('PAGE', pageBlock);

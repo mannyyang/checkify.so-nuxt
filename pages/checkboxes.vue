@@ -35,42 +35,71 @@ const metrics = computed(() => {
 });
 
 const percentage = computed(() => {
-  return (metrics.value.checked / metrics.value.total) * 100 || 0;
+  return ((metrics.value.checked / metrics.value.total) * 100).toFixed(1) || 0;
 });
 
-const showChecked = ref(false);
+const showChecked = ref(true);
+
+const filtered = computed(() => {
+  if (data.value) {
+    return data.value.map((page) => {
+      return {
+        page: page.page,
+        checkboxes: page.checkboxes.filter((checkbox) => {
+          if (showChecked.value) {
+            return checkbox;
+          }
+
+          return !checkbox.to_do.checked;
+        })
+      };
+    });
+  }
+
+  return [];
+});
+
+const checkboxList = computed(() => {
+  if (showChecked.value) {
+    return data.value;
+  } else {
+    return filtered.value;
+  }
+});
 
 // refresh every 60 minutes
 setTimeout(() => {
   refresh();
 }, 3600000);
-
-const resp = data.value;
-
-console.log(resp);
 </script>
 
 <template>
   <div class="flex p4">
     <div class="todos-container flex-1">
-      <div class="page pb-lg" v-for="page in resp" :key="page.page.id">
-        <h4>
-          {{ page.page.properties['Name'].title[0].plain_text }}
-        </h4>
-        <div
-          class="flex align-items-center mb-2"
-          v-for="checkbox in page.checkboxes"
-          :key="checkbox.id"
-        >
-          <Checkbox
-            v-model="checkbox.to_do.checked"
-            :inputId="checkbox.id"
-            :value="checkbox.to_do.checked"
-            binary
-          />
-          <label :for="checkbox.id" class="ml-2">
-            {{ checkbox.to_do.rich_text[0].plain_text }}
-          </label>
+      <div
+        class="page-container"
+        v-for="item in checkboxList"
+        :key="item.page.id"
+      >
+        <div class="page pb-lg" v-if="item.checkboxes.length">
+          <h4>
+            {{ item.page.properties['Name'].title[0].plain_text }}
+          </h4>
+          <div
+            class="flex align-items-center mb-2"
+            v-for="checkbox in item.checkboxes"
+            :key="checkbox.id"
+          >
+            <Checkbox
+              v-model="checkbox.to_do.checked"
+              :inputId="checkbox.id"
+              :value="checkbox.to_do.checked"
+              binary
+            />
+            <label :for="checkbox.id" class="ml-2">
+              {{ checkbox.to_do.rich_text[0].plain_text }}
+            </label>
+          </div>
         </div>
       </div>
     </div>
