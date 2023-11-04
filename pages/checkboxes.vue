@@ -74,66 +74,74 @@ setTimeout(() => {
 </script>
 
 <template>
-  <div class="flex p4">
-    <div class="todos-container flex-1">
-      <div
-        class="page-container"
-        v-for="item in checkboxList"
-        :key="item.page.id"
-      >
-        <div class="page pb-lg" v-if="item.checkboxes.length">
-          <h4>
-            {{ item.page.properties['Name'].title[0].plain_text }}
-          </h4>
-          <div
-            class="flex align-items-center mb-2"
-            v-for="checkbox in item.checkboxes"
-            :key="checkbox.id"
-          >
-            <Checkbox
-              v-model="checkbox.to_do.checked"
-              :inputId="checkbox.id"
-              :value="checkbox.to_do.checked"
-              binary
+  <div class="todos-container">
+    <div class="actions-container flex flex-col max-w-sm">
+      <div class="actions-conatiner">
+        <Toolbar class="mb-4 rounded-2">
+          <template #start>
+            <Button
+              icon="pi pi-refresh"
+              label="Refresh"
+              :loading="pending"
+              @click="() => refresh()"
             />
-            <label :for="checkbox.id" class="ml-2">
-              {{ checkbox.to_do.rich_text[0].plain_text }}
-            </label>
+          </template>
+
+          <template #end>
+            <span class="mr-2">Show Checked</span>
+            <InputSwitch v-model="showChecked" />
+          </template>
+        </Toolbar>
+
+        <div class="metrics-container pb-4">
+          <div class="flex justify-between">
+            <span class="text-gray-900 font-medium text-2xl">
+              {{ percentage }}%
+              <span class="text-gray-600">
+                ({{ metrics.checked }}/{{ metrics.total }})
+              </span>
+            </span>
+            <div class="text-xl">
+              {{ metrics.unchecked }} Todos
+            </div>
           </div>
+
+          <ProgressBar class="my-3 pb-2" :value="percentage" />
         </div>
       </div>
-    </div>
 
-    <div class="actions-container max-w-sm pl-8">
-      <Toolbar class="mb-4 rounded-2">
-        <template #start>
-          <Button
-            icon="pi pi-refresh"
-            label="Refresh"
-            :loading="pending"
-            @click="() => refresh()"
-          />
-        </template>
-
-        <template #end>
-          <span class="mr-2">Show Checked</span>
-          <InputSwitch v-model="showChecked" />
-        </template>
-      </Toolbar>
-
-      <Card class="shadow-none rounded-2 border-1 border-solid border-gray-400">
-        <template #title> Todos </template>
+      <Card
+        class="flex-1 shadow-none rounded-2 border-1 border-solid border-gray-400"
+      >
         <template #content>
-          <span class="text-gray-900 font-medium text-3xl">
-            {{ percentage }}%
-            <span class="text-gray-600">
-              ({{ metrics.checked }}/{{ metrics.total }})
-            </span>
-          </span>
-          <ProgressBar class="my-3 pb-2" :value="percentage" />
-          <div class="text-xl font-medium">
-            {{ metrics.unchecked }} Remaining
-          </div>
+          <ScrollPanel style="width: 100%; max-height: 500px">
+            <div
+              class="page-container"
+              v-for="item in checkboxList"
+              :key="item.page.id"
+            >
+              <div class="page pb-lg" v-if="item.checkboxes.length">
+                <h4>
+                  {{ item.page.properties['Name'].title[0].plain_text }}
+                </h4>
+                <div
+                  class="flex align-items-center mb-2"
+                  v-for="checkbox in item.checkboxes"
+                  :key="checkbox.id"
+                >
+                  <Checkbox
+                    v-model="checkbox.to_do.checked"
+                    :inputId="checkbox.id"
+                    :value="checkbox.to_do.checked"
+                    binary
+                  />
+                  <label :for="checkbox.id" class="ml-2">
+                    {{ checkbox.to_do.rich_text[0].plain_text }}
+                  </label>
+                </div>
+              </div>
+            </div>
+          </ScrollPanel>
         </template>
       </Card>
     </div>
