@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ToDoBlockObjectResponse } from '@notionhq/client/build/src/api-endpoints';
 import Button from 'primevue/button';
 
 definePageMeta({
@@ -67,6 +68,13 @@ const checkboxList = computed(() => {
   }
 });
 
+const onTodoUpdate = async (checkbox: ToDoBlockObjectResponse) => {
+  await useFetch('/api/set-checkbox', {
+    method: 'POST',
+    body: checkbox
+  });
+};
+
 // refresh every 60 minutes
 setTimeout(() => {
   refresh();
@@ -95,6 +103,7 @@ setTimeout(() => {
               :inputId="checkbox.id"
               :value="checkbox.to_do.checked"
               binary
+              @input="onTodoUpdate(checkbox)"
             />
             <label :for="checkbox.id" class="ml-2">
               {{ checkbox.to_do.rich_text[0].plain_text }}
