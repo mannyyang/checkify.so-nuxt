@@ -7,7 +7,7 @@ definePageMeta({
 });
 
 const showChecked = ref(true);
-const showSidebar = ref(true);
+const showSidebar = ref(false);
 
 const { data, pending, error, refresh, status } = await useFetch(
   '/api/get-checkboxes',
