@@ -83,9 +83,9 @@ setTimeout(() => {
 </script>
 
 <template>
-  <div class="flex p4">
-    <div class="todos-container relative">
-      <Toolbar class="fixed mb-4 rounded-2 z-2">
+  <div class="flex flex-col">
+    <div class="todos-container flex-1 relative">
+      <Toolbar class="fixed rounded-2 z-2">
         <template #start>
           <span class="text-lg font-bold mr-4">My Todos</span>
         </template>
@@ -108,35 +108,37 @@ setTimeout(() => {
         </template>
       </Toolbar>
 
-      <div class="pt-20">
-        <div
-          class="page-container"
-          v-for="item in checkboxList"
-          :key="item.page.id"
-        >
-          <div class="page pb-lg" v-if="item.checkboxes.length">
-            <h4>
-              {{ item.page.properties['Name'].title[0].plain_text }}
-            </h4>
-            <div
-              class="flex align-items-center mb-2"
-              v-for="checkbox in item.checkboxes"
-              :key="checkbox.id"
-            >
-              <Checkbox
-                v-model="checkbox.to_do.checked"
-                :inputId="checkbox.id"
-                :value="checkbox.to_do.checked"
-                binary
-                @input="onTodoUpdate(checkbox)"
-              />
-              <label :for="checkbox.id" class="ml-2">
-                {{ checkbox.to_do.rich_text[0].plain_text }}
-              </label>
+      <ScrollPanel style="height: 100vh">
+        <div class="pt-20">
+          <div
+            class="page-container"
+            v-for="item in checkboxList"
+            :key="item.page.id"
+          >
+            <div class="page pb-lg" v-if="item.checkboxes.length">
+              <h4>
+                {{ item.page.properties['Name'].title[0].plain_text }}
+              </h4>
+              <div
+                class="flex align-items-center mb-2"
+                v-for="checkbox in item.checkboxes"
+                :key="checkbox.id"
+              >
+                <Checkbox
+                  v-model="checkbox.to_do.checked"
+                  :inputId="checkbox.id"
+                  :value="checkbox.to_do.checked"
+                  binary
+                  @input="onTodoUpdate(checkbox)"
+                />
+                <label :for="checkbox.id" class="ml-2">
+                  {{ checkbox.to_do.rich_text[0].plain_text }}
+                </label>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      </ScrollPanel>
     </div>
 
     <Sidebar v-model:visible="showSidebar" position="right">
