@@ -90,7 +90,7 @@ export async function getPageBlocks(pageBlock: BlockObjectResponse) {
             const { data, error } = await supabase.from('tag').insert({
               name: strTag,
               notion_block: block,
-              line_text: full_line
+              block_text: full_line
             });
 
             if (data) {

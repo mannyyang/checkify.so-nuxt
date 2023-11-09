@@ -76,6 +76,15 @@ const onTodoUpdate = async (checkbox: ToDoBlockObjectResponse) => {
   });
 };
 
+const parseBlockLink = (blockId: string, parentId: string) => {
+  // Ex. https://www.notion.so/8c25175876f44559804acd1e632791f5?pvs=4#ac313eeb57a541b4a6468cf3ee104b72
+  const url = `https://www.notion.so/${parentId.replaceAll(
+    '-',
+    ''
+  )}?pvs=4#${blockId.replaceAll('-', '')}`;
+  return url;
+};
+
 // refresh every 60 minutes
 setTimeout(() => {
   refresh();
@@ -133,6 +142,11 @@ setTimeout(() => {
                 />
                 <label :for="checkbox.id" class="ml-2">
                   {{ checkbox.to_do.rich_text[0].plain_text }}
+                  <a
+                    class="pi pi-link"
+                    target="_blank"
+                    :href="parseBlockLink(checkbox.id, item.page.id)"
+                  ></a>
                 </label>
               </div>
             </div>
