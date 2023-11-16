@@ -50,64 +50,61 @@ export async function getPageBlocks(pageBlock: BlockObjectResponse) {
     block_id: pageBlock.id
   });
 
-  childrenBlocksResp.results.forEach(
-    async (block: any & BlockObjectResponseWithChildren) => {
-      if (isFullBlock(block)) {
-        const type = block.type;
+  for (const block of childrenBlocksResp.results) {
+    if (isFullBlock(block)) {
+      // Recursively get children blocks
+      if (block.has_children) {
+        const children = await getPageBlocks(block);
         // @ts-ignore
-        const text_items = block[type].rich_text;
+        block.children = children;
+      }
 
-        // Recursively get children blocks
-        if (block.has_children) {
-          const children = await getPageBlocks(block);
-          // @ts-ignore
-          block.children = children;
-        }
+      const type = block.type;
+      // @ts-ignore
+      const text_items = block[type].rich_text;
 
-        if (!text_items) {
-          return;
-        }
+      if (!text_items) {
+        return;
+      }
 
-        consola.log('BLOCK', block);
+      consola.log('BLOCK', block);
 
-        const full_line = text_items
-          .map((text_item: { plain_text: string }) => {
-            return text_item.plain_text;
-          })
-          .join(' ');
+      const full_line = text_items
+        .map((text_item: { plain_text: string }) => {
+          return text_item.plain_text;
+        })
+        .join(' ');
 
-        // Extract tags from text_items
-        const tags = text_items.filter((text_item: { plain_text: string }) => {
-          return text_item.plain_text && text_item.plain_text.includes('#');
-        });
+      // Extract tags from text_items
+      const tags = text_items.filter((text_item: { plain_text: string }) => {
+        return text_item.plain_text && text_item.plain_text.includes('#');
+      });
 
-        tags.forEach(async (tag: { plain_text: string }) => {
-          const strTags = tag.plain_text
-            .split(' ')
-            .filter((v) => v.startsWith('#'));
+      for (const tag of tags) {
+        const strTags = tag.plain_text
+          .split(' ')
+          .filter((v: string) => v.startsWith('#'));
 
-          for (const strTag of strTags) {
-            const { data, error } = await supabase.from('tag').insert({
-              name: strTag,
-              notion_block: block,
-              block_text: full_line
-            });
+        for (const strTag of strTags) {
+          const { data, error } = await supabase.from('tag').insert({
+            name: strTag,
+            notion_block: block,
+            block_text: full_line,
+            notion_block_id: block.id,
+            notion_parent_id: pageBlock.id
+          });
 
-            if (data) {
-              consola.log(data);
-            }
-
-            if (error) {
-              consola.error(error);
-            }
+          if (data) {
+            consola.log(data);
           }
-        });
+
+          if (error) {
+            consola.error(error);
+          }
+        }
       }
     }
-  );
+  }
 
-  // @ts-ignore
-  pageBlock.children = childrenBlocksResp.results;
-
-  return pageBlock;
+  return childrenBlocksResp.results;
 }

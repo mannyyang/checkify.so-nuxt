@@ -2,7 +2,7 @@ import pkg from './package.json';
 
 export default defineNuxtConfig({
   devtools: true,
-  ssr: true,
+  ssr: false,
   runtimeConfig: {
     public: {
       APP_VERSION: pkg.version,
@@ -11,14 +11,14 @@ export default defineNuxtConfig({
     }
   },
   modules: [
+    'nuxt-primevue',
     '@formkit/nuxt',
-    '@sfxcode/nuxt-primevue',
     '@unocss/nuxt',
     '@pinia/nuxt',
     '@nuxtjs/i18n',
     '@nuxt/content',
     '@vueuse/nuxt',
-    'nuxt-primevue'
+    '@nuxtjs/supabase'
   ],
   content: {
     highlight: {
@@ -39,31 +39,11 @@ export default defineNuxtConfig({
     vueI18n: './vue-i18n.options.ts'
   },
   primevue: {
-    config: {
-      ripple: true
-    },
-    usePrimeVue: true,
-    options: {
-      // PrimeVue Config Options
-      // ripple, pt etc.
-    },
     components: {
-      prefix: '',
-      name: undefined,
-      include: undefined,
-      exclude: undefined
+      exclude: ['Chart']
     },
-    directives: {
-      prefix: '',
-      name: undefined,
-      include: undefined,
-      exclude: undefined
-    },
-    composables: {
-      prefix: '',
-      name: undefined,
-      include: undefined,
-      exclude: undefined
+    options: {
+      ripple: true
     }
   },
   css: [
@@ -71,17 +51,16 @@ export default defineNuxtConfig({
     'primeicons/primeicons.css',
     '@sfxcode/formkit-primevue/dist/sass/formkit-primevue.scss'
   ],
-  pinia: {
-    autoImports: [
-      // automatically imports `defineStore`
-      'defineStore' // import { defineStore } from 'pinia'
-    ]
-  },
   build: {
     transpile: ['nuxt', 'primevue', 'formkit-primevue']
   },
   sourcemap: {
     client: false,
     server: true
+  },
+  supabase: {
+    redirectOptions: {
+      exclude: ['/privacy-policy', '/terms-of-use']
+    }
   }
 });

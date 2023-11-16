@@ -1,6 +1,6 @@
 <script setup>
 useHead({
-  title: 'Checkify.so'
+  title: 'Nuxt 3 PrimeVue Starter'
 })
 </script>
 
