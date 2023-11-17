@@ -21,8 +21,8 @@ async function signInWithGoogle() {
   >
     <div class="flex flex-col items-center justify-center">
       <img
-        :src="'logoUrl'"
-        alt="Sakai logo"
+        src="/layout/images/logo-green.png"
+        alt="Checkify logo"
         class="mb-5 w-6rem flex-shrink-0"
       />
       <div style="border-radius: 56px; padding: 0.3rem">
@@ -31,12 +31,6 @@ async function signInWithGoogle() {
           style="border-radius: 53px"
         >
           <div class="text-center mb-10">
-            <!-- <img
-              src="/demo/images/login/avatar.png"
-              alt="Image"
-              height="50"
-              class="mb-3"
-            /> -->
             <div class="text-3xl font-medium mb-3">Welcome!</div>
             <span class="font-medium">Sign in to continue</span>
           </div>

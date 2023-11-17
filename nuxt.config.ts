@@ -59,8 +59,11 @@ export default defineNuxtConfig({
     server: true
   },
   supabase: {
+    url: process.env.SUPABASE_URL,
+    key: process.env.SUPABASE_KEY,
+    serviceKey: process.env.SUPABASE_SERVICE_KEY,
     redirectOptions: {
-      exclude: ['/privacy-policy', '/terms-of-use']
+      exclude: ['/privacy-policy', '/terms-of-use', '/checkboxes']
     }
   }
 });

@@ -1,11 +1,10 @@
-<script setup lang='ts'>
-import { ref } from 'vue'
-import AppMenuItem from './AppMenuItem.vue'
-import { useNavigationMenu } from '~/composables/navigation'
+<script setup lang="ts">
+import { ref } from 'vue';
+import AppMenuItem from './AppMenuItem.vue';
+import { useNavigationMenu } from '~/composables/useNavigation';
 
-const { navigationMenu } = useNavigationMenu()
-const model = navigationMenu()
-
+const { navigationMenu } = useNavigationMenu();
+const model = navigationMenu();
 </script>
 
 <template>
@@ -18,3 +17,4 @@ const model = navigationMenu()
 </template>
 
 <style lang="scss" scoped></style>
+~/composables/useNavigation
