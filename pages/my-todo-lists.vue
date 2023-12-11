@@ -1,7 +1,4 @@
 <script setup lang="ts">
-const supabase = useSupabaseClient();
-const user = useSupabaseUser();
-
 const response = ref({
   data: {}
 });

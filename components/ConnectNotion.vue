@@ -1,7 +1,4 @@
 <script setup lang="ts">
-const supabase = useSupabaseClient();
-const user = useSupabaseUser();
-
 // create computed property to encode url for query params
 const encodedUrl = computed(() => {
   const redirect =
@@ -15,7 +12,7 @@ const encodedUrl = computed(() => {
   <a :href="encodedUrl">
     <Button label="Connect Notion">
       <template #icon>
-        <img class="w-5 h-5 mr-2" src="notion-logo.svg" alt="Notion Logo" />
+        <img class="w-5 h-5 mr-2" src="/notion-logo.svg" alt="Notion Logo" />
       </template>
     </Button>
   </a>
