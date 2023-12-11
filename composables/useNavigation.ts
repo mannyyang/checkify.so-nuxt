@@ -5,8 +5,8 @@ export function useNavigationMenu() {
         label: 'Home',
         items: [
           {
-            label: 'Dashboard',
-            to: '/dashboard',
+            label: 'My Todo Lists',
+            to: '/my-todos-lists',
             icon: 'pi pi-fw pi-home'
           },
           {
@@ -18,7 +18,7 @@ export function useNavigationMenu() {
             label: 'Logout',
             to: '/logout',
             icon: 'pi pi-fw pi-home'
-          }
+          },
         ]
       }
       // {

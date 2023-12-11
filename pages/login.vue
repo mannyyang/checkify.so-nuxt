@@ -6,10 +6,10 @@ definePageMeta({
 const supabase = useSupabaseClient();
 
 async function signInWithGoogle() {
-  const { data, error } = await supabase.auth.signInWithOAuth({
+  const { error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: '/confirm'
+      redirectTo: 'http://localhost:3000/confirm'
     }
   });
 }
@@ -45,7 +45,7 @@ async function signInWithGoogle() {
                 <img
                   class="w-7 h-7 mr-2"
                   alt="Google sign-in"
-                  src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Google_%22G%22_Logo.svg/512px-Google_%22G%22_Logo.svg.png"
+                  src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/24px-Google_%22G%22_logo.svg.png"
                 />
               </template>
             </Button>
