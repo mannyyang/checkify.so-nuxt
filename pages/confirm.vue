@@ -4,7 +4,7 @@ watch(
   user,
   () => {
     if (user.value) {
-      return navigateTo('/dashboard');
+      return navigateTo('/my-todo-lists');
     }
   },
   { immediate: true }

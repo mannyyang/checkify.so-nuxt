@@ -1,13 +1,15 @@
+import { PrimeIcons } from 'primevue/api';
+
 export function useNavigationMenu() {
   const navigationMenu = () => {
     return [
       {
-        label: 'Home',
+        label: 'Checkify.so',
         items: [
           {
             label: 'My Todo Lists',
-            to: '/my-todos-lists',
-            icon: 'pi pi-fw pi-home'
+            to: '/my-todo-lists',
+            icon: 'pi pi-fw pi-check-square'
           },
           {
             label: 'Login',
