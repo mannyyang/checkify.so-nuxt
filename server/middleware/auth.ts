@@ -5,20 +5,25 @@ import {
 
 export default defineEventHandler(async (event) => {
   const supabase = serverSupabaseServiceRole(event);
-  const user = await serverSupabaseUser(event);
 
-  event.context.user = user;
+  try {
+    const user = await serverSupabaseUser(event);
 
-  const { data, error } = await supabase
-    .from('notion_access_token')
-    .select()
-    .eq('user_id', user?.id || '');
+    event.context.user = user;
 
-  if (error) {
-    throw new Error(error.message);
-  }
+    const { data, error } = await supabase
+      .from('notion_access_token')
+      .select()
+      .eq('user_id', user?.id || '');
 
-  if (data.length > 0 && data[0].access_token) {
-    event.context.notion_auth = data[0];
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    if (data.length > 0 && data[0].access_token) {
+      event.context.notion_auth = data[0];
+    }
+  } catch (err) {
+    console.log(err);
   }
 });
