@@ -8,8 +8,8 @@ export const useThemeStore = defineStore('theme', {
   // a function that returns a fresh state
   state: () => ({
     themeName: 'lara-dark',
-    themeColor: 'teal',
-    link: '/themes/lara-dark-teal/theme.css'
+    themeColor: 'blue',
+    link: '/themes/lara-dark-blue/theme.css'
   }),
   // optional getters
   getters: {

@@ -6,6 +6,8 @@ import {
 export default defineEventHandler(async (event) => {
   const supabase = serverSupabaseServiceRole(event);
 
+  // TODO: build error happens with auth so catch so it doesn't fail at least
+  // https://github.com/nuxt-modules/supabase/issues/238
   try {
     const user = await serverSupabaseUser(event);
 

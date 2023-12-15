@@ -1,6 +1,6 @@
 <script setup>
 useHead({
-  title: 'Nuxt 3 PrimeVue Starter'
+  title: 'Checkify.so'
 })
 </script>
 
@@ -12,4 +12,13 @@ useHead({
 
 <style lang='scss'>
 @import 'App.scss';
+
+// Global Overrides
+@keyframes spin {
+    to {transform:rotate(360deg);}
+}
+
+.p-icon-spin {
+  animation: spin 2s linear infinite;
+}
 </style>

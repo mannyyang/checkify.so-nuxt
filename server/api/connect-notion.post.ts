@@ -9,13 +9,11 @@ export default defineEventHandler(async (event) => {
   const body = await readBody(event);
 
   if (body) {
-    console.log('INSIDE', body);
+    console.log('CONNECT_NOTION', body);
 
     const clientId = process.env.NOTION_OAUTH_CLIENT_ID;
     const clientSecret = process.env.NOTION_OAUTH_CLIENT_SECRET;
     const redirectUri = 'http://localhost:3000/connect-notion';
-
-    console.log(clientId, clientSecret)
 
     // encode in base 64
     const encoded = Buffer.from(`${clientId}:${clientSecret}`).toString(
@@ -35,6 +33,8 @@ export default defineEventHandler(async (event) => {
         redirect_uri: redirectUri
       }
     });
+
+    console.log('OAUTH_RESPONSE', response);
 
     const payload = {
       // @ts-ignore

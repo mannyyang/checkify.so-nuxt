@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { Client, isFullBlock } from '@notionhq/client';
+import { c } from 'vitest/dist/reporters-5f784f42';
 // import {
 //   ToDoBlockObjectResponse,
 //   PageObjectResponse
@@ -11,11 +12,15 @@ import { Client, isFullBlock } from '@notionhq/client';
 // );
 
 export default defineEventHandler(async (event) => {
+  // get query parameters from nuxt3 server
+  const { query = '' } = getQuery(event);
+
   const accessToken = event.context.notion_auth.access_token;
   const notion = new Client({ auth: accessToken });
 
   const response = await notion.search({
-    query: 'Daily',
+    // @ts-ignore
+    query: query,
     filter: {
       value: 'database',
       property: 'object'
@@ -26,7 +31,12 @@ export default defineEventHandler(async (event) => {
     }
   });
 
+  console.log(response);
+
   return {
-    response
+    databases: response.results.map((result) => {
+      // @ts-ignore
+      return { ...result, name: result.title[0].plain_text };
+    })
   };
 });
