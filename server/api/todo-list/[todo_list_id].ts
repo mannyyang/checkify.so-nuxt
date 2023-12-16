@@ -1,19 +1,44 @@
 import { Client, isFullBlock } from '@notionhq/client';
-import {
+import type {
   ToDoBlockObjectResponse,
   PageObjectResponse
 } from '@notionhq/client/build/src/api-endpoints';
+import { createClient } from '@supabase/supabase-js';
 import { consola } from 'consola';
 
-const notion = new Client({ auth: process.env.NOTION_API_KEY });
+const supabase = createClient(
+  process.env.SUPABASE_URL || '',
+  process.env.SUPABASE_SERVICE_KEY || ''
+);
 
 type CheckboxBlock = ToDoBlockObjectResponse & {};
 
-export default defineEventHandler(async () => {
-  const databaseId = '5d619652040e4c9788e6cf0bd7aa6ed5';
+export default defineEventHandler(async (event) => {
+  const todo_list_id = getRouterParam(event, 'todo_list_id');
+
+  if (!todo_list_id) {
+    throw new Error('No todo_list_id found');
+  }
+
+  const { data, error } = await supabase
+    .from('todo_list')
+    .select('access_token, notion_database_id')
+    .eq('todo_list_id', todo_list_id);
+
+  if (error) {
+    throw error;
+  }
+
+  if (!data || data.length === 0) {
+    throw new Error('No todo list found');
+  }
+
+  const { access_token, notion_database_id } = data[0];
+
+  const notion = new Client({ auth: access_token });
 
   const databasePages = await notion.databases.query({
-    database_id: databaseId,
+    database_id: notion_database_id,
     page_size: 60
   });
 

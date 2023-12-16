@@ -11,7 +11,7 @@ dependencies:
     specifier: ^4.4.0
     version: 4.4.0
   primevue:
-    specifier: ^3.38.1
+    specifier: ^3.40.1
     version: 3.40.1(vue@3.3.8)
   quill:
     specifier: ^1.3.7

@@ -7,9 +7,10 @@ const supabase = createClient(
 );
 
 export default defineEventHandler(async (event) => {
+  const { user, notion_auth } = event.context;
   const body: DatabaseObjectResponse = await readBody(event);
 
-  if (body) {
+  if (body && notion_auth) {
     console.log('TODO_LIST_POST', body);
 
     const { error } = await supabase.from('notion_database').upsert({
@@ -25,12 +26,11 @@ export default defineEventHandler(async (event) => {
     }
 
     const { error: todo_list_error } = await supabase
-      .from('notion_database')
+      .from('todo_list')
       .upsert({
+        user_id: user.id,
         notion_database_id: body.id,
-        // @ts-ignore
-        name: body.name,
-        metadata: body
+        access_token: notion_auth.access_token,
       });
 
     if (todo_list_error) {
@@ -41,5 +41,5 @@ export default defineEventHandler(async (event) => {
     return body;
   }
 
-  throw "Error: no body found";
+  throw "Error: no body or auth found";
 });

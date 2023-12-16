@@ -4,6 +4,7 @@ import type {
   AutoCompleteCompleteEvent,
   AutoCompleteItemSelectEvent
 } from 'primevue/autocomplete';
+import InputGroup from 'primevue/inputgroup';
 
 const response = ref({
   data: {}
@@ -14,6 +15,7 @@ const todo_lists = ref<any[]>([]);
 
 onMounted(async () => {
   response.value = await useFetch('/api/auth-notion');
+  await fetchTodoLists();
 });
 
 const searchDatabases = async (event: AutoCompleteCompleteEvent) => {
@@ -56,11 +58,49 @@ const addDatabase = async (database: DatabaseObjectResponse) => {
     body: database
   });
 };
+
+const fetchTodoLists = async () => {
+  const { data, error } = await useFetch(`/api/todo-list`);
+
+  if (error.value) {
+    console.error(error.value);
+    return;
+  }
+
+  todo_lists.value = data.value?.todo_lists;
+};
+
+const handleTodoListName = (todoList: {
+  todo_list_id: string;
+  notion_database_id: {
+    metadata: {
+      name: string;
+    };
+  };
+  name?: string;
+}) => {
+  if (todoList.name) {
+    return todoList.name;
+  }
+
+  return todoList.notion_database_id.metadata.name;
+};
+
+const handleLink = (todoList: { todo_list_id: string }) => {
+  return `https://checkify.so/todo-list/${todoList.todo_list_id}`;
+};
+
+const handleCopyLink = (todoList: { todo_list_id: string }) => {
+  navigator.clipboard.writeText(handleLink(todoList));
+};
 </script>
 
 <template>
   <div class="card">
-    <Panel header="Get Started Here!">
+    <Panel class="mb-8">
+      <template #header>
+        <h2 class="mb-0">Get Started Here!</h2>
+      </template>
       <div class="flex items-center pb-4">
         <i
           class="pi pi-info-circle mr-4"
@@ -79,90 +119,96 @@ const addDatabase = async (database: DatabaseObjectResponse) => {
       >
     </Panel>
 
-    <h2>My Todo Lists</h2>
-
-    <div class="w-full flex pt-4">
-      <AutoComplete
-        class="database-search flex-1 mr-4"
-        v-model="searchQuery"
-        optionLabel="name"
-        placeholder="Search for a database"
-        :suggestions="searchResults"
-        @complete="searchDatabases"
-        @item-select="onSelect"
-      >
-        <template #option="slotProps">
-          <div class="flex align-options-center">
-            <img
-              :alt="slotProps.option.name"
-              :src="getIcon(slotProps.option)"
-              class="mr-2"
-              style="width: 20px"
-              v-if="slotProps.option.icon"
-            />
-            <div>{{ slotProps.option.name }}</div>
-          </div>
-        </template>
-      </AutoComplete>
-      <Button label="Refresh" icon="pi pi-refresh" />
-    </div>
-
-    <DataView data-key="id" :value="todo_lists" layout="grid">
-      <template #grid="slotProps">
-        <div class="card">
-          <div class="p-4 border-1 surface-border surface-card border-round">
-            <div
-              class="flex flex-wrap align-items-center justify-content-between gap-2"
-            >
-              <div class="flex align-items-center gap-2">
-                <i class="pi pi-tag"></i>
-                <span class="font-semibold">{{ slotProps.data.name }}</span>
-              </div>
-              <!-- <Tag
-                    :value="item.inventoryStatus"
-                    :severity="getSeverity(item)"
-                  ></Tag> -->
-            </div>
-            <div class="flex flex-column align-items-center gap-3 py-5">
-              <!-- <img
-                    class="w-9 shadow-2 border-round"
-                    :src="`https://primefaces.org/cdn/primevue/images/product/${item.image}`"
-                    :alt="item.name"
-                  /> -->
-              <div class="text-2xl font-bold">
-                {{ slotProps.data.name }}
-              </div>
-              <!-- <Rating
-                    :modelValue="item.rating"
-                    readonly
-                    :cancel="false"
-                  ></Rating> -->
-            </div>
-            <div class="flex align-items-center justify-content-between">
-              <Button icon="pi pi-minus" rounded></Button>
-            </div>
-          </div>
-        </div>
+    <Panel class="mb-8">
+      <template #header>
+        <h2 class="mb-0">Add Database</h2>
       </template>
-    </DataView>
-
-    <!-- <Inplace>
-      <template #display> View Content </template>
-      <template #content>
-        <p class="m-0">
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-          eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad
-          minim veniam, quis nostrud exercitation ullamco laboris nisi ut
-          aliquip ex ea commodo consequat. Duis aute irure dolor in
-          reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-          pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
-          culpa qui officia deserunt mollit anim id est laborum.
+      <div class="flex items-center pb-4">
+        <i
+          class="pi pi-info-circle mr-4"
+          style="font-size: 1.5rem; color: var(--primary-color)"
+        ></i>
+        <p>
+          Search for and select the database that you'll be creating your to-do
+          list from.
         </p>
+      </div>
+
+      <div class="w-full flex">
+        <AutoComplete
+          class="database-search w-full md:w-1/2 mr-4"
+          v-model="searchQuery"
+          optionLabel="name"
+          placeholder="Search for a database"
+          :suggestions="searchResults"
+          @complete="searchDatabases"
+          @item-select="onSelect"
+        >
+          <template #option="slotProps">
+            <div class="flex align-options-center">
+              <img
+                :alt="slotProps.option.name"
+                :src="getIcon(slotProps.option)"
+                class="mr-2"
+                style="width: 20px"
+                v-if="slotProps.option.icon"
+              />
+              <div>{{ slotProps.option.name }}</div>
+            </div>
+          </template>
+        </AutoComplete>
+        <!-- <Button label="Refresh" icon="pi pi-refresh" /> -->
+      </div>
+    </Panel>
+
+    <Panel>
+      <template #header>
+        <h2 class="mb-0">My Todo Lists</h2>
       </template>
-    </Inplace> -->
-    <!-- <p>Use this page to start from scratch and place your custom content !</p> -->
-    <!-- <NuxtLink to="/"> Home page </NuxtLink> -->
-    <!-- <pre>{{ searchResults }}</pre> -->
+
+      <DataView
+        class="database-view"
+        data-key="id"
+        :value="todo_lists"
+        layout="grid"
+      >
+        <template #grid="slotProps">
+          <Card class="todo-list__card">
+            <template #content>
+              <div class="flex items-center mb-4">
+                <div class="todo-list__label flex-1 flex items-center">
+                  <img
+                    class="mr-2"
+                    :alt="handleTodoListName(slotProps.data)"
+                    :src="getIcon(slotProps.data.notion_database_id.metadata)"
+                    style="width: 20px"
+                    v-if="slotProps.data.notion_database_id.metadata.icon"
+                  />
+                  <span class="font-semibold">
+                    {{ handleTodoListName(slotProps.data) }}
+                  </span>
+                </div>
+
+                <Button
+                  text
+                  size="small"
+                  icon="pi pi-trash"
+                  severity="danger"
+                />
+              </div>
+              <InputGroup>
+                <InputText :value="handleLink(slotProps.data)" />
+                <Button
+                  icon="pi pi-copy"
+                  severity="secondary"
+                  @click="handleCopyLink(slotProps.data)"
+                />
+              </InputGroup>
+            </template>
+          </Card>
+        </template>
+      </DataView>
+    </Panel>
   </div>
 </template>
 
@@ -170,6 +216,20 @@ const addDatabase = async (database: DatabaseObjectResponse) => {
 .database-search {
   .p-autocomplete-input {
     width: 100%;
+  }
+}
+
+.database-view {
+  .p-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(250px, 1fr));
+    grid-gap: 1rem;
+  }
+}
+
+.todo-list__card {
+  .p-card-content {
+    padding: 0;
   }
 }
 </style>

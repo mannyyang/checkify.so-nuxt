@@ -63,7 +63,13 @@ export default defineNuxtConfig({
     key: process.env.SUPABASE_KEY,
     serviceKey: process.env.SUPABASE_SERVICE_KEY,
     redirectOptions: {
-      exclude: ['/privacy-policy', '/terms-of-use', '/checkboxes']
+      exclude: [
+        '/',
+        '/privacy-policy',
+        '/terms-of-use',
+        '/checkboxes',
+        '/todo-list/*'
+      ]
     }
   }
 });
