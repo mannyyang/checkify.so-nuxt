@@ -13,7 +13,7 @@ export default defineEventHandler(async (event) => {
 
     const clientId = process.env.NOTION_OAUTH_CLIENT_ID;
     const clientSecret = process.env.NOTION_OAUTH_CLIENT_SECRET;
-    const redirectUri = 'http://localhost:3000/connect-notion';
+    const redirectUri = process.env.BASE_URL +  '/connect-notion';
 
     // encode in base 64
     const encoded = Buffer.from(`${clientId}:${clientSecret}`).toString(

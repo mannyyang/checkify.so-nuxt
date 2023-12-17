@@ -1,10 +1,13 @@
 <script setup lang="ts">
+const runtimeConfig = useRuntimeConfig();
+
 // create computed property to encode url for query params
 const encodedUrl = computed(() => {
-  const redirect =
-    'https://api.notion.com/v1/oauth/authorize?client_id=2632be3c-842c-4597-b89f-58f60a345ad9&response_type=code&owner=user&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fconnect-notion';
+  const redirectUrl = encodeURIComponent(
+    runtimeConfig.public.BASE_URL + '/connect-notion'
+  );
 
-  return redirect;
+  return `https://api.notion.com/v1/oauth/authorize?client_id=2632be3c-842c-4597-b89f-58f60a345ad9&response_type=code&owner=user&redirect_uri=${redirectUrl}`;
 });
 </script>
 

@@ -3,13 +3,18 @@ definePageMeta({
   layout: 'public'
 });
 
+const runtimeConfig = useRuntimeConfig();
 const supabase = useSupabaseClient();
+
+const redirectUrl = computed(() => {
+  return `${runtimeConfig.public.BASE_URL}/confirm`;
+});
 
 async function signInWithGoogle() {
   const { error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: 'http://localhost:3000/confirm'
+      redirectTo: redirectUrl.value
     }
   });
 }

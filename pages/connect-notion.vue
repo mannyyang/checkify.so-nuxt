@@ -15,8 +15,6 @@ onMounted(async () => {
       }
     });
 
-    console.log(response);
-
     navigateTo('/my-todo-lists');
   }
 });
