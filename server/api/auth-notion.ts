@@ -23,7 +23,8 @@ export default defineEventHandler(async (event) => {
 
   if (data.length > 0 && data[0].access_token) {
     return {
-      is_auth: true
+      is_auth: true,
+      user
     };
   }
   

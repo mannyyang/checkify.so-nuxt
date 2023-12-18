@@ -14,12 +14,12 @@ export function useNavigationMenu() {
           {
             label: 'Login',
             to: '/login',
-            icon: 'pi pi-fw pi-home'
+            icon: 'pi pi-fw pi-sign-in'
           },
           {
             label: 'Logout',
             to: '/logout',
-            icon: 'pi pi-fw pi-home'
+            icon: 'pi pi-fw pi-sign-out'
           },
         ]
       }

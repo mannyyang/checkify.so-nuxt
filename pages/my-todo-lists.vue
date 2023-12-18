@@ -12,6 +12,8 @@ const response = ref({
 const searchQuery = ref('');
 const searchResults = ref<any[]>([]);
 const todo_lists = ref<any[]>([]);
+const visible = ref(false);
+const currentTodoList = ref();
 
 onMounted(async () => {
   response.value = await useFetch('/api/auth-notion');
@@ -53,10 +55,17 @@ const onSelect = (item: AutoCompleteItemSelectEvent) => {
 const addDatabase = async (database: DatabaseObjectResponse) => {
   todo_lists.value.push(database);
 
-  const { data, error } = await useFetch(`/api/todo-list`, {
+  const { error } = await useFetch(`/api/todo-list`, {
     method: 'POST',
     body: database
   });
+
+  if (error.value) {
+    console.error(error.value);
+    return;
+  }
+
+  fetchTodoLists();
 };
 
 const fetchTodoLists = async () => {
@@ -93,11 +102,41 @@ const handleLink = (todoList: { todo_list_id: string }) => {
 const handleCopyLink = (todoList: { todo_list_id: string }) => {
   navigator.clipboard.writeText(handleLink(todoList));
 };
+
+const handleDeleteModal = (todoList: { todo_list_id: string }) => {
+  currentTodoList.value = todoList;
+  visible.value = true;
+};
+
+const clearCurrentTodoList = () => {
+  currentTodoList.value = null;
+};
+
+const confirmDelete = async () => {
+  const { data, error } = await useFetch(
+    `/api/todo-list/${currentTodoList.value.todo_list_id}`,
+    {
+      method: 'DELETE'
+    }
+  );
+
+  if (error.value) {
+    console.error(error.value);
+    return;
+  }
+
+  todo_lists.value = todo_lists.value.filter(
+    (todoList) => todoList.todo_list_id !== currentTodoList.value.todo_list_id
+  );
+
+  clearCurrentTodoList();
+  visible.value = false;
+};
 </script>
 
 <template>
   <div class="card">
-    <Panel class="mb-8">
+    <Panel class="mb-8" toggleable>
       <template #header>
         <h2 class="mb-0">Get Started Here!</h2>
       </template>
@@ -119,7 +158,7 @@ const handleCopyLink = (todoList: { todo_list_id: string }) => {
       >
     </Panel>
 
-    <Panel class="mb-8">
+    <Panel class="mb-8" toggleable>
       <template #header>
         <h2 class="mb-0">Add Database</h2>
       </template>
@@ -161,10 +200,26 @@ const handleCopyLink = (todoList: { todo_list_id: string }) => {
       </div>
     </Panel>
 
-    <Panel>
+    <Panel toggleable>
       <template #header>
         <h2 class="mb-0">My Todo Lists</h2>
       </template>
+
+      <div class="flex items-center pb-4">
+        <i
+          class="pi pi-info-circle mr-4"
+          style="font-size: 1.5rem; color: var(--primary-color)"
+        ></i>
+        <p>
+          Here are all the to-do lists you've created. Click on the copy icon to
+          copy the link for an embed.
+        </p>
+      </div>
+
+      <!-- create text for an empty state -->
+      <div v-if="todo_lists.length === 0">
+        <p class="italic">You haven't created any to-do lists yet.</p>
+      </div>
 
       <DataView
         class="database-view"
@@ -194,6 +249,7 @@ const handleCopyLink = (todoList: { todo_list_id: string }) => {
                   size="small"
                   icon="pi pi-trash"
                   severity="danger"
+                  @click="handleDeleteModal(slotProps.data)"
                 />
               </div>
               <InputGroup>
@@ -209,6 +265,42 @@ const handleCopyLink = (todoList: { todo_list_id: string }) => {
         </template>
       </DataView>
     </Panel>
+
+    <Dialog
+      v-model:visible="visible"
+      modal
+      header="Are you sure you want to delete?"
+      :style="{ width: '50rem' }"
+      :breakpoints="{ '1199px': '75vw', '575px': '90vw' }"
+    >
+      <div class="flex items-center">
+        <img
+          class="mr-2"
+          :alt="handleTodoListName(currentTodoList)"
+          :src="getIcon(currentTodoList.notion_database_id.metadata)"
+          style="width: 20px"
+          v-if="currentTodoList.notion_database_id.metadata.icon"
+        />
+        <span class="font-semibold">
+          {{ handleTodoListName(currentTodoList) }}
+        </span>
+      </div>
+      <template #footer>
+        <Button
+          label="Cancel"
+          @click="visible = false"
+          autofocus
+          severity="secondary"
+        />
+        <Button
+          label="Delete"
+          icon="pi pi-trash"
+          @click="confirmDelete"
+          autofocus
+          severity="danger"
+        />
+      </template>
+    </Dialog>
   </div>
 </template>
 

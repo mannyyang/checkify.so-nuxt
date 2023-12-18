@@ -20,13 +20,5 @@ onMounted(async () => {
 });
 </script>
 <template>
-  <div>
-    Waiting for connection...
-    <div>
-      {{ query.code }}
-    </div>
-    <div v-if="response">
-      <pre>{{ response }}</pre>
-    </div>
-  </div>
+  <div>Waiting for connection...</div>
 </template>

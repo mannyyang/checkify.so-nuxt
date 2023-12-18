@@ -17,7 +17,8 @@ export default defineEventHandler(async (event) => {
       notion_database_id: body.id,
       // @ts-ignore
       name: body.name,
-      metadata: body
+      metadata: body,
+      access_token: notion_auth.access_token
     });
 
     if (error) {
@@ -25,13 +26,10 @@ export default defineEventHandler(async (event) => {
       return error;
     }
 
-    const { error: todo_list_error } = await supabase
-      .from('todo_list')
-      .upsert({
-        user_id: user.id,
-        notion_database_id: body.id,
-        access_token: notion_auth.access_token,
-      });
+    const { error: todo_list_error } = await supabase.from('todo_list').upsert({
+      user_id: user.id,
+      notion_database_id: body.id
+    });
 
     if (todo_list_error) {
       console.log(todo_list_error);
@@ -41,5 +39,5 @@ export default defineEventHandler(async (event) => {
     return body;
   }
 
-  throw "Error: no body or auth found";
+  throw 'Error: no body or auth found';
 });

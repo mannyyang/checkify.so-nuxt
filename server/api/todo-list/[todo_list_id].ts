@@ -22,7 +22,7 @@ export default defineEventHandler(async (event) => {
 
   const { data, error } = await supabase
     .from('todo_list')
-    .select('access_token, notion_database_id')
+    .select(`notion_database_id(notion_database_id, access_token)`)
     .eq('todo_list_id', todo_list_id);
 
   if (error) {
@@ -33,7 +33,10 @@ export default defineEventHandler(async (event) => {
     throw new Error('No todo list found');
   }
 
-  const { access_token, notion_database_id } = data[0];
+  const {
+    // @ts-ignore
+    notion_database_id: { notion_database_id, access_token }
+  } = data[0];
 
   const notion = new Client({ auth: access_token });
 
