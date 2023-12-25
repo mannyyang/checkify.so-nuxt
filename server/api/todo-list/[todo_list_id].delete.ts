@@ -1,4 +1,3 @@
-import type { DatabaseObjectResponse } from '@notionhq/client/build/src/api-endpoints';
 import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(
@@ -7,24 +6,30 @@ const supabase = createClient(
 );
 
 export default defineEventHandler(async (event) => {
-  const { user, notion_auth } = event.context;
-  const body: DatabaseObjectResponse = await readBody(event);
+  const { user } = event.context;
+  const todo_list_id = getRouterParam(event, 'todo_list_id');
 
-  if (!body || !notion_auth) {
-    throw 'Error: no body or auth found';
+  if (!todo_list_id) {
+    throw 'Error: no todo_list_id found';
   }
 
-  console.log('TODO_LIST_DELETE', body);
+  if (!user) {
+    throw 'Error: no user found';
+  }
+
+  console.log('TODO_LIST_DELETE', todo_list_id);
 
   const { error } = await supabase
     .from('todo_list')
     .delete()
-    .eq('todo_list_id', body.id);
+    .eq('todo_list_id', todo_list_id);
 
   if (error) {
     console.log(error);
     return error;
   }
 
-  return body;
+  return {
+    success: true
+  };
 });

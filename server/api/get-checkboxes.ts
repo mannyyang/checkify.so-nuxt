@@ -26,7 +26,7 @@ export default defineEventHandler(async () => {
         page_size: 100
       });
 
-      consola.log('PAGE', pageBlock);
+      // consola.log('PAGE', pageBlock);
 
       const checkboxBlocks = childrenBlocksResp.results.filter((childBlock) => {
         if (isFullBlock(childBlock)) {
@@ -34,7 +34,7 @@ export default defineEventHandler(async () => {
         }
       }) as CheckboxBlock[];
 
-      consola.log('CHECKBOXES', checkboxBlocks);
+      // consola.log('CHECKBOXES', checkboxBlocks);
 
       const item = {
         page: pageBlock as PageObjectResponse,

@@ -113,7 +113,7 @@ const clearCurrentTodoList = () => {
 };
 
 const confirmDelete = async () => {
-  const { data, error } = await useFetch(
+  const { error } = await useFetch(
     `/api/todo-list/${currentTodoList.value.todo_list_id}`,
     {
       method: 'DELETE'
@@ -131,6 +131,8 @@ const confirmDelete = async () => {
 
   clearCurrentTodoList();
   visible.value = false;
+
+  fetchTodoLists();
 };
 </script>
 
@@ -153,9 +155,9 @@ const confirmDelete = async () => {
       </div>
 
       <ConnectNotion class="mr-4" />
-      <InlineMessage severity="success" v-if="response.data.is_auth"
-        >You are connected</InlineMessage
-      >
+      <!-- <InlineMessage severity="success" v-if="response.data.is_auth">
+        You are connected
+      </InlineMessage> -->
     </Panel>
 
     <Panel class="mb-8" toggleable>
@@ -180,6 +182,7 @@ const confirmDelete = async () => {
           optionLabel="name"
           placeholder="Search for a database"
           :suggestions="searchResults"
+          :disabled="!response.data.is_auth"
           @complete="searchDatabases"
           @item-select="onSelect"
         >

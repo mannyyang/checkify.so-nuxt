@@ -10,42 +10,24 @@ export function useNavigationMenu() {
             label: 'My Todo Lists',
             to: '/my-todo-lists',
             icon: 'pi pi-fw pi-check-square'
+          }
+        ]
+      },
+      {
+        label: 'Documentation',
+        items: [
+          {
+            label: 'Connect Notion',
+            icon: 'pi pi-fw pi-key',
+            to: '/docs/connect-notion'
           },
           {
-            label: 'Login',
-            to: '/login',
-            icon: 'pi pi-fw pi-sign-in'
-          },
-          {
-            label: 'Logout',
-            to: '/logout',
-            icon: 'pi pi-fw pi-sign-out'
-          },
+            label: 'Create a Todo List',
+            icon: 'pi pi-fw pi-book',
+            to: '/docs/component'
+          }
         ]
       }
-      // {
-      //   label: 'PrimeVue',
-      //   items: [
-      //     { label: 'DataTable', icon: 'pi pi-fw pi-table', to: '/prime/datatable' },
-      //     { label: 'Messages', icon: 'pi pi-fw pi-user-edit', to: '/prime/messages' },
-      //     { label: 'Validation', icon: 'pi pi-fw pi-user-edit', to: '/prime/validation' }
-      //   ]
-      // },
-      // {
-      //   label: 'UI',
-      //   items: [
-      //     { label: 'UnoCSS', icon: 'pi pi-fw pi-user-edit', to: '/ui/uno' },
-      //     { label: 'Icons', icon: 'pi pi-fw pi-user-edit', to: '/ui/icons' },
-      //     { label: 'TipTap', icon: 'pi pi-fw pi-user-edit', to: '/ui/tiptap' }
-      //   ]
-      // },
-      // {
-      //   label: 'Content',
-      //   items: [
-      //     { label: 'Markdown', icon: 'pi pi-fw pi-user-edit', to: '/cms/markdown' },
-      //     { label: 'Component', icon: 'pi pi-fw pi-user-edit', to: '/cms/component' }
-      //   ]
-      // },
       // {
       //   label: 'Pages',
       //   items: [
