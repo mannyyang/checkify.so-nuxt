@@ -155,9 +155,9 @@ const confirmDelete = async () => {
       </div>
 
       <ConnectNotion class="mr-4" />
-      <!-- <InlineMessage severity="success" v-if="response.data.is_auth">
+      <InlineMessage severity="success" v-if="response.data.is_auth">
         You are connected
-      </InlineMessage> -->
+      </InlineMessage>
     </Panel>
 
     <Panel class="mb-8" toggleable>
@@ -219,52 +219,52 @@ const confirmDelete = async () => {
         </p>
       </div>
 
-      <!-- create text for an empty state -->
-      <div v-if="todo_lists.length === 0">
-        <p class="italic">You haven't created any to-do lists yet.</p>
-      </div>
-
       <DataView
         class="database-view"
         data-key="id"
         :value="todo_lists"
         layout="grid"
       >
+        <template #empty>
+          <p class="italic">You haven't created any to-do lists yet.</p>
+        </template>
         <template #grid="slotProps">
-          <Card class="todo-list__card">
-            <template #content>
-              <div class="flex items-center mb-4">
-                <div class="todo-list__label flex-1 flex items-center">
-                  <img
-                    class="mr-2"
-                    :alt="handleTodoListName(slotProps.data)"
-                    :src="getIcon(slotProps.data.notion_database_id.metadata)"
-                    style="width: 20px"
-                    v-if="slotProps.data.notion_database_id.metadata.icon"
-                  />
-                  <span class="font-semibold">
-                    {{ handleTodoListName(slotProps.data) }}
-                  </span>
-                </div>
+          <div class="p-grid">
+            <Card class="todo-list__card" v-for="data in slotProps.items">
+              <template #content>
+                <div class="flex items-center mb-4">
+                  <div class="todo-list__label flex-1 flex items-center">
+                    <img
+                      class="mr-2"
+                      :alt="handleTodoListName(data)"
+                      :src="getIcon(data.notion_database_id.metadata)"
+                      style="width: 20px"
+                      v-if="data.notion_database_id.metadata.icon"
+                    />
+                    <span class="font-semibold">
+                      {{ handleTodoListName(data) }}
+                    </span>
+                  </div>
 
-                <Button
-                  text
-                  size="small"
-                  icon="pi pi-trash"
-                  severity="danger"
-                  @click="handleDeleteModal(slotProps.data)"
-                />
-              </div>
-              <InputGroup>
-                <InputText :value="handleLink(slotProps.data)" />
-                <Button
-                  icon="pi pi-copy"
-                  severity="secondary"
-                  @click="handleCopyLink(slotProps.data)"
-                />
-              </InputGroup>
-            </template>
-          </Card>
+                  <Button
+                    text
+                    size="small"
+                    icon="pi pi-trash"
+                    severity="danger"
+                    @click="handleDeleteModal(data)"
+                  />
+                </div>
+                <InputGroup>
+                  <InputText :value="handleLink(data)" />
+                  <Button
+                    icon="pi pi-copy"
+                    severity="secondary"
+                    @click="handleCopyLink(data)"
+                  />
+                </InputGroup>
+              </template>
+            </Card>
+          </div>
         </template>
       </DataView>
     </Panel>

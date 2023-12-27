@@ -8,5 +8,5 @@ onBeforeMount(async () => {
 </script>
 
 <template>
-  <div></div>
+  <div>Logging out...</div>
 </template>
