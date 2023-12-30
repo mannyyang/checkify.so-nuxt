@@ -1,4 +1,8 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+definePageMeta({
+  layout: 'public'
+});
+</script>
 
 <template>
   <div class="sp_tos_container container">

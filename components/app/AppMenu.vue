@@ -17,4 +17,3 @@ const model = navigationMenu();
 </template>
 
 <style lang="scss" scoped></style>
-~/composables/useNavigation

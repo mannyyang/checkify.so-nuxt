@@ -9,9 +9,9 @@ export default defineEventHandler(async (event) => {
   // don't touch error routes
   if (urlObj.pathname === '/__nuxt_error') return;
   // redirects /old-page -> /new-page
-  if (urlObj.pathname == '/') {
-    return await sendRedirect(event, '/my-todo-lists');
-  }
+  // if (urlObj.pathname == '/') {
+  //   return await sendRedirect(event, '/my-todo-lists');
+  // }
 
   const supabase = serverSupabaseServiceRole(event);
 

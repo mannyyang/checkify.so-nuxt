@@ -1,66 +1,89 @@
-<script setup lang='ts'>
-import AdvertiseBox from '@/components/AdvertiseBox.vue'
+<script setup lang="ts">
+definePageMeta({
+  layout: 'public'
+});
 </script>
 
 <template>
-  <div class="surface-0 text-center">
-    <div class="mb-3 font-bold text-4xl">
-      <span class="text-green-600">PrimeVue </span>
-      <span class="text-blue-400"> & TypeScript</span>
-      <span class="text-green-400"> & Nuxt 3</span>
+  <section class="hero">
+    <div
+      class="flex flex-col lg:flex-row items-center px-4 py-16 max-w-7xl mx-auto space-y-4 lg:space-y-0"
+    >
+      <div class="w-full lg:w-1/2 text-center lg:text-left">
+        <h1 class="text-5xl font-bold leading-tight">
+          Don't Let Your To-Dos Drown in Notion's Digital Depths
+        </h1>
+        <p class="mt-4 text-lg text-gray-600">
+          Tired of hunting for scattered to-dos across countless Notion pages?
+          Simply aggregate all your tasks in one place, gaining instant clarity
+          and control over your workflow.
+        </p>
+        <Button
+          class="mt-8"
+          label="Login to get started"
+          icon="pi pi-sign-in"
+          size="large"
+        />
+      </div>
+      <div class="w-full lg:w-1/2 lg:ml-10">
+        <img
+          class="max-w-full p-6"
+          src="/hero-section.png"
+          alt="Notion integration with other tools"
+        />
+      </div>
     </div>
-    <h2 class="text-2xl pb-6">
-      Starter for Vue.js Development with Nuxt 3.
-    </h2>
-    <div class="grid grid-cols-2 lg:grid-cols-3 gap-2">
-      <AdvertiseBox header="PrimeVue 3.40.x" icon="prime-check-circle" color="green-600">
-        Excellent Component Library for VUE
-      </AdvertiseBox>
-      <AdvertiseBox header="PrimeVue Theme & Layout" icon="prime-check-circle" color="green-600">
-        Free Sakai theme
-      </AdvertiseBox>
-      <AdvertiseBox header="FormKit" icon="prime-check-circle" color="purple-500">
-        FormKit 1.2.x for Form Validation
-      </AdvertiseBox>
-      <AdvertiseBox header="UnoCSS" icon="prime-check-circle" color="green-600">
-        UnoCSS for rapid styling
-      </AdvertiseBox>
-      <AdvertiseBox header="VUE 3.3" icon="prime-check-circle" color="green-600">
-        Composition Api
-      </AdvertiseBox>
-      <AdvertiseBox header="Script Setup" icon="prime-check-circle" color="green-600">
-        Reduce a lot of boilerplate code
-      </AdvertiseBox>
-      <AdvertiseBox header="Typescript 5" icon="prime-check-circle" color="blue-400">
-        Typesafe by default
-      </AdvertiseBox>
+  </section>
 
-      <AdvertiseBox header="Nuxt 3.8" icon="prime-check-circle" color="green-400">
-        Pages, Layouts, ...
-      </AdvertiseBox>
-      <AdvertiseBox header="Nuxt Content 2.9" icon="prime-check-circle" color="green-400">
-        Markdown, YML, CSV or JSON and MDC Syntax
-      </AdvertiseBox>
-      <AdvertiseBox header="I18n" icon="prime-check-circle" color="green-600">
-        Nuxt I18n (Beta)
-      </AdvertiseBox>
-      <AdvertiseBox header="VueUse" icon="prime-check-circle" color="green-600">
-        VueUse included
-      </AdvertiseBox>
-      <AdvertiseBox header="Pinia Store 2" icon="prime-check-circle" color="blue-400">
-        Replacement / Alternative for VUEX Store
-      </AdvertiseBox>
-      <AdvertiseBox header="Nitro" icon="prime-check-circle" color="green-400">
-        Nuxt 3 Server Engine
-      </AdvertiseBox>
-      <AdvertiseBox header="TipTap" icon="prime-check-circle" color="green-600">
-        TipTap Editor Demo
-      </AdvertiseBox>
-      <AdvertiseBox header="Vitest" icon="prime-check-circle" color="blue-600">
-        Testing with Vitest
-      </AdvertiseBox>
+  <section class="flex flex-col md:flex-row w-full py-8 px-4">
+    <div class="md:w-1/2 pr-8 pb-4 md:pb-0">
+      <h2 class="mb-4">Synced Todos & Metrics</h2>
+      <p class="mt-2 text-lg">
+        Todo's are now synced with your notion blocks as in if you check a todo
+        in the view, it will be reflected in your notion page.
+      </p>
+      <p class="mt-2 text-lg">
+        See how you're doing with metrics. View status with a clean progress
+        bar.
+      </p>
     </div>
-  </div>
+    <div class="md:w-1/2">
+      <video width="100%" autoplay loop muted>
+        <source src="/recording/synced-todos.mov?url" type="video/mp4" />
+        Your browser does not support the video tag.
+      </video>
+    </div>
+  </section>
+
+  <section class="flex flex-col md:flex-row w-full py-8 px-4">
+    <div class="md:w-1/2">
+      <video width="100%" autoplay loop muted>
+        <source src="/recording/manual-refresh.mov?url" type="video/mp4" />
+        Your browser does not support the video tag.
+      </video>
+    </div>
+    <div class="md:w-1/2 pl-8 pb-4 md:pb-0">
+      <h2 class="mb-4">Refreshing Todos</h2>
+      <p class="mt-2 text-lg">
+        Todo's are synced every hour, but a manual refresh button is included.
+      </p>
+    </div>
+  </section>
+
+  <section class="flex flex-col md:flex-row w-full py-8 px-4">
+    <div class="md:w-1/2 pr-8 pb-4 md:pb-0">
+      <h2 class="mb-4">Hide completed tasks</h2>
+      <p class="mt-2 text-lg">
+        Hide completed tasks for a focused and clean view.
+      </p>
+    </div>
+    <div class="md:w-1/2">
+      <video width="100%" autoplay loop muted>
+        <source src="/recording/hide-completed.mov?url" type="video/mp4" />
+        Your browser does not support the video tag.
+      </video>
+    </div>
+  </section>
 </template>
 
 <style scoped></style>
