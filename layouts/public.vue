@@ -42,7 +42,7 @@ const containerClass = computed(() => {
 
 <style lang="scss">
 .public-layout {
-  .layout-sidebar {
+  .layout-sidebar, .layout-menu-button {
     display: none;
   }
 }

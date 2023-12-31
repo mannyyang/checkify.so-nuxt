@@ -111,10 +111,13 @@ function redirectToGithub(event: any) {
         <i class="pi pi-calendar" />
         <span>Calendar</span>
       </button> -->
-      <button class="p-link layout-topbar-button" @click="onTopBarMenuButton()">
-        <i class="pi pi-user" />
-        <span>Profile</span>
-      </button>
+      <NuxtLink to="/my-todo-lists">
+        <button class="p-link layout-topbar-button">
+          <i class="pi pi-user" />
+          <span>Profile</span>
+        </button>
+      </NuxtLink>
+
       <!-- <button class="p-link layout-topbar-button" @click="toggle">
         <i class="pi pi-cog" />
         <span>Settings</span>
@@ -125,6 +128,7 @@ function redirectToGithub(event: any) {
       </button> -->
     </div>
     <client-only>
+      <!-- For settings button -->
       <OverlayPanel
         id="overlay_panel"
         ref="op"
