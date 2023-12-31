@@ -237,9 +237,9 @@ const confirmDelete = async () => {
                     <img
                       class="mr-2"
                       :alt="handleTodoListName(data)"
-                      :src="getIcon(data.notion_database_id.metadata)"
+                      :src="getIcon(data.notion_database_id?.metadata)"
                       style="width: 20px"
-                      v-if="data.notion_database_id.metadata.icon"
+                      v-if="data.notion_database_id?.metadata.icon"
                     />
                     <span class="font-semibold">
                       {{ handleTodoListName(data) }}

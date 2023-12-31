@@ -23,7 +23,7 @@ export default defineEventHandler(async (event) => {
     event.context.user = user;
 
     const { data, error } = await supabase
-      .from('notion_access_token')
+      .from('notion_access_token_user')
       .select()
       .eq('user_id', user?.id || '');
 

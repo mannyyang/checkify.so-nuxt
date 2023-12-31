@@ -35,7 +35,7 @@ definePageMeta({
     </div>
   </section>
 
-  <section class="flex flex-col md:flex-row w-full py-8 px-4">
+  <section class="flex flex-col md:flex-row w-full py-16 px-4">
     <div class="md:w-1/2 pr-8 pb-4 md:pb-0">
       <h2 class="mb-4">Synced Todos & Metrics</h2>
       <p class="mt-2 text-lg">
@@ -48,16 +48,27 @@ definePageMeta({
       </p>
     </div>
     <div class="md:w-1/2">
-      <video width="100%" autoplay loop muted>
+      <video
+        class="max-w-full b-1 b-solid b-black b-rounded"
+        autoplay
+        loop
+        muted
+      >
         <source src="/recording/synced-todos.mov?url" type="video/mp4" />
         Your browser does not support the video tag.
       </video>
     </div>
   </section>
 
-  <section class="flex flex-col md:flex-row w-full py-8 px-4">
+  <section class="flex flex-col md:flex-row w-full py-16 px-4">
     <div class="md:w-1/2">
-      <video width="100%" autoplay loop muted>
+      <video
+        class="max-w-full b-1 b-solid b-black b-rounded"
+        width="100%"
+        autoplay
+        loop
+        muted
+      >
         <source src="/recording/manual-refresh.mov?url" type="video/mp4" />
         Your browser does not support the video tag.
       </video>
@@ -70,7 +81,7 @@ definePageMeta({
     </div>
   </section>
 
-  <section class="flex flex-col md:flex-row w-full py-8 px-4">
+  <section class="flex flex-col md:flex-row w-full py-16 px-4">
     <div class="md:w-1/2 pr-8 pb-4 md:pb-0">
       <h2 class="mb-4">Hide completed tasks</h2>
       <p class="mt-2 text-lg">
@@ -78,10 +89,30 @@ definePageMeta({
       </p>
     </div>
     <div class="md:w-1/2">
-      <video width="100%" autoplay loop muted>
+      <video
+        class="max-w-full b-1 b-solid b-black b-rounded"
+        width="100%"
+        autoplay
+        loop
+        muted
+      >
         <source src="/recording/hide-completed.mov?url" type="video/mp4" />
         Your browser does not support the video tag.
       </video>
+    </div>
+  </section>
+
+  <section class="hero">
+    <div class="w-full p-20 text-center">
+      <h1 class="text-5xl font-bold leading-tight">
+        Notion + Checkify: Aggregate and Conquer your Todos
+      </h1>
+      <Button
+        class="mt-8"
+        label="Login to get started"
+        icon="pi pi-sign-in"
+        size="large"
+      />
     </div>
   </section>
 </template>

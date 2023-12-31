@@ -13,44 +13,54 @@ export default defineEventHandler(async (event) => {
 
     const clientId = process.env.NOTION_OAUTH_CLIENT_ID;
     const clientSecret = process.env.NOTION_OAUTH_CLIENT_SECRET;
-    const redirectUri = process.env.BASE_URL +  '/connect-notion';
+    const redirectUri = process.env.BASE_URL + '/connect-notion';
 
     // encode in base 64
     const encoded = Buffer.from(`${clientId}:${clientSecret}`).toString(
       'base64'
     );
 
-    const response = await $fetch('https://api.notion.com/v1/oauth/token', {
-      method: 'POST',
-      headers: {
-        accept: 'application/json',
-        'Content-Type': 'application/json',
-        authorization: `Basic ${encoded}`
-      },
-      body: {
-        grant_type: 'authorization_code',
-        code: body.code,
-        redirect_uri: redirectUri
+    const response: { access_token: string } = await $fetch(
+      'https://api.notion.com/v1/oauth/token',
+      {
+        method: 'POST',
+        headers: {
+          accept: 'application/json',
+          'Content-Type': 'application/json',
+          authorization: `Basic ${encoded}`
+        },
+        body: {
+          grant_type: 'authorization_code',
+          code: body.code,
+          redirect_uri: redirectUri
+        }
       }
-    });
+    );
 
     console.log('OAUTH_RESPONSE', response);
 
-    const payload = {
-      // @ts-ignore
-      ...response,
-      user_id: body.user_id
-    };
-    const { error } = await supabase
+    const { error: tokenError } = await supabase
       .from('notion_access_token')
-      .upsert(payload);
+      .upsert(response);
 
-    if (error) {
-      console.log(error);
-      return error;
+    if (tokenError) {
+      throw tokenError;
     }
 
-    return payload;
+    const { error: userTokenError } = await supabase
+      .from('notion_access_token_user')
+      .upsert({
+        user_id: body.user_id,
+        access_token: response.access_token
+      });
+
+    if (userTokenError) {
+      throw userTokenError;
+    }
+
+    return {
+      connected: true
+    };
   }
 
   return {
