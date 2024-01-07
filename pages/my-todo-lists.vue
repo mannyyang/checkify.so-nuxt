@@ -215,7 +215,8 @@ const confirmDelete = async () => {
         ></i>
         <p>
           Here are all the to-do lists you've created. Click on the copy icon to
-          copy the link for an embed.
+          copy the link for an embed. The first 45 pages in a database are used
+          and the first 50 blocks in a page are used.
         </p>
       </div>
 

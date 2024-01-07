@@ -18,12 +18,14 @@ definePageMeta({
           Simply aggregate all your tasks in one place, gaining instant clarity
           and control over your workflow.
         </p>
-        <Button
-          class="mt-8"
-          label="Login to get started"
-          icon="pi pi-sign-in"
-          size="large"
-        />
+        <NuxtLink to="/my-todo-lists">
+          <Button
+            class="mt-8"
+            label="Login to get started"
+            icon="pi pi-sign-in"
+            size="large"
+          />
+        </NuxtLink>
       </div>
       <div class="w-full lg:w-1/2 lg:ml-10">
         <img
@@ -107,12 +109,15 @@ definePageMeta({
       <h1 class="text-5xl font-bold leading-tight">
         Notion + Checkify: Aggregate and Conquer your Todos
       </h1>
-      <Button
-        class="mt-8"
-        label="Login to get started"
-        icon="pi pi-sign-in"
-        size="large"
-      />
+
+      <NuxtLink to="/my-todo-lists">
+        <Button
+          class="mt-8"
+          label="Login to get started"
+          icon="pi pi-sign-in"
+          size="large"
+        />
+      </NuxtLink>
     </div>
   </section>
 </template>

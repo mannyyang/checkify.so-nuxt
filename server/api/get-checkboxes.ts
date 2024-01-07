@@ -14,7 +14,7 @@ export default defineEventHandler(async () => {
 
   const databasePages = await notion.databases.query({
     database_id: databaseId,
-    page_size: 60
+    page_size: 45
   });
 
   const pages = databasePages.results || [];
@@ -23,7 +23,7 @@ export default defineEventHandler(async () => {
     pages.map(async (pageBlock) => {
       const childrenBlocksResp = await notion.blocks.children.list({
         block_id: pageBlock.id,
-        page_size: 100
+        page_size: 50
       });
 
       // consola.log('PAGE', pageBlock);
