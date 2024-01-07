@@ -69,7 +69,8 @@ export default defineNuxtConfig({
         '/privacy-policy',
         '/terms-of-use',
         '/checkboxes',
-        '/todo-list/*'
+        '/todo-list/*',
+        '/docs/*',
       ]
     }
   }
