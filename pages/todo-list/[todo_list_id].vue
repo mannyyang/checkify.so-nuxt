@@ -143,7 +143,11 @@ setTimeout(() => {
                   @input="onTodoUpdate(checkbox)"
                 />
                 <label :for="checkbox.id" class="ml-2">
-                  {{ checkbox.to_do.rich_text[0].plain_text }}
+                  {{
+                    checkbox.to_do.rich_text.length > 0
+                      ? checkbox.to_do.rich_text[0].plain_text
+                      : ''
+                  }}
                   <a
                     class="pi pi-link"
                     target="_blank"

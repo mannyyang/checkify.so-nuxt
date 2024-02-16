@@ -19,12 +19,6 @@ export default defineEventHandler(async () => {
 
   const databasePages = await notion.databases.query({
     database_id: databaseId,
-    sorts: [
-      {
-        property: 'Created time',
-        direction: 'descending'
-      }
-    ],
     page_size: 5
   });
 
@@ -47,7 +41,7 @@ export default defineEventHandler(async () => {
         const parent_id = page.parent[parent_type];
 
         pageToBeInserted.push({
-          notion_block: block,
+          notion_block: page,
           block_text: title,
           notion_block_id: page.id,
           notion_parent_id: parent_id,
@@ -82,6 +76,8 @@ export async function getPageBlocks(pageBlock: BlockObjectResponse) {
   let children = [];
 
   for (const block of childrenBlocksResp.results) {
+    console.log('type', block);
+
     if (isFullBlock(block)) {
       // Recursively get children blocks
       if (block.has_children) {
