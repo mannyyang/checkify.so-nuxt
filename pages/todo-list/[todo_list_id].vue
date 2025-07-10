@@ -128,7 +128,7 @@ setTimeout(() => {
           >
             <div class="page pb-lg" v-if="item.checkboxes.length">
               <h4>
-                {{ item.page.properties['Name'].title[0].plain_text }}
+                {{ item.page.properties['Name']?.title?.[0]?.plain_text }}
               </h4>
               <div
                 class="flex align-items-center mb-2"
