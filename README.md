@@ -1,101 +1,137 @@
-# Nuxt 3 + PrimeVue Starter
+# Checkify.so
 
-Build your VUE.js App with Nuxt3. First Class PrimeVUE support. Validation by Formkit.
-Based on [Nuxt-Sakai](https://github.com/primefaces/sakai-nuxt) Theme.
+A modern web application that aggregates todo lists from Notion, providing a cleaner, more focused interface for managing your tasks. Built with Nuxt 3, PrimeVue, and Supabase.
 
+## 🎯 Project Goal
 
-[![CI](https://github.com/sfxcode/nuxt3-primevue-starter/actions/workflows/main.yml/badge.svg)](https://github.com/sfxcode/nuxt3-primevue-starter/actions/workflows/main.yml)
+Checkify.so solves a common problem with Notion: while it's great for organizing information, managing todos scattered across different pages can be cumbersome. This app:
 
-THX to [antfu / Vitesse Nuxt3](https://github.com/antfu/vitesse-nuxt3) for starter code
+- **Aggregates all your Notion todos** into a single, clean interface
+- **Syncs bidirectionally** - check off items here, and they update in Notion
+- **Provides a distraction-free** todo management experience
+- **Maintains Notion as your source of truth** while offering a better task interface
 
-## Features
+## ✨ Features
 
-- [Nuxt 3](https://v3.nuxtjs.org) - SSR, ESR, File-based routing, components auto importing, modules, etc.
-- [PrimeVue](https://primevue.org/) 3.40.x with free Sakai Layout and Lara Theme
-- [Formkit-PrimeVue](https://formkit-primevue.netlify.app/) PrimeVue Formkit Integration
-- [Vite](https://vitejs.dev/) - Instant HMR
-- [UnoCSS](https://github.com/antfu/unocss) - The instant on-demand atomic CSS engine.
-- Use icons from any icon sets in Pure CSS, powered by [UnoCSS](https://github.com/antfu/unocss)
-- [State Management via Pinia](https://pinia.esm.dev)
-- [TipTap](https://tiptap.dev) - Headless Editor
-- [Vitest](https://vitest.dev/) - Blazing Fast Unit Test Framework
+- **Notion Integration**: OAuth-based connection to your Notion workspace
+- **Real-time Sync**: Bidirectional checkbox synchronization with Notion
+- **Multi-database Support**: Connect multiple Notion databases
+- **Clean UI**: Focused todo interface without Notion's complexity
+- **Authentication**: Secure login with Google via Supabase
+- **Responsive Design**: Works on desktop and mobile devices
+- **Multi-language**: English and German support
 
-## Nuxt Modules
+## 🚀 Tech Stack
 
-- [PrimeVue-Nuxt](https://primevue.org/nuxt/) PrimeVue Nuxt Module
-- [Pinia](https://pinia.esm.dev/) - intuitive, type safe, light and flexible Store for Vue.
-- [VueUse](https://github.com/vueuse/vueuse) - collection of useful composition APIs.
-- [FormKit](https://formkit.com/) - Validation
-- [UnoCSS](https://github.com/antfu/unocss) - the instant on-demand atomic CSS engine.
-- [Content](https://content.nuxtjs.org) - parses .md, .yml, .csv and .json files
-- [I18n](https://v8.i18n.nuxtjs.org) - Integration with [Vue I18n](https://vue-i18n.intlify.dev/)
+- **Framework**: [Nuxt 3](https://nuxt.com/) (SSR disabled, running as SPA)
+- **UI Library**: [PrimeVue 3.40.x](https://primevue.org/) with Sakai theme
+- **Database & Auth**: [Supabase](https://supabase.com/)
+- **State Management**: [Pinia](https://pinia.vuejs.org/)
+- **Styling**: [UnoCSS](https://unocss.dev/)
+- **Forms**: [FormKit](https://formkit.com/) with PrimeVue integration
+- **Editor**: [TipTap](https://tiptap.dev/)
+- **Testing**: [Vitest](https://vitest.dev/)
 
+## 📋 Prerequisites
 
+- Node.js 18+ (LTS recommended)
+- pnpm package manager
+- Supabase account
+- Notion integration app (for OAuth)
 
-## Variations
+## 🛠️ Installation
 
-### vite-primevue-starter
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/yourusername/checkify.so-nuxt.git
+   cd checkify.so-nuxt
+   ```
 
-Vite Primevue Starter Template
+2. **Install dependencies**
+   ```bash
+   pnpm install
+   ```
 
-[Github Repository](https://github.com/sfxcode/vite-primevue-starter)
+3. **Set up environment variables**
+   
+   Create a `.env` file in the root directory:
+   ```env
+   SUPABASE_URL=your_supabase_project_url
+   SUPABASE_KEY=your_supabase_anon_key
+   SUPABASE_SERVICE_KEY=your_supabase_service_key
+   BASE_URL=http://localhost:3000
+   ```
 
-[App on Netlify](https://vite-primevue-starter.netlify.app/)
+4. **Set up Supabase**
+   
+   The app requires the following tables in Supabase:
+   - `profiles` - User profiles
+   - `notion_access_token` - Notion OAuth tokens
+   - `notion_access_token_user` - User-token relationships
+   - `notion_database` - Connected Notion databases
+   - `todo_list` - User's todo lists
+   - `page` - Cached Notion pages
+   - `todo` - Individual todo items
 
-* Pages, Layouts, and other NUXT like features by VITE Plugins
-* UnoCSS
-* Markdown
-* CachedPiniaStore
-* i18n
-* Validation
-* ...
+5. **Configure Notion Integration**
+   
+   - Create a Notion integration at https://www.notion.so/my-integrations
+   - Set up OAuth with redirect URL: `{BASE_URL}/api/connect-notion`
+   - Add client ID and secret to your environment
 
-## Project setup and usage
+## 🏃‍♂️ Development
 
-Install node:
-
-**Latest node LTS version required (18)**
-Use node manager like **nvm** to install.
-
-Install pnpm:
-[https://pnpm.io/installation](https://pnpm.io/installation)
-
-Install dependencies:
-
-```
-pnpm install
-```
-
-Run development server:
-
-```
+```bash
+# Start development server
 pnpm dev
-```
 
-Vitest test runner:
-
-```
+# Run tests
 pnpm test:unit
-```
 
-Build:
+# Run tests with UI
+pnpm test:ui
 
-```
+# Lint code
+pnpm lint
+
+# Build for production
 pnpm build
+
+# Preview production build
+pnpm preview
 ```
 
-Start Production build:
+## 📚 Documentation
 
-```
-pnpm start
-```
+For detailed documentation, see the `.claude/` directory:
 
-## Tools
+- [Architecture Overview](.claude/architecture.md)
+- [Authentication Guide](.claude/authentication.md)
+- [Notion Integration](.claude/notion-integration.md)
+- [API Reference](.claude/api-reference.md)
+- [UI Components](.claude/ui-components.md)
+- [Development Guide](.claude/development.md)
+- [Database Schema](.claude/database-schema.md)
 
-I use IntelliJ with VUE.js plugin.
+## 🚢 Deployment
 
-## Supporters
+The app is configured for deployment on Netlify:
 
-JetBrains is supporting this open source project with:
+1. Connect your GitHub repository to Netlify
+2. Set environment variables in Netlify dashboard
+3. Build command: `pnpm build`
+4. Publish directory: `.output/public`
 
-[![Intellij IDEA](http://www.jetbrains.com/img/logos/logo_intellij_idea.png)](http://www.jetbrains.com/idea/)
+## 🤝 Contributing
+
+Contributions are welcome! Please read our contributing guidelines and submit pull requests to our repository.
+
+## 📄 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## 🙏 Acknowledgments
+
+- Built on top of the [Nuxt-Sakai](https://github.com/primefaces/sakai-nuxt) theme
+- Inspired by the need for better todo management in Notion
+- Thanks to the Nuxt, PrimeVue, and Supabase communities
