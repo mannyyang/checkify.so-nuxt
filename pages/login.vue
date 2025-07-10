@@ -10,7 +10,7 @@ const redirectUrl = computed(() => {
   return `${runtimeConfig.public.BASE_URL}/confirm`;
 });
 
-async function signInWithGoogle() {
+async function signInWithGoogle () {
   const { error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
@@ -29,14 +29,16 @@ async function signInWithGoogle() {
         src="/layout/images/logo-green.png"
         alt="Checkify logo"
         class="mb-5 w-6rem flex-shrink-0"
-      />
+      >
       <div style="border-radius: 56px; padding: 0.3rem">
         <div
           class="w-full surface-card py-8 px-5 sm:px-8"
           style="border-radius: 53px"
         >
           <div class="text-center mb-10">
-            <div class="text-3xl font-medium mb-3">Welcome!</div>
+            <div class="text-3xl font-medium mb-3">
+              Welcome!
+            </div>
             <span class="font-medium">Sign in to continue</span>
           </div>
 
@@ -51,7 +53,7 @@ async function signInWithGoogle() {
                   class="w-7 h-7 mr-2"
                   alt="Google sign-in"
                   src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/24px-Google_%22G%22_logo.svg.png"
-                />
+                >
               </template>
             </Button>
           </div>
@@ -59,7 +61,7 @@ async function signInWithGoogle() {
       </div>
     </div>
   </div>
-  <!-- 
+  <!--
   <div class="w-screen h-screen flex justify-center items-center">
     <Card>
       <template #content>

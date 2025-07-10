@@ -4,12 +4,14 @@
   <div class="sp_tos_container container">
     <main id="sp_all_content" class="sp_tos_content p-6">
       <div class="sp_tos_lg-flex">
-        <div class="sp_tos_main_menu pb-6" id="sp_tos_main_menu">
+        <div id="sp_tos_main_menu" class="sp_tos_main_menu pb-6">
           <div
-          class="sp_style_sidebarcolor sp_tos_main_menu_elements
+            class="sp_style_sidebarcolor sp_tos_main_menu_elements
           sp-tos_position_relative p-4"
           >
-            <h3 id="sp_tos_title" class="sp_tos_change_title">Topics</h3>
+            <h3 id="sp_tos_title" class="sp_tos_change_title">
+              Topics
+            </h3>
             <ul
               class="sp_tos_list_type_none sp_tos_padding_inline_start_30 mb-0"
             >
@@ -145,8 +147,8 @@
                 Policy page
               </h1>
               <div
-                class="sp_tos_position_relative"
                 id="sp_tos_lang_selector_layout"
+                class="sp_tos_position_relative"
               >
                 <div class="sp_tos_lang_selector_blk">
                   <button
@@ -164,112 +166,93 @@
                 </div>
               </div>
             </div>
-            <h5 class="py-3">Last updated: 1 Oct 2023</h5>
+            <h5 class="py-3">
+              Last updated: 1 Oct 2023
+            </h5>
             <div
-              style="padding-left: 0px; font-weight: 300; font-size: 18px"
               id="sp_page_maincontent_data"
+              style="padding-left: 0px; font-weight: 300; font-size: 18px"
               class="ql-editor"
             >
               <div class="sp_pre_text">
                 <p>
-                  <span style="background-color: transparent"
-                    >By accessing or using our SaaS application, you agree to be
+                  <span style="background-color: transparent">By accessing or using our SaaS application, you agree to be
                     bound by these Terms and Conditions. If you do not agree to
-                    these terms, you may not use our SaaS application.</span
-                  >
+                    these terms, you may not use our SaaS application.</span>
                 </p>
-                <p><br /></p>
+                <p><br></p>
                 <h2
                   id="Mfbdc0c4ebd1aea002e805f9b2e4e92571696135679065"
                   data-num="2"
                 >
-                  <strong style="background-color: transparent"
-                    >Use of Our SaaS Application</strong
-                  >
+                  <strong style="background-color: transparent">Use of Our SaaS Application</strong>
                 </h2>
-                <p><br /></p>
+                <p><br></p>
                 <p>
-                  <span style="background-color: transparent"
-                    >You may use our SaaS application only for lawful purposes
+                  <span style="background-color: transparent">You may use our SaaS application only for lawful purposes
                     and in accordance with these Terms and Conditions. You may
                     not use our SaaS application for any illegal or unauthorized
                     purpose or in a way that infringes the rights of
-                    others.</span
-                  >
+                    others.</span>
                 </p>
-                <p><br /></p>
+                <p><br></p>
                 <h2
                   id="M958d93efab7e4835339300ad09dd64f41696135679066"
                   data-num="2"
                 >
-                  <strong style="background-color: transparent"
-                    >Account Registration</strong
-                  >
+                  <strong style="background-color: transparent">Account Registration</strong>
                 </h2>
-                <p><br /></p>
+                <p><br></p>
                 <p>
-                  <span style="background-color: transparent"
-                    >To use certain features of our SaaS application, you may be
+                  <span style="background-color: transparent">To use certain features of our SaaS application, you may be
                     required to register an account. You are responsible for
                     maintaining the confidentiality of your account and
                     password, and you agree to accept responsibility for all
                     activities under your account. You may not share your
                     account with anyone else, and you may not use another user's
-                    account without permission.</span
-                  >
+                    account without permission.</span>
                 </p>
-                <p><br /></p>
+                <p><br></p>
                 <h2
                   id="Mb77e52614a3e5124448ad504add7044c1696135679067"
                   data-num="2"
                 >
-                  <strong style="background-color: transparent"
-                    >Subscription Fees</strong
-                  >
+                  <strong style="background-color: transparent">Subscription Fees</strong>
                 </h2>
-                <p><br /></p>
+                <p><br></p>
                 <p>
-                  <span style="background-color: transparent"
-                    >Our SaaS application may be offered as a paid subscription
+                  <span style="background-color: transparent">Our SaaS application may be offered as a paid subscription
                     service. If you choose to purchase a subscription, you agree
                     to pay the subscription fees and any applicable taxes.
                     Subscription fees are non-refundable, except as required by
-                    law.</span
-                  >
+                    law.</span>
                 </p>
-                <p><br /></p>
+                <p><br></p>
                 <h2
                   id="M73e6de089d1d81a79c93d198249d08361696135679068"
                   data-num="2"
                 >
-                  <strong style="background-color: transparent"
-                    >Content and Intellectual Property</strong
-                  >
+                  <strong style="background-color: transparent">Content and Intellectual Property</strong>
                 </h2>
-                <p><br /></p>
+                <p><br></p>
                 <p>
-                  <span style="background-color: transparent"
-                    >Our SaaS application may include content owned by us or our
+                  <span style="background-color: transparent">Our SaaS application may include content owned by us or our
                     licensors. This content is protected by copyright and other
                     intellectual property laws. You may not use this content for
                     commercial purposes without our express written consent. You
                     may use Widgetbox.app widgets on commercial templates with
-                    attribution "Widgets from widgetbox.app"</span
-                  >
+                    attribution "Widgets from widgetbox.app"</span>
                 </p>
-                <p><br /></p>
+                <p><br></p>
                 <h2
                   id="Md3b2d34a37eecfe4e661e6b5e6b0e3321696135679069"
                   data-num="2"
                 >
-                  <strong style="background-color: transparent"
-                    >Your Contributions</strong
-                  >
+                  <strong style="background-color: transparent">Your Contributions</strong>
                 </h2>
-                <p><br /></p>
+                <p><br></p>
                 <p>
-                  <span style="background-color: transparent"
-                    >You can contribute content to our SaaS application, such as
+                  <span style="background-color: transparent">You can contribute content to our SaaS application, such as
                     comments or ratings. By contributing content, you grant us a
                     perpetual, irrevocable, non-exclusive, royalty-free, and
                     fully sublicensable right to use, reproduce, modify, adapt,
@@ -278,87 +261,70 @@
                     any media. You represent and warrant that you own or have
                     the necessary rights and permissions to contribute to this
                     content and that your content does not infringe the rights
-                    of any third party.</span
-                  >
+                    of any third party.</span>
                 </p>
-                <p><br /></p>
+                <p><br></p>
                 <h2
                   id="M4bd23454151fe585181100f77b2e66241696135679071"
                   data-num="2"
                 >
-                  <strong style="background-color: transparent"
-                    >Disclaimers</strong
-                  >
+                  <strong style="background-color: transparent">Disclaimers</strong>
                 </h2>
-                <p><br /></p>
+                <p><br></p>
                 <p>
-                  <span style="background-color: transparent"
-                    >Our SaaS application is provided on an "as is" and "as
+                  <span style="background-color: transparent">Our SaaS application is provided on an "as is" and "as
                     available" basis. We make no warranties, express or implied,
                     about the completeness, accuracy, reliability, suitability,
                     or availability of our SaaS application or the information
                     contained in it. We will not be liable for any loss or
-                    damage arising from the use of our SaaS application.</span
-                  >
+                    damage arising from the use of our SaaS application.</span>
                 </p>
-                <p><br /></p>
+                <p><br></p>
                 <h2
                   id="Mef0b298ee47f8f50768c2d67b1012e431696135679072"
                   data-num="2"
                 >
-                  <strong style="background-color: transparent"
-                    >Limitation of Liability</strong
-                  >
+                  <strong style="background-color: transparent">Limitation of Liability</strong>
                 </h2>
-                <p><br /></p>
+                <p><br></p>
                 <p>
-                  <span style="background-color: transparent"
-                    >In no event will we be liable for any loss or damage,
+                  <span style="background-color: transparent">In no event will we be liable for any loss or damage,
                     including, without limitation, indirect or consequential
                     loss or damage, arising from the use of our SaaS
-                    application.</span
-                  >
+                    application.</span>
                 </p>
-                <p><br /></p>
+                <p><br></p>
                 <h2
                   id="Mb4b6cb4acc6fb262a4e50a4b7b5546001696135679073"
                   data-num="2"
                 >
-                  <strong style="background-color: transparent"
-                    >Changes to These Terms and Conditions</strong
-                  >
+                  <strong style="background-color: transparent">Changes to These Terms and Conditions</strong>
                 </h2>
-                <p><br /></p>
+                <p><br></p>
                 <p>
-                  <span style="background-color: transparent"
-                    >We may update these Terms and Conditions from time to time.
+                  <span style="background-color: transparent">We may update these Terms and Conditions from time to time.
                     We will post any updates on this page and encourage you to
-                    review these Terms and Conditions periodically.</span
-                  >
+                    review these Terms and Conditions periodically.</span>
                 </p>
                 <h2
                   id="M325e3e06f9e3549a194a2dd9088c23a11696135735823"
                   data-num="2"
                 >
-                  <br />
+                  <br>
                 </h2>
-                <p><br /></p>
+                <p><br></p>
                 <h2
                   id="M4e7f532b3cad216f1e9ff412154ff87b1696135679075"
                   data-num="2"
                 >
-                  <strong style="background-color: transparent"
-                    >Contact Us</strong
-                  >
+                  <strong style="background-color: transparent">Contact Us</strong>
                 </h2>
-                <p><br /></p>
+                <p><br></p>
                 <p>
-                  <span style="background-color: transparent"
-                    >If you have any questions about these Terms and Conditions,
-                    please contact us at admin@widgetbox.app</span
-                  >
+                  <span style="background-color: transparent">If you have any questions about these Terms and Conditions,
+                    please contact us at admin@widgetbox.app</span>
                 </p>
-                <p><br /></p>
+                <p><br></p>
               </div>
             </div>
           </div>

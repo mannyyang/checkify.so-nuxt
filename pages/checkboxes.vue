@@ -120,22 +120,22 @@ setTimeout(() => {
       <ScrollPanel style="height: 100vh">
         <div class="pt-20">
           <div
-            class="page-container"
             v-for="item in checkboxList"
             :key="item.page.id"
+            class="page-container"
           >
-            <div class="page pb-lg" v-if="item.checkboxes.length">
+            <div v-if="item.checkboxes.length" class="page pb-lg">
               <h4>
                 {{ item.page.properties['Name'].title[0].plain_text }}
               </h4>
               <div
-                class="flex align-items-center mb-2"
                 v-for="checkbox in item.checkboxes"
                 :key="checkbox.id"
+                class="flex align-items-center mb-2"
               >
                 <Checkbox
                   v-model="checkbox.to_do.checked"
-                  :inputId="checkbox.id"
+                  :input-id="checkbox.id"
                   :value="checkbox.to_do.checked"
                   binary
                   @input="onTodoUpdate(checkbox)"
@@ -146,7 +146,7 @@ setTimeout(() => {
                     class="pi pi-link"
                     target="_blank"
                     :href="parseBlockLink(checkbox.id, item.page.id)"
-                  ></a>
+                  />
                 </label>
               </div>
             </div>
@@ -160,7 +160,9 @@ setTimeout(() => {
         <Card
           class="mb-4 shadow-none rounded-2 border-1 border-solid border-gray-400"
         >
-          <template #title> Todos </template>
+          <template #title>
+            Todos
+          </template>
           <template #content>
             <span class="text-gray-900 font-medium text-3xl">
               {{ percentage }}%

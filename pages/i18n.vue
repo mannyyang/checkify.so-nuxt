@@ -1,11 +1,11 @@
 <script setup lang='ts'>
-const { d, t, n, locale, locales, setLocale } = useI18n()
-const testDate = new Date()
-const testNumber = 42.4242
+const { d, t, n, locale, locales, setLocale } = useI18n();
+const testDate = new Date();
+const testNumber = 42.4242;
 
 const availableLocales = computed(() => {
-  return locales.value?.filter(l => l.code !== locale.value)
-})
+  return locales.value?.filter(l => l.code !== locale.value);
+});
 
 </script>
 

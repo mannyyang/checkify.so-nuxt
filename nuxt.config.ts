@@ -70,7 +70,7 @@ export default defineNuxtConfig({
         '/terms-of-use',
         '/checkboxes',
         '/todo-list/*',
-        '/docs/*',
+        '/docs/*'
       ]
     }
   }

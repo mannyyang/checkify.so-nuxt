@@ -11,7 +11,18 @@
       "mcp__context7__get-library-docs",
       "Bash(ls:*)",
       "WebFetch(domain:developers.notion.com)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(pnpm lint:*)",
+      "Bash(git commit:*)",
+      "Bash(say \"Documentation has been successfully committed. The repository now has comprehensive documentation explaining the project''s goals, architecture, and implementation details.\")",
+      "Bash(pnpm test:*)",
+      "Bash(ls:*)",
+      "Bash(npm install:*)",
+      "Bash(brew install:*)",
+      "Bash(supabase:*)",
+      "Bash(cat:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ],
     "deny": []
   }

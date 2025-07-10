@@ -1,5 +1,5 @@
 <script setup lang='ts' xmlns:all="http://www.w3.org/1999/xhtml">
-const config = useRuntimeConfig()
+const config = useRuntimeConfig();
 
 </script>
 

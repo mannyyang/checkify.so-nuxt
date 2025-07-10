@@ -68,12 +68,12 @@ type BlockObjectResponseWithChildren = BlockObjectResponse & {
   children?: BlockObjectResponseWithChildren[];
 };
 
-export async function getPageBlocks(pageBlock: BlockObjectResponse) {
+export async function getPageBlocks (pageBlock: BlockObjectResponse) {
   const childrenBlocksResp = await notion.blocks.children.list({
     block_id: pageBlock.id
   });
 
-  let children = [];
+  const children = [];
 
   for (const block of childrenBlocksResp.results) {
     console.log('type', block);
@@ -130,14 +130,14 @@ export async function getPageBlocks(pageBlock: BlockObjectResponse) {
   };
 }
 
-function getPageTitle(page: PageObjectResponse) {
+function getPageTitle (page: PageObjectResponse) {
   // use the object keys method to find the title property.
   const titleProperty = Object.keys(page?.properties).find(
-    (key) => page.properties[key].type === 'title'
+    key => page.properties[key].type === 'title'
   );
 
   return titleProperty
     ? // @ts-ignore
-      page.properties[titleProperty].title[0].plain_text
+    page.properties[titleProperty].title[0].plain_text
     : '';
 }

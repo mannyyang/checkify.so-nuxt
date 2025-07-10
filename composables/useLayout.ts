@@ -1,4 +1,4 @@
-import { toRefs, reactive, computed } from 'vue'
+import { toRefs, reactive, computed } from 'vue';
 
 const layoutConfig = reactive({
   ripple: true,
@@ -8,7 +8,7 @@ const layoutConfig = reactive({
   theme: 'lara-dark-blue',
   scale: 14,
   activeMenuItem: null
-})
+});
 
 const layoutState = reactive({
   staticMenuDesktopInactive: false,
@@ -17,37 +17,37 @@ const layoutState = reactive({
   configSidebarVisible: false,
   staticMenuMobileActive: false,
   menuHoverActive: false
-})
+});
 
 export function useLayout () {
   const changeThemeSettings = (theme, darkTheme) => {
-    layoutConfig.darkTheme = darkTheme
-    layoutConfig.theme = theme
-  }
+    layoutConfig.darkTheme = darkTheme;
+    layoutConfig.theme = theme;
+  };
 
   const setScale = (scale) => {
-    layoutConfig.scale = scale
-  }
+    layoutConfig.scale = scale;
+  };
 
   const setActiveMenuItem = (item) => {
-    layoutConfig.activeMenuItem = item.value || item
-  }
+    layoutConfig.activeMenuItem = item.value || item;
+  };
 
   const onMenuToggle = () => {
     if (layoutConfig.menuMode === 'overlay') {
-      layoutState.overlayMenuActive = !layoutState.overlayMenuActive
+      layoutState.overlayMenuActive = !layoutState.overlayMenuActive;
     }
 
     if (window.innerWidth > 991) {
-      layoutState.staticMenuDesktopInactive = !layoutState.staticMenuDesktopInactive
+      layoutState.staticMenuDesktopInactive = !layoutState.staticMenuDesktopInactive;
     } else {
-      layoutState.staticMenuMobileActive = !layoutState.staticMenuMobileActive
+      layoutState.staticMenuMobileActive = !layoutState.staticMenuMobileActive;
     }
-  }
+  };
 
-  const isSidebarActive = computed(() => layoutState.overlayMenuActive || layoutState.staticMenuMobileActive)
+  const isSidebarActive = computed(() => layoutState.overlayMenuActive || layoutState.staticMenuMobileActive);
 
-  const isDarkTheme = computed(() => layoutConfig.darkTheme)
+  const isDarkTheme = computed(() => layoutConfig.darkTheme);
 
   return {
     layoutConfig: toRefs(layoutConfig),
@@ -58,5 +58,5 @@ export function useLayout () {
     isSidebarActive,
     isDarkTheme,
     setActiveMenuItem
-  }
+  };
 }

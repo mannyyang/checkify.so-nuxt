@@ -1,17 +1,17 @@
 <script setup lang='ts'>
-import { computed, watch, ref } from 'vue'
+import { computed, watch, ref } from 'vue';
 
-import AppMenu from '~/components/app/AppMenu.vue'
-const { layoutConfig, layoutState, isSidebarActive } = useLayout()
-const outsideClickListener = ref(null)
-const themeStore = useThemeStore()
+import AppMenu from '~/components/app/AppMenu.vue';
+const { layoutConfig, layoutState, isSidebarActive } = useLayout();
+const outsideClickListener = ref(null);
+const themeStore = useThemeStore();
 watch(isSidebarActive, (newVal) => {
   if (newVal) {
-    bindOutsideClickListener()
+    bindOutsideClickListener();
   } else {
-    unbindOutsideClickListener()
+    unbindOutsideClickListener();
   }
-})
+});
 const containerClass = computed(() => {
   return {
     dark: themeStore.isDarkMode,
@@ -22,36 +22,36 @@ const containerClass = computed(() => {
     'layout-mobile-active': layoutState.staticMenuMobileActive.value,
     'p-input-filled': layoutConfig.inputStyle.value === 'filled',
     'p-ripple-disabled': !layoutConfig.ripple.value
-  }
-})
+  };
+});
 
 const bindOutsideClickListener = () => {
   if (!outsideClickListener.value) {
     outsideClickListener.value = (event) => {
       if (isOutsideClicked(event)) {
-        layoutState.overlayMenuActive.value = false
-        layoutState.staticMenuMobileActive.value = false
-        layoutState.menuHoverActive.value = false
+        layoutState.overlayMenuActive.value = false;
+        layoutState.staticMenuMobileActive.value = false;
+        layoutState.menuHoverActive.value = false;
       }
-    }
+    };
 
-    document.addEventListener('click', outsideClickListener.value)
+    document.addEventListener('click', outsideClickListener.value);
   }
-}
+};
 
 const unbindOutsideClickListener = () => {
   if (outsideClickListener.value) {
-    document.removeEventListener('click', outsideClickListener)
-    outsideClickListener.value = null
+    document.removeEventListener('click', outsideClickListener);
+    outsideClickListener.value = null;
   }
-}
+};
 
 const isOutsideClicked = (event) => {
-  const sidebarEl = document.querySelector('.layout-sidebar')
-  const topbarEl = document.querySelector('.layout-menu-button')
+  const sidebarEl = document.querySelector('.layout-sidebar');
+  const topbarEl = document.querySelector('.layout-menu-button');
 
-  return !(sidebarEl.isSameNode(event.target) || sidebarEl.contains(event.target) || topbarEl.isSameNode(event.target) || topbarEl.contains(event.target))
-}
+  return !(sidebarEl.isSameNode(event.target) || sidebarEl.contains(event.target) || topbarEl.isSameNode(event.target) || topbarEl.contains(event.target));
+};
 </script>
 
 <template>

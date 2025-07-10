@@ -45,7 +45,7 @@ type BlockObjectResponseWithChildren = BlockObjectResponse & {
   children?: BlockObjectResponseWithChildren[];
 };
 
-export async function getPageBlocks(pageBlock: BlockObjectResponse) {
+export async function getPageBlocks (pageBlock: BlockObjectResponse) {
   const childrenBlocksResp = await notion.blocks.children.list({
     block_id: pageBlock.id
   });

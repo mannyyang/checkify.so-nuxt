@@ -1,12 +1,12 @@
 <script setup lang='ts'>
-import { FormKitSchema } from '@formkit/vue'
-import { ref, reactive } from 'vue'
+import { FormKitSchema } from '@formkit/vue';
+import { ref, reactive } from 'vue';
 
 const options = [
   { label: 'Every page load', value: 'refresh' },
   { label: 'Ever hour', value: 'hourly' },
   { label: 'Every day', value: 'daily' }
-]
+];
 
 const schema = reactive(
   [
@@ -98,14 +98,14 @@ const schema = reactive(
       value: 50
     }
   ]
-)
+);
 
-const data = ref({})
+const data = ref({});
 
 const submitHandler = async () => {
   // Lets pretend this is an ajax request:
-  await new Promise(resolve => setTimeout(resolve, 1000))
-}
+  await new Promise(resolve => setTimeout(resolve, 1000));
+};
 </script>
 <template>
   <div class="card flex flex-wrap gap-12">

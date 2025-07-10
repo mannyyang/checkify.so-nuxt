@@ -1,21 +1,21 @@
 <script setup lang='ts'>
-import { FilterMatchMode } from 'primevue/api'
+import { FilterMatchMode } from 'primevue/api';
 
-const { tableData, filters, dataTableRef, exportCSV } = usePrimeDataTable()
+const { tableData, filters, dataTableRef, exportCSV } = usePrimeDataTable();
 
 filters.value = {
   global: { value: null, matchMode: FilterMatchMode.CONTAINS },
   name: { value: null, matchMode: FilterMatchMode.CONTAINS },
   code: { value: null, matchMode: FilterMatchMode.CONTAINS },
   inventoryStatus: { value: null, matchMode: FilterMatchMode.STARTS_WITH }
-}
+};
 
-const dataStore = useDataStore()
+const dataStore = useDataStore();
 
 onMounted(async () => {
-  await dataStore.initData()
-  tableData.value = dataStore.products
-})
+  await dataStore.initData();
+  tableData.value = dataStore.products;
+});
 </script>
 
 <template>

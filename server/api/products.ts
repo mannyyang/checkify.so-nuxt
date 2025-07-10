@@ -362,5 +362,5 @@ export default defineEventHandler((event) => {
         rating: 8
       }
     ]
-  }
-})
+  };
+});

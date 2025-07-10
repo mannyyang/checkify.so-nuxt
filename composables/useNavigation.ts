@@ -1,6 +1,6 @@
 import { PrimeIcons } from 'primevue/api';
 
-export function useNavigationMenu() {
+export function useNavigationMenu () {
   const navigationMenu = () => {
     return [
       {

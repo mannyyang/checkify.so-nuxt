@@ -7,7 +7,7 @@ export default defineEventHandler(async (event) => {
   // Redirect on home
   const urlObj = getRequestURL(event);
   // don't touch error routes
-  if (urlObj.pathname === '/__nuxt_error') return;
+  if (urlObj.pathname === '/__nuxt_error') { return; }
   // redirects /old-page -> /new-page
   // if (urlObj.pathname == '/') {
   //   return await sendRedirect(event, '/my-todo-lists');

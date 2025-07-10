@@ -27,7 +27,6 @@ export default defineEventHandler(async (event) => {
       user
     };
   }
-  
 
   console.error('No access token found for user', user?.id);
 

@@ -24,7 +24,7 @@ const searchDatabases = async (event: AutoCompleteCompleteEvent) => {
   const query = event.query;
 
   if (query) {
-    const { data, error } = await useFetch(`/api/search-notion`, {
+    const { data, error } = await useFetch('/api/search-notion', {
       query: { query }
     });
 
@@ -55,7 +55,7 @@ const onSelect = (item: AutoCompleteItemSelectEvent) => {
 const addDatabase = async (database: DatabaseObjectResponse) => {
   todo_lists.value.push(database);
 
-  const { error } = await useFetch(`/api/todo-list`, {
+  const { error } = await useFetch('/api/todo-list', {
     method: 'POST',
     body: database
   });
@@ -69,7 +69,7 @@ const addDatabase = async (database: DatabaseObjectResponse) => {
 };
 
 const fetchTodoLists = async () => {
-  const { data, error } = await useFetch(`/api/todo-list`);
+  const { data, error } = await useFetch('/api/todo-list');
 
   if (error.value) {
     console.error(error.value);
@@ -126,7 +126,7 @@ const confirmDelete = async () => {
   }
 
   todo_lists.value = todo_lists.value.filter(
-    (todoList) => todoList.todo_list_id !== currentTodoList.value.todo_list_id
+    todoList => todoList.todo_list_id !== currentTodoList.value.todo_list_id
   );
 
   clearCurrentTodoList();
@@ -140,13 +140,15 @@ const confirmDelete = async () => {
   <div class="card">
     <Panel class="mb-8" toggleable>
       <template #header>
-        <h2 class="mb-0">Get Started Here!</h2>
+        <h2 class="mb-0">
+          Get Started Here!
+        </h2>
       </template>
       <div class="flex items-center pb-4">
         <i
           class="pi pi-info-circle mr-4"
           style="font-size: 1.5rem; color: var(--primary-color)"
-        ></i>
+        />
         <p>
           You are one step away from creating your first to-do list. Connect
           your Notion account to fetch all your checkboxes and checkify your
@@ -155,20 +157,22 @@ const confirmDelete = async () => {
       </div>
 
       <ConnectNotion class="mr-4" />
-      <InlineMessage severity="success" v-if="response.data.is_auth">
+      <InlineMessage v-if="response.data.is_auth" severity="success">
         You are connected
       </InlineMessage>
     </Panel>
 
     <Panel class="mb-8" toggleable>
       <template #header>
-        <h2 class="mb-0">Add Database</h2>
+        <h2 class="mb-0">
+          Add Database
+        </h2>
       </template>
       <div class="flex items-center pb-4">
         <i
           class="pi pi-info-circle mr-4"
           style="font-size: 1.5rem; color: var(--primary-color)"
-        ></i>
+        />
         <p>
           Search for and select the database that you'll be creating your to-do
           list from.
@@ -177,9 +181,9 @@ const confirmDelete = async () => {
 
       <div class="w-full flex">
         <AutoComplete
-          class="database-search w-full md:w-1/2 mr-4"
           v-model="searchQuery"
-          optionLabel="name"
+          class="database-search w-full md:w-1/2 mr-4"
+          option-label="name"
           placeholder="Search for a database"
           :suggestions="searchResults"
           :disabled="!response.data.is_auth"
@@ -189,12 +193,12 @@ const confirmDelete = async () => {
           <template #option="slotProps">
             <div class="flex align-options-center">
               <img
+                v-if="slotProps.option.icon"
                 :alt="slotProps.option.name"
                 :src="getIcon(slotProps.option)"
                 class="mr-2"
                 style="width: 20px"
-                v-if="slotProps.option.icon"
-              />
+              >
               <div>{{ slotProps.option.name }}</div>
             </div>
           </template>
@@ -205,14 +209,16 @@ const confirmDelete = async () => {
 
     <Panel toggleable>
       <template #header>
-        <h2 class="mb-0">My Todo Lists</h2>
+        <h2 class="mb-0">
+          My Todo Lists
+        </h2>
       </template>
 
       <div class="flex items-center pb-4">
         <i
           class="pi pi-info-circle mr-4"
           style="font-size: 1.5rem; color: var(--primary-color)"
-        ></i>
+        />
         <p>
           Here are all the to-do lists you've created. Click on the copy icon to
           copy the link for an embed. The first 45 pages in a database are used
@@ -227,21 +233,23 @@ const confirmDelete = async () => {
         layout="grid"
       >
         <template #empty>
-          <p class="italic">You haven't created any to-do lists yet.</p>
+          <p class="italic">
+            You haven't created any to-do lists yet.
+          </p>
         </template>
         <template #grid="slotProps">
           <div class="p-grid">
-            <Card class="todo-list__card" v-for="data in slotProps.items">
+            <Card v-for="data in slotProps.items" class="todo-list__card">
               <template #content>
                 <div class="flex items-center mb-4">
                   <div class="todo-list__label flex-1 flex items-center">
                     <img
+                      v-if="data.notion_database_id?.metadata.icon"
                       class="mr-2"
                       :alt="handleTodoListName(data)"
                       :src="getIcon(data.notion_database_id?.metadata)"
                       style="width: 20px"
-                      v-if="data.notion_database_id?.metadata.icon"
-                    />
+                    >
                     <span class="font-semibold">
                       {{ handleTodoListName(data) }}
                     </span>
@@ -279,12 +287,12 @@ const confirmDelete = async () => {
     >
       <div class="flex items-center">
         <img
+          v-if="currentTodoList.notion_database_id.metadata.icon"
           class="mr-2"
           :alt="handleTodoListName(currentTodoList)"
           :src="getIcon(currentTodoList.notion_database_id.metadata)"
           style="width: 20px"
-          v-if="currentTodoList.notion_database_id.metadata.icon"
-        />
+        >
         <span class="font-semibold">
           {{ handleTodoListName(currentTodoList) }}
         </span>
@@ -292,16 +300,16 @@ const confirmDelete = async () => {
       <template #footer>
         <Button
           label="Cancel"
-          @click="visible = false"
           autofocus
           severity="secondary"
+          @click="visible = false"
         />
         <Button
           label="Delete"
           icon="pi pi-trash"
-          @click="confirmDelete"
           autofocus
           severity="danger"
+          @click="confirmDelete"
         />
       </template>
     </Dialog>

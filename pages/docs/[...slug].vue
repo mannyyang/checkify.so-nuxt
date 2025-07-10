@@ -8,17 +8,19 @@ const slug = route.params.slug.toString();
     <ContentDoc class="markdown-layout" :path="slug">
       <template #default="{ doc }">
         <h1>
-          <i class="pi pi-fw text-3xl mr-2" :class="`pi-${doc.icon}`" v-if="doc.icon" />{{
+          <i v-if="doc.icon" class="pi pi-fw text-3xl mr-2" :class="`pi-${doc.icon}`" />{{
             doc.title
           }}
         </h1>
         <!-- <p>{{ doc.description }}</p> -->
-        <hr />
+        <hr>
         <ContentRenderer :value="doc" />
       </template>
       <!-- Slot if document is not found -->
       <template #not-found>
-        <h1 class="text-2xl">Content Page ({{ slug }}) not found</h1>
+        <h1 class="text-2xl">
+          Content Page ({{ slug }}) not found
+        </h1>
       </template>
     </ContentDoc>
   </div>

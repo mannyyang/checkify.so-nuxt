@@ -13,7 +13,7 @@ export default defineEventHandler(async (event) => {
 
     const response = await notion.search({
       // @ts-ignore
-      query: query,
+      query,
       filter: {
         value: 'database',
         property: 'object'
@@ -32,5 +32,5 @@ export default defineEventHandler(async (event) => {
     };
   }
 
-  throw "Error: no auth found";
+  throw 'Error: no auth found';
 });

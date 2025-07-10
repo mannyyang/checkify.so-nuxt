@@ -32,14 +32,16 @@ definePageMeta({
           class="max-w-full p-6"
           src="/hero-section.png"
           alt="Notion integration with other tools"
-        />
+        >
       </div>
     </div>
   </section>
 
   <section class="flex flex-col md:flex-row w-full py-16 px-4">
     <div class="md:w-1/2 pr-8 pb-4 md:pb-0">
-      <h2 class="mb-4">Synced Todos & Metrics</h2>
+      <h2 class="mb-4">
+        Synced Todos & Metrics
+      </h2>
       <p class="mt-2 text-lg">
         Todo's are now synced with your notion blocks as in if you check a todo
         in the view, it will be reflected in your notion page.
@@ -56,7 +58,7 @@ definePageMeta({
         loop
         muted
       >
-        <source src="/recording/synced-todos.mov?url" type="video/mp4" />
+        <source src="/recording/synced-todos.mov?url" type="video/mp4">
         Your browser does not support the video tag.
       </video>
     </div>
@@ -71,12 +73,14 @@ definePageMeta({
         loop
         muted
       >
-        <source src="/recording/manual-refresh.mov?url" type="video/mp4" />
+        <source src="/recording/manual-refresh.mov?url" type="video/mp4">
         Your browser does not support the video tag.
       </video>
     </div>
     <div class="md:w-1/2 pl-8 pb-4 md:pb-0">
-      <h2 class="mb-4">Refreshing Todos</h2>
+      <h2 class="mb-4">
+        Refreshing Todos
+      </h2>
       <p class="mt-2 text-lg">
         Todo's are synced every hour, but a manual refresh button is included.
       </p>
@@ -85,7 +89,9 @@ definePageMeta({
 
   <section class="flex flex-col md:flex-row w-full py-16 px-4">
     <div class="md:w-1/2 pr-8 pb-4 md:pb-0">
-      <h2 class="mb-4">Hide completed tasks</h2>
+      <h2 class="mb-4">
+        Hide completed tasks
+      </h2>
       <p class="mt-2 text-lg">
         Hide completed tasks for a focused and clean view.
       </p>
@@ -98,7 +104,7 @@ definePageMeta({
         loop
         muted
       >
-        <source src="/recording/hide-completed.mov?url" type="video/mp4" />
+        <source src="/recording/hide-completed.mov?url" type="video/mp4">
         Your browser does not support the video tag.
       </video>
     </div>
