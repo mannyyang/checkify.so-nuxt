@@ -22,7 +22,11 @@ export default defineEventHandler(async (event) => {
 
   const { data, error } = await supabase
     .from('todo_list')
-    .select(`notion_database_id(notion_database_id, access_token)`)
+    .select(`
+      notion_database_id(notion_database_id, access_token),
+      notion_sync_database_id,
+      last_sync_date
+    `)
     .eq('todo_list_id', todo_list_id);
 
   if (error) {
@@ -77,5 +81,11 @@ export default defineEventHandler(async (event) => {
     return block.checkboxes.length > 0;
   });
 
-  return pagesWithCheckboxes;
+  return {
+    pages: pagesWithCheckboxes,
+    syncInfo: {
+      syncDatabaseId: data[0].notion_sync_database_id,
+      lastSyncDate: data[0].last_sync_date
+    }
+  };
 });
