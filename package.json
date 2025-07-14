@@ -44,7 +44,6 @@
     "@notionhq/client": "^4.0.1",
     "@supabase/supabase-js": "^2.50.5",
     "@vueuse/core": "^13.5.0",
-    "better-sqlite3": "^12.2.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "gray-matter": "^4.0.3",
