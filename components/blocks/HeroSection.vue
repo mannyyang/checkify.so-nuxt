@@ -2,6 +2,7 @@
 import { Button } from '~/components/ui/button';
 import { LogIn, ArrowRight } from 'lucide-vue-next';
 import { ref, onMounted } from 'vue';
+import MarketingNav from './MarketingNav.vue';
 
 const isVisible = ref(false);
 
@@ -13,6 +14,7 @@ onMounted(() => {
 </script>
 
 <template>
+  <MarketingNav />
   <section class="relative overflow-hidden">
     <!-- Background gradients -->
     <div

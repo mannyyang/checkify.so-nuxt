@@ -45,7 +45,8 @@
       "Bash(cp:*)",
       "mcp__playwright__browser_close",
       "mcp__playwright__browser_type",
-      "Bash(say \"I''ve completed searching the codebase for old dependencies. I found references to PrimeVue, FormKit, and UnoCSS in two documentation files, and old PrimeVue theme files in the public directory. The actual source code is clean with no imports of these old dependencies.\")"
+      "Bash(say \"I''ve completed searching the codebase for old dependencies. I found references to PrimeVue, FormKit, and UnoCSS in two documentation files, and old PrimeVue theme files in the public directory. The actual source code is clean with no imports of these old dependencies.\")",
+      "Bash(say \"I''ve finished redesigning the Checkify landing page with a modern navigation bar, animated hero section, feature cards, and enhanced footer. The page now matches the Websyte AI style while keeping all the original content.\")"
     ],
     "deny": []
   }
