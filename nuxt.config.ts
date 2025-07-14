@@ -27,9 +27,22 @@ export default defineNuxtConfig({
   content: {
     highlight: {
       theme: 'one-dark-pro',
-      preload: ['json', 'js', 'ts', 'html', 'css', 'vue']
+      preload: ['json', 'js', 'ts', 'html', 'css', 'vue', 'typescript', 'javascript', 'bash', 'markdown']
+    },
+    markdown: {
+      anchorLinks: true,
+      toc: {
+        depth: 3,
+        searchDepth: 3
+      }
+    },
+    documentDriven: false,
+    navigation: {
+      fields: ['title', 'description', 'icon', 'order']
+    },
+    experimental: {
+      nativeSqlite: true
     }
-    // Options
   },
   css: ['~/assets/css/tailwind.css'],
   vite: {
@@ -49,6 +62,8 @@ export default defineNuxtConfig({
     key: process.env.SUPABASE_KEY,
     serviceKey: process.env.SUPABASE_SERVICE_KEY,
     redirectOptions: {
+      login: '/login',
+      callback: '/confirm',
       exclude: [
         '/',
         '/privacy-policy',
