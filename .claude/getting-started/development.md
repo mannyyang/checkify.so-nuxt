@@ -122,40 +122,116 @@ export default {
 
 1. **Component Structure**
    ```vue
-   <template>
-     <!-- Template content -->
-   </template>
+   <script setup lang="ts">
+   // UI component imports
+   import { Button } from '@/components/ui/button'
+   import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
    
-   <script setup>
-   // Imports
-   import { ref, computed } from 'vue'
+   // Icon imports
+   import { Settings, User } from 'lucide-vue-next'
+   
+   // Vue imports
+   import { ref, computed, onMounted } from 'vue'
    
    // Props & Emits
-   const props = defineProps({})
-   const emit = defineEmits([])
+   const props = defineProps<{
+     title: string
+     loading?: boolean
+   }>()
+   const emit = defineEmits<{
+     click: [value: string]
+   }>()
    
    // Reactive state
-   const state = ref()
+   const state = ref<string>('')
    
    // Computed properties
-   const computedValue = computed(() => {})
+   const computedValue = computed(() => state.value.toUpperCase())
    
    // Methods
-   const handleClick = () => {}
+   const handleClick = () => {
+     emit('click', state.value)
+   }
    
    // Lifecycle hooks
-   onMounted(() => {})
+   onMounted(() => {
+     // Component mounted
+   })
    </script>
    
-   <style scoped>
-   /* Component styles */
-   </style>
+   <template>
+     <Card>
+       <CardHeader>
+         <CardTitle>{{ props.title }}</CardTitle>
+       </CardHeader>
+       <CardContent>
+         <Button @click="handleClick" :disabled="props.loading">
+           <Settings class="w-4 h-4 mr-2" />
+           Click me
+         </Button>
+       </CardContent>
+     </Card>
+   </template>
    ```
 
 2. **File Naming**
    - Components: PascalCase (e.g., `TodoList.vue`)
    - Composables: camelCase with 'use' prefix (e.g., `useAuth.ts`)
    - API routes: kebab-case (e.g., `todo-list.post.ts`)
+
+### UI Development with shadcn/ui
+
+1. **Adding New Components**
+   ```bash
+   # Use the shadcn-vue CLI to add components
+   npx shadcn-vue@latest add [component-name]
+   
+   # Example: Add a Table component
+   npx shadcn-vue@latest add table
+   ```
+
+2. **Component Usage**
+   ```vue
+   <script setup lang="ts">
+   import { Button } from '@/components/ui/button'
+   import { toast } from 'vue-sonner'
+   
+   const handleClick = () => {
+     toast.success('Action completed!')
+   }
+   </script>
+   
+   <template>
+     <Button variant="outline" size="sm" @click="handleClick">
+       Click me
+     </Button>
+   </template>
+   ```
+
+3. **Styling with Tailwind CSS**
+   ```vue
+   <template>
+     <!-- Use Tailwind utility classes -->
+     <div class="flex items-center gap-4 p-4 bg-card rounded-lg border">
+       <h3 class="text-lg font-semibold">Title</h3>
+       <p class="text-sm text-muted-foreground">Description</p>
+     </div>
+   </template>
+   ```
+
+4. **Icon Usage**
+   ```vue
+   <script setup lang="ts">
+   import { Home, Settings, User } from 'lucide-vue-next'
+   </script>
+   
+   <template>
+     <Button>
+       <Home class="w-4 h-4 mr-2" />
+       Home
+     </Button>
+   </template>
+   ```
 
 ## Testing
 

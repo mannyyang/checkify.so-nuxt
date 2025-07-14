@@ -1,6 +1,6 @@
 # Checkify.so
 
-A modern web application that aggregates todo lists from Notion, providing a cleaner, more focused interface for managing your tasks. Built with Nuxt 3, PrimeVue, and Supabase.
+A modern web application that aggregates todo lists from Notion, providing a cleaner, more focused interface for managing your tasks. Built with Nuxt 3, shadcn/ui, and Supabase.
 
 ## 🎯 Project Goal
 
@@ -23,13 +23,13 @@ Checkify.so solves a common problem with Notion: while it's great for organizing
 
 ## 🚀 Tech Stack
 
-- **Framework**: [Nuxt 3](https://nuxt.com/) (SSR disabled, running as SPA)
-- **UI Library**: [PrimeVue 3.40.x](https://primevue.org/) with Sakai theme
+- **Framework**: [Nuxt 3](https://nuxt.com/) (SSR enabled with client-side data fetching)
+- **UI Library**: [shadcn/ui](https://ui.shadcn.com/) - Modern component library built on Radix UI
 - **Database & Auth**: [Supabase](https://supabase.com/)
 - **State Management**: [Pinia](https://pinia.vuejs.org/)
-- **Styling**: [UnoCSS](https://unocss.dev/)
-- **Forms**: [FormKit](https://formkit.com/) with PrimeVue integration
-- **Editor**: [TipTap](https://tiptap.dev/)
+- **Styling**: [Tailwind CSS v4](https://tailwindcss.com/)
+- **Icons**: [lucide-vue-next](https://lucide.dev/)
+- **Analytics**: [PostHog](https://posthog.com/)
 - **Testing**: [Vitest](https://vitest.dev/)
 
 ## 📋 Prerequisites
@@ -132,6 +132,6 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## 🙏 Acknowledgments
 
-- Built on top of the [Nuxt-Sakai](https://github.com/primefaces/sakai-nuxt) theme
+- UI components powered by [shadcn/ui](https://ui.shadcn.com/) and [Radix UI](https://www.radix-ui.com/)
 - Inspired by the need for better todo management in Notion
-- Thanks to the Nuxt, PrimeVue, and Supabase communities
+- Thanks to the Nuxt, Vue, and Supabase communities

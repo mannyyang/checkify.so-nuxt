@@ -49,7 +49,7 @@ Welcome to the comprehensive documentation for Checkify.so - a powerful todo man
 ## 🏗️ Architecture Overview
 
 ```
-User → Nuxt 3 SPA → Supabase Auth → Google OAuth
+User → Nuxt 3 (SSR) → Supabase Auth → Google OAuth
                   ↓
             Authenticated
                   ↓
@@ -64,7 +64,7 @@ User → Nuxt 3 SPA → Supabase Auth → Google OAuth
 
 ## 🚦 Current Status
 
-- **Version**: 2024.07.14
+- **Version**: 2025.07.14
 - **Stage**: Production
 - **Notable Features**:
   - ✅ Notion OAuth integration
@@ -73,10 +73,13 @@ User → Nuxt 3 SPA → Supabase Auth → Google OAuth
   - ✅ Webhook support
   - ✅ PostHog analytics
   - ✅ Feature flag management
+  - ✅ Modern UI with shadcn/ui components
+  - ✅ Responsive design with Tailwind CSS v4
+  - ✅ Client-side data fetching for better performance
 
 ## 🛠️ Tech Stack
 
-- **Frontend**: Nuxt 3, Vue 3, PrimeVue, UnoCSS
+- **Frontend**: Nuxt 3, Vue 3, shadcn/ui, Tailwind CSS v4
 - **Backend**: Supabase (PostgreSQL, Auth, Realtime)
 - **Integration**: Notion API v2
 - **Analytics**: PostHog
@@ -112,4 +115,4 @@ Checkify.so is open source software licensed under the MIT license. See the LICE
 
 ---
 
-*Last updated: July 14, 2024*
+*Last updated: July 14, 2025*

@@ -31,14 +31,20 @@ This document provides a comprehensive overview of Checkify.so's system architec
 ├── pages/              # File-based routing
 ├── layouts/            # App layouts (default, public, embed)
 ├── components/         # Reusable components
-│   ├── app/           # App-specific components
-│   ├── content/       # Content components
-│   └── tiptap/        # Editor components
+│   ├── ui/            # shadcn/ui components
+│   │   ├── button/    # Button components
+│   │   ├── card/      # Card components
+│   │   ├── sidebar/   # Sidebar components
+│   │   └── ...        # Other UI components
+│   ├── AppSidebar.vue # Main app sidebar
+│   ├── NavMain.vue    # Navigation components
+│   └── ...            # App-specific components
 ├── server/
 │   ├── api/           # API endpoints
 │   └── middleware/    # Server middleware
 ├── stores/            # Pinia state management
 ├── composables/       # Vue composables
+├── lib/               # Utility functions
 └── plugins/           # Nuxt plugins
 ```
 
@@ -46,12 +52,12 @@ This document provides a comprehensive overview of Checkify.so's system architec
 
 ### Frontend
 - **Framework**: Nuxt 3.8.0 (Vue 3.3.8)
-- **Rendering**: SPA mode (SSR disabled)
-- **UI Library**: PrimeVue 3.40.1 with Sakai theme
+- **Rendering**: SSR enabled
+- **UI Library**: shadcn/ui (based on Radix UI primitives)
 - **State Management**: Pinia 2.1.7
-- **Styling**: UnoCSS 0.57.7
-- **Forms**: FormKit 5.5.0 with PrimeVue integration
-- **Editor**: TipTap 2.1.13
+- **Styling**: Tailwind CSS v4.0.0-beta.6
+- **Icons**: lucide-vue-next
+- **Utilities**: class-variance-authority, clsx
 
 ### Backend
 - **API Layer**: Nuxt server routes (Nitro)
@@ -67,24 +73,25 @@ This document provides a comprehensive overview of Checkify.so's system architec
 
 ## Key Architectural Decisions
 
-### 1. SPA vs SSR
-**Decision**: Run as SPA with SSR disabled
+### 1. SSR Configuration
+**Decision**: SSR enabled with client-side data fetching for todo lists
 
 **Rationale**:
-- Simplified deployment (static hosting)
-- Better client-side performance for interactive todo management
-- Reduced server costs
-- Supabase handles all backend needs
+- Better SEO for landing pages and documentation
+- Improved initial page load performance
+- Client-side data fetching for dynamic content (todo lists)
+- Maintains real-time responsiveness for todo management
 
 **Configuration**:
 ```typescript
-// nuxt.config.ts
-ssr: false,
-nitro: {
-  prerender: {
-    routes: ['/'] // Only prerender landing page
+// Pages use client-side data fetching
+const { data, pending, refresh } = useFetch<TodoListData>(
+  '/api/todo-list/' + route.params.todo_list_id,
+  {
+    lazy: true,
+    server: false // Client-side only
   }
-}
+);
 ```
 
 ### 2. Authentication Strategy
@@ -200,7 +207,8 @@ nitro: {
 - Tree-shaking enabled
 - Component auto-imports
 - Lazy loading for routes
-- Icon purging with UnoCSS
+- Optimized Tailwind CSS with v4 performance improvements
+- On-demand component loading for shadcn/ui
 
 ### Database Optimization
 - Indexed queries on frequent lookups

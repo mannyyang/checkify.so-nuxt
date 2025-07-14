@@ -16,8 +16,8 @@ The primary goal is to solve a common Notion pain point: while Notion excels at 
 - **Multi-Database Support**: Connect and manage todos from multiple Notion workspaces
 
 ### Technical Implementation
-- **Framework**: Nuxt 3 (Vue 3) running as a SPA with SSR disabled
-- **UI**: PrimeVue 3.40.x with Sakai theme + UnoCSS for styling
+- **Framework**: Nuxt 3 (Vue 3) with SSR enabled
+- **UI**: shadcn/ui component library with Tailwind CSS v4
 - **Backend**: Supabase for authentication, database, and user management
 - **Integration**: Notion API v2 for reading and updating todo blocks
 
@@ -51,7 +51,7 @@ For detailed information about specific aspects of the codebase, refer to the fo
 
 ### Development Resources
 - [**API Reference**](.claude/api-reference.md) - Complete documentation of all API endpoints
-- [**UI Components**](.claude/ui-components.md) - Component architecture, PrimeVue patterns, and layouts
+- [**UI Components**](.claude/ui-components.md) - Component architecture, shadcn/ui patterns, and layouts
 - [**Development Guide**](.claude/development.md) - Setup instructions, testing approach, and deployment
 
 ## Quick Architecture Summary

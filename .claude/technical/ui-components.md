@@ -1,579 +1,491 @@
-# UI Components Guide
+# UI Components Documentation
 
-This document provides a comprehensive overview of the UI architecture in Checkify.so, including component organization, PrimeVue usage, layouts, and key components.
+This document provides a comprehensive guide to the UI components used in Checkify.so, built with shadcn/ui and Tailwind CSS v4.
 
-## Component Organization
+## Overview
+
+Checkify.so uses **shadcn/ui**, a modern component library built on top of Radix UI primitives with Tailwind CSS styling. This provides:
+
+- **Accessibility**: ARIA-compliant components out of the box
+- **Customization**: Full control over component code and styling
+- **Performance**: Tree-shakeable, only import what you use
+- **Type Safety**: Full TypeScript support
+
+## Component Architecture
 
 ### Directory Structure
 
 ```
 components/
-├── app/                 # Application-specific components
-│   ├── AppFooter.vue
-│   ├── AppLayout.vue
-│   ├── AppMenuItem.vue
-│   ├── AppMenu.vue
-│   ├── AppSidebar.vue
-│   ├── AppTopbar.vue
-│   ├── ConnectNotion.vue
-│   ├── PublicFooter.vue
-│   └── PublicMenu.vue
-├── content/            # Content display components
-│   ├── ContentHeader.vue
-│   ├── ContentSection.vue
-│   └── ContentWrapper.vue
-├── tiptap/            # TipTap editor components
-│   ├── EditorButton.vue
-│   ├── index.vue
-│   └── lowlight.ts
-├── LocaleSwitcher.vue  # i18n language switcher
-├── NotionBlock.vue     # Notion block renderer
-└── ProductItem.vue     # Demo product component
+├── ui/                    # shadcn/ui components
+│   ├── avatar/           # Avatar components
+│   ├── button/           # Button component
+│   ├── card/             # Card components
+│   ├── checkbox/         # Checkbox component
+│   ├── dialog/           # Dialog/Modal components
+│   ├── dropdown-menu/    # Dropdown menu components
+│   ├── input/            # Input component
+│   ├── progress/         # Progress bar component
+│   ├── separator/        # Separator component
+│   ├── sheet/            # Sheet/Drawer components
+│   ├── sidebar/          # Sidebar navigation components
+│   ├── skeleton/         # Skeleton loader component
+│   ├── sonner/           # Toast notification component
+│   └── tooltip/          # Tooltip components
+├── AppSidebar.vue        # Main application sidebar
+├── NavMain.vue           # Main navigation component
+├── NavProjects.vue       # Documentation navigation
+├── NavUser.vue           # User profile dropdown
+└── TeamSwitcher.vue      # Workspace switcher
 ```
 
-### Component Naming Convention
+## Core Components
 
-- **App** prefix: Layout and navigation components
-- **Content** prefix: Content wrapper components
-- **Public** prefix: Unauthenticated view components
-- PascalCase for all component names
-- Single-word components in subdirectories
+### Button
 
-## PrimeVue Component Usage
-
-### Configuration
-
-PrimeVue is configured in `nuxt.config.ts`:
-
-```typescript
-primevue: {
-  options: {
-    ripple: true
-  },
-  components: {
-    prefix: 'Prime' // Optional prefix
-  }
-}
-```
-
-### Commonly Used Components
-
-#### 1. Data Display
-```vue
-<!-- DataTable for lists -->
-<DataTable :value="todoLists" paginator :rows="10">
-  <Column field="name" header="List Name" sortable />
-  <Column field="created_at" header="Created" sortable />
-</DataTable>
-
-<!-- Card for content sections -->
-<Card>
-  <template #header>
-    <h3>My Todo Lists</h3>
-  </template>
-  <template #content>
-    <!-- Content here -->
-  </template>
-</Card>
-```
-
-#### 2. Form Components
-```vue
-<!-- Button with loading state -->
-<Button 
-  label="Connect Notion" 
-  icon="pi pi-link"
-  :loading="isConnecting"
-  @click="connectNotion" 
-/>
-
-<!-- Checkbox for todos -->
-<Checkbox 
-  v-model="todo.checked"
-  :binary="true"
-  @change="toggleCheckbox(todo)"
-/>
-
-<!-- Input with validation -->
-<InputText 
-  v-model="searchQuery"
-  placeholder="Search databases..."
-  class="w-full"
-/>
-```
-
-#### 3. Feedback Components
-```vue
-<!-- Toast notifications -->
-<Toast position="top-right" />
-
-<!-- Progress indicator -->
-<ProgressSpinner v-if="loading" />
-
-<!-- Confirmation dialog -->
-<ConfirmDialog />
-```
-
-### PrimeVue Theme
-
-Using the Sakai theme with Lara design system:
-
-```scss
-// assets/scss/layout/layout.scss
-@import './presets/lara/green/theme.scss';
-
-// Custom theme variables
-:root {
-  --primary-color: #10b981;
-  --primary-color-text: #ffffff;
-  --surface-a: #ffffff;
-  --surface-b: #f9fafb;
-  --surface-c: #f3f4f6;
-}
-```
-
-## Layout System
-
-### Three Layout Types
-
-#### 1. Default Layout (`layouts/default.vue`)
-For authenticated users:
+The Button component is the primary interactive element throughout the application.
 
 ```vue
-<template>
-  <AppLayout>
-    <slot />
-  </AppLayout>
-</template>
-
-<script setup>
-definePageMeta({
-  middleware: 'auth' // Requires authentication
-})
+<script setup lang="ts">
+import { Button } from '@/components/ui/button'
 </script>
-```
 
-#### 2. Public Layout (`layouts/public.vue`)
-For unauthenticated pages:
-
-```vue
 <template>
-  <div class="public-layout">
-    <PublicMenu />
-    <main class="content">
-      <slot />
-    </main>
-    <PublicFooter />
-  </div>
+  <!-- Default button -->
+  <Button>Click me</Button>
+  
+  <!-- With icon -->
+  <Button>
+    <Settings class="w-4 h-4 mr-2" />
+    Settings
+  </Button>
+  
+  <!-- Variants -->
+  <Button variant="destructive">Delete</Button>
+  <Button variant="outline">Cancel</Button>
+  <Button variant="ghost">Ghost</Button>
+  <Button variant="link">Link</Button>
+  
+  <!-- Sizes -->
+  <Button size="sm">Small</Button>
+  <Button size="default">Default</Button>
+  <Button size="lg">Large</Button>
+  <Button size="icon"><X /></Button>
 </template>
 ```
 
-#### 3. Embed Layout (`layouts/embed.vue`)
-For embedded todo lists:
+### Card
+
+Cards are used to group related content and actions.
 
 ```vue
-<template>
-  <div class="embed-layout">
-    <div class="embed-container">
-      <slot />
-    </div>
-  </div>
-</template>
-
-<style scoped>
-.embed-layout {
-  min-height: 100vh;
-  padding: 1rem;
-}
-</style>
-```
-
-### Using Layouts in Pages
-
-```vue
-<script setup>
-// Default layout (authenticated)
-definePageMeta({
-  layout: 'default'
-})
-
-// Public layout
-definePageMeta({
-  layout: 'public'
-})
-
-// Embed layout
-definePageMeta({
-  layout: 'embed'
-})
+<script setup lang="ts">
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 </script>
-```
 
-## Key UI Components
-
-### 1. AppLayout Component
-
-The main application shell for authenticated users:
-
-```vue
-<!-- components/app/AppLayout.vue -->
-<template>
-  <div class="layout-wrapper">
-    <AppTopbar />
-    <AppSidebar />
-    <div class="layout-main-container">
-      <div class="layout-main">
-        <slot />
-      </div>
-      <AppFooter />
-    </div>
-  </div>
-</template>
-```
-
-Features:
-- Responsive sidebar navigation
-- Top bar with user menu
-- Footer with app info
-- Mobile-friendly with hamburger menu
-
-### 2. NotionBlock Component
-
-Renders Notion blocks with checkbox functionality:
-
-```vue
-<!-- components/NotionBlock.vue -->
-<template>
-  <div class="notion-block" :class="blockClass">
-    <Checkbox 
-      v-if="block.type === 'to_do'"
-      v-model="block.to_do.checked"
-      @change="onToggle"
-    />
-    <span class="block-text" v-html="renderText(block)" />
-  </div>
-</template>
-
-<script setup>
-const props = defineProps({
-  block: Object,
-  onToggle: Function
-})
-
-const renderText = (block) => {
-  // Convert Notion rich text to HTML
-  return block.to_do?.rich_text
-    .map(text => text.plain_text)
-    .join('')
-}
-</script>
-```
-
-### 3. ConnectNotion Component
-
-OAuth connection flow for Notion:
-
-```vue
-<!-- components/app/ConnectNotion.vue -->
 <template>
   <Card>
-    <template #content>
-      <div v-if="!isConnected" class="text-center">
-        <i class="pi pi-link text-5xl mb-4" />
-        <h3>Connect Your Notion Workspace</h3>
-        <p>Link your Notion account to start managing todos</p>
-        <Button 
-          label="Connect Notion"
-          icon="pi pi-arrow-right"
-          @click="initiateOAuth"
-        />
-      </div>
-      <div v-else>
-        <Message severity="success">
-          Notion connected successfully!
-        </Message>
-      </div>
-    </template>
+    <CardHeader>
+      <CardTitle>Card Title</CardTitle>
+      <CardDescription>Card description goes here</CardDescription>
+    </CardHeader>
+    <CardContent>
+      <!-- Card content -->
+    </CardContent>
+    <CardFooter>
+      <!-- Card actions -->
+    </CardFooter>
   </Card>
 </template>
 ```
 
-### 4. Todo List Display
+### Input
 
-Example of displaying todo lists:
-
-```vue
-<template>
-  <div class="todo-lists">
-    <DataView :value="todoLists" layout="grid">
-      <template #grid="slotProps">
-        <div class="col-12 md:col-6 lg:col-4">
-          <Card>
-            <template #header>
-              <h4>{{ slotProps.data.name }}</h4>
-            </template>
-            <template #content>
-              <p>{{ slotProps.data.todo_count }} todos</p>
-              <Button 
-                label="View"
-                @click="viewList(slotProps.data)"
-              />
-            </template>
-          </Card>
-        </div>
-      </template>
-    </DataView>
-  </div>
-</template>
-```
-
-## FormKit Integration
-
-### Configuration
-
-FormKit is integrated with PrimeVue components:
-
-```typescript
-// formkit.config.ts
-import { primeInputs } from '@sfxcode/formkit-primevue'
-
-export default {
-  inputs: primeInputs
-}
-```
-
-### Usage Example
-
-```vue
-<FormKit
-  type="primeInputText"
-  name="database_name"
-  label="Database Name"
-  validation="required|length:3"
-  :validation-messages="{
-    required: 'Database name is required',
-    length: 'Must be at least 3 characters'
-  }"
-/>
-```
-
-## i18n Implementation
-
-### Language Support
-
-Currently supports English and German:
-
-```typescript
-// nuxt.config.ts
-i18n: {
-  locales: [
-    { code: 'en', iso: 'en-US', name: 'English' },
-    { code: 'de', iso: 'de-DE', name: 'Deutsch' }
-  ],
-  defaultLocale: 'en'
-}
-```
-
-### LocaleSwitcher Component
-
-```vue
-<!-- components/LocaleSwitcher.vue -->
-<template>
-  <Dropdown 
-    v-model="locale" 
-    :options="availableLocales"
-    optionLabel="name"
-    optionValue="code"
-    @change="switchLocale"
-  />
-</template>
-
-<script setup>
-const { locale, locales, setLocale } = useI18n()
-
-const switchLocale = (event) => {
-  setLocale(event.value)
-}
-</script>
-```
-
-### Using Translations
-
-```vue
-<template>
-  <h1>{{ $t('welcome.title') }}</h1>
-  <p>{{ $t('welcome.description') }}</p>
-</template>
-
-<!-- In script -->
-<script setup>
-const { t } = useI18n()
-const message = t('errors.not_found')
-</script>
-```
-
-## Styling with UnoCSS
-
-### Utility Classes
-
-```vue
-<div class="flex items-center justify-between p-4 bg-surface-50 rounded-lg">
-  <span class="text-lg font-semibold text-surface-900">
-    Todo Item
-  </span>
-  <Button 
-    class="p-button-sm p-button-text"
-    icon="pi pi-ellipsis-v"
-  />
-</div>
-```
-
-### Responsive Design
-
-```vue
-<div class="grid">
-  <div class="col-12 md:col-6 lg:col-4">
-    <!-- Mobile: full width -->
-    <!-- Tablet: half width -->
-    <!-- Desktop: third width -->
-  </div>
-</div>
-```
-
-## Component Best Practices
-
-### 1. Composition API
-
-Always use `<script setup>`:
-
-```vue
-<script setup>
-import { ref, computed } from 'vue'
-
-const props = defineProps({
-  todo: Object
-})
-
-const emit = defineEmits(['update', 'delete'])
-
-const isEditing = ref(false)
-const editedText = ref(props.todo.text)
-
-const save = () => {
-  emit('update', { ...props.todo, text: editedText.value })
-  isEditing.value = false
-}
-</script>
-```
-
-### 2. Component Props
-
-Define props with TypeScript:
+Input components for form fields.
 
 ```vue
 <script setup lang="ts">
-interface Props {
-  todo: {
-    id: string
-    text: string
-    checked: boolean
-  }
-  editable?: boolean
+import { Input } from '@/components/ui/input'
+
+const value = ref('')
+</script>
+
+<template>
+  <Input 
+    v-model="value" 
+    placeholder="Enter text..."
+    type="text"
+  />
+</template>
+```
+
+### Checkbox
+
+Checkbox component for boolean inputs.
+
+```vue
+<script setup lang="ts">
+import { Checkbox } from '@/components/ui/checkbox'
+
+const checked = ref(false)
+</script>
+
+<template>
+  <Checkbox 
+    v-model:checked="checked"
+    id="terms"
+  />
+  <label for="terms">Accept terms and conditions</label>
+</template>
+```
+
+### Dialog
+
+Modal dialogs for important interactions.
+
+```vue
+<script setup lang="ts">
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+
+const open = ref(false)
+</script>
+
+<template>
+  <Dialog v-model:open="open">
+    <DialogTrigger as-child>
+      <Button>Open Dialog</Button>
+    </DialogTrigger>
+    <DialogContent>
+      <DialogHeader>
+        <DialogTitle>Dialog Title</DialogTitle>
+        <DialogDescription>
+          Dialog description goes here.
+        </DialogDescription>
+      </DialogHeader>
+      <!-- Dialog content -->
+      <DialogFooter>
+        <Button variant="outline" @click="open = false">Cancel</Button>
+        <Button @click="handleSave">Save</Button>
+      </DialogFooter>
+    </DialogContent>
+  </Dialog>
+</template>
+```
+
+### Sidebar
+
+The sidebar component provides navigation and is a key UI element.
+
+```vue
+<script setup lang="ts">
+import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from '@/components/ui/sidebar'
+</script>
+
+<template>
+  <Sidebar>
+    <SidebarContent>
+      <SidebarGroup>
+        <SidebarGroupLabel>Platform</SidebarGroupLabel>
+        <SidebarGroupContent>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton as-child>
+                <NuxtLink to="/">
+                  <Home class="w-4 h-4" />
+                  <span>Home</span>
+                </NuxtLink>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarGroupContent>
+      </SidebarGroup>
+    </SidebarContent>
+  </Sidebar>
+</template>
+```
+
+### Toast Notifications (Sonner)
+
+Toast notifications for user feedback.
+
+```vue
+<script setup lang="ts">
+import { toast } from 'vue-sonner'
+
+// Success toast
+toast.success('Operation completed successfully')
+
+// Error toast
+toast.error('Something went wrong')
+
+// With description
+toast.success('Sync Successful', {
+  description: 'Your todos have been synced with Notion'
+})
+</script>
+```
+
+## Styling System
+
+### Tailwind CSS v4
+
+Checkify.so uses Tailwind CSS v4 with a custom configuration:
+
+```css
+/* assets/css/tailwind.css */
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  /* ... other design tokens */
+}
+```
+
+### CSS Variables
+
+The theme uses CSS variables for colors, allowing easy customization:
+
+```css
+:root {
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  /* ... more variables */
 }
 
-const props = withDefaults(defineProps<Props>(), {
-  editable: true
-})
-</script>
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  /* ... dark mode variables */
+}
 ```
 
-### 3. Event Handling
+### Utility Classes
 
-Use clear event names:
+Common utility patterns:
 
 ```vue
-<script setup>
-const emit = defineEmits<{
-  toggle: [id: string, checked: boolean]
-  delete: [id: string]
-  update: [todo: Todo]
-}>()
-</script>
+<!-- Spacing -->
+<div class="p-4 m-2 space-y-4">
+
+<!-- Flexbox -->
+<div class="flex items-center justify-between gap-4">
+
+<!-- Grid -->
+<div class="grid grid-cols-3 gap-6">
+
+<!-- Typography -->
+<h1 class="text-3xl font-bold">
+<p class="text-sm text-muted-foreground">
+
+<!-- Borders & Shadows -->
+<div class="border rounded-lg shadow-sm">
+
+<!-- Responsive -->
+<div class="w-full md:w-1/2 lg:w-1/3">
 ```
 
-### 4. Accessibility
+## Component Patterns
 
-Always include ARIA attributes:
+### Form Patterns
 
 ```vue
-<Button 
-  :aria-label="`Mark ${todo.text} as ${todo.checked ? 'incomplete' : 'complete'}`"
-  @click="toggle"
-/>
-```
-
-## Performance Optimization
-
-### 1. Lazy Loading
-
-```vue
-<script setup>
-const NotionSettings = defineAsyncComponent(
-  () => import('./NotionSettings.vue')
-)
-</script>
-```
-
-### 2. List Rendering
-
-Use proper keys:
-
-```vue
-<div v-for="todo in todos" :key="todo.notion_block_id">
-  <!-- Always use stable, unique keys -->
-</div>
-```
-
-### 3. Computed Properties
-
-Cache expensive operations:
-
-```vue
-<script setup>
-const sortedTodos = computed(() => 
-  todos.value.sort((a, b) => a.order - b.order)
-)
-</script>
-```
-
-## Testing Components
-
-### Unit Tests
-
-```typescript
-import { mount } from '@vue/test-utils'
-import NotionBlock from '@/components/NotionBlock.vue'
-
-describe('NotionBlock', () => {
-  it('renders checkbox for todo blocks', () => {
-    const wrapper = mount(NotionBlock, {
-      props: {
-        block: {
-          type: 'to_do',
-          to_do: { checked: false }
-        }
-      }
-    })
+<template>
+  <form @submit.prevent="handleSubmit" class="space-y-4">
+    <div class="space-y-2">
+      <label for="email" class="text-sm font-medium">Email</label>
+      <Input 
+        id="email"
+        v-model="email"
+        type="email"
+        placeholder="Enter your email"
+      />
+    </div>
     
-    expect(wrapper.find('.p-checkbox').exists()).toBe(true)
-  })
-})
+    <div class="flex items-center space-x-2">
+      <Checkbox id="terms" v-model:checked="acceptTerms" />
+      <label for="terms" class="text-sm">
+        I accept the terms and conditions
+      </label>
+    </div>
+    
+    <Button type="submit" :disabled="!acceptTerms">
+      Submit
+    </Button>
+  </form>
+</template>
 ```
 
-### Component Testing Best Practices
+### Loading States
 
-1. Test user interactions
-2. Test prop variations
-3. Test emitted events
-4. Test accessibility features
-5. Use data-testid for reliable selectors
+```vue
+<template>
+  <div v-if="pending" class="space-y-4">
+    <Skeleton class="h-12 w-full" />
+    <Skeleton class="h-4 w-3/4" />
+    <Skeleton class="h-4 w-1/2" />
+  </div>
+  
+  <div v-else>
+    <!-- Content -->
+  </div>
+</template>
+```
+
+### Empty States
+
+```vue
+<template>
+  <div class="text-center py-12">
+    <FileX class="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+    <h3 class="text-lg font-medium mb-2">No todos found</h3>
+    <p class="text-sm text-muted-foreground">
+      Create your first todo list to get started
+    </p>
+    <Button class="mt-4">
+      <Plus class="w-4 h-4 mr-2" />
+      Create Todo List
+    </Button>
+  </div>
+</template>
+```
+
+## Icon System
+
+Checkify.so uses **lucide-vue-next** for icons:
+
+```vue
+<script setup lang="ts">
+import { Home, Settings, User, X, Check, ChevronRight } from 'lucide-vue-next'
+</script>
+
+<template>
+  <!-- Basic usage -->
+  <Home class="w-4 h-4" />
+  
+  <!-- With color -->
+  <Settings class="w-5 h-5 text-primary" />
+  
+  <!-- In buttons -->
+  <Button>
+    <User class="w-4 h-4 mr-2" />
+    Profile
+  </Button>
+</template>
+```
+
+## Responsive Design
+
+### Breakpoints
+
+Tailwind CSS v4 default breakpoints:
+- `sm`: 640px
+- `md`: 768px
+- `lg`: 1024px
+- `xl`: 1280px
+- `2xl`: 1536px
+
+### Mobile-First Approach
+
+```vue
+<template>
+  <!-- Stack on mobile, side-by-side on desktop -->
+  <div class="flex flex-col md:flex-row gap-4">
+    <div class="w-full md:w-1/2">Left content</div>
+    <div class="w-full md:w-1/2">Right content</div>
+  </div>
+  
+  <!-- Hide on mobile, show on desktop -->
+  <div class="hidden md:block">
+    Desktop only content
+  </div>
+  
+  <!-- Different sizes based on screen -->
+  <Button class="w-full md:w-auto">
+    Responsive Button
+  </Button>
+</template>
+```
+
+## Accessibility
+
+All shadcn/ui components follow WAI-ARIA guidelines:
+
+- Proper ARIA labels and roles
+- Keyboard navigation support
+- Screen reader compatibility
+- Focus management
+- Color contrast compliance
+
+Example:
+
+```vue
+<template>
+  <Button
+    :aria-label="isPlaying ? 'Pause' : 'Play'"
+    :aria-pressed="isPlaying"
+    @click="togglePlay"
+  >
+    <Play v-if="!isPlaying" class="w-4 h-4" />
+    <Pause v-else class="w-4 h-4" />
+  </Button>
+</template>
+```
+
+## Performance Considerations
+
+1. **Component Imports**: Import only what you need
+   ```vue
+   // Good
+   import { Button } from '@/components/ui/button'
+   
+   // Avoid importing everything
+   import * as UI from '@/components/ui'
+   ```
+
+2. **Lazy Loading**: Use dynamic imports for heavy components
+   ```vue
+   const HeavyComponent = defineAsyncComponent(() => 
+     import('@/components/HeavyComponent.vue')
+   )
+   ```
+
+3. **Icon Optimization**: Icons are tree-shaken automatically
+
+## Migration from PrimeVue
+
+Key differences when migrating from PrimeVue:
+
+1. **Component Names**: 
+   - PrimeVue: `<Button>`, `<Card>`, `<Dialog>`
+   - shadcn/ui: Same names but different props/slots
+
+2. **Styling**:
+   - PrimeVue: CSS classes like `p-button`
+   - shadcn/ui: Tailwind utility classes
+
+3. **Props**:
+   - PrimeVue: `label`, `icon`, `severity`
+   - shadcn/ui: `variant`, `size`, children for content
+
+4. **Icons**:
+   - PrimeVue: PrimeIcons (`pi pi-check`)
+   - shadcn/ui: lucide-vue-next components
+
+5. **Forms**:
+   - PrimeVue: FormKit integration
+   - shadcn/ui: Native v-model with Vue
+
+## Best Practices
+
+1. **Consistent Spacing**: Use Tailwind's spacing scale (p-4, m-2, gap-6)
+2. **Color Usage**: Use semantic color variables (text-primary, bg-muted)
+3. **Component Composition**: Build complex UIs from simple components
+4. **Accessibility**: Always include proper ARIA labels and keyboard support
+5. **Performance**: Lazy load heavy components and optimize bundle size

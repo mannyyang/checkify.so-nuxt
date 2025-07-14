@@ -2,7 +2,30 @@
 
 All notable changes to Checkify.so are documented here.
 
-## [Unreleased]
+## [2025.07.14] - 2025-07-14
+
+### Changed
+- **MAJOR: UI Framework Migration from PrimeVue to shadcn/ui**
+  - Replaced all PrimeVue components with shadcn/ui equivalents
+  - Migrated from UnoCSS to Tailwind CSS v4
+  - Removed FormKit dependency
+  - Added lucide-vue-next for icons (replacing PrimeIcons)
+  - Implemented modern component patterns with Radix UI primitives
+  - Complete UI overhaul with improved accessibility and performance
+
+- **Application Architecture Updates**
+  - Re-enabled SSR with client-side data fetching for todo lists
+  - Improved loading states and user experience
+  - Added proper TypeScript types for all components
+  - Implemented new sidebar navigation with user profile dropdown
+
+- **UI/UX Improvements**
+  - Larger, more accessible checkboxes (20x20px)
+  - Inline external link icons for better usability
+  - Right-side settings sidebar replacing modal sheets
+  - Improved toast notifications with vue-sonner
+  - Footer with Privacy Policy and Terms of Use links
+  - Fixed login page with proper Google button and logo sizing
 
 ### Added
 - **PostHog Integration**: Analytics and feature flag management
@@ -11,10 +34,18 @@ All notable changes to Checkify.so are documented here.
   - Custom event tracking for user behavior analysis
   - `notion-database-sync` feature flag
 
-### Changed
+### Removed
+- PrimeVue and all related dependencies
+- UnoCSS styling system
+- FormKit and FormKit-PrimeVue
+- Sakai theme files
+- Unused backup files and legacy components
+
+### Updated
 - Documentation reorganized into `.claude/` directory structure
-- Updated sidebar UI with collapsible design
-- Improved loading states throughout the application
+- Updated all documentation to reflect new tech stack
+- Improved development guide with shadcn/ui patterns
+- Architecture documentation updated for new components
 
 ## [2024.07.14] - 2024-07-14
 

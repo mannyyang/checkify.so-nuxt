@@ -44,7 +44,8 @@
       "mcp__playwright__browser_tab_new",
       "Bash(cp:*)",
       "mcp__playwright__browser_close",
-      "mcp__playwright__browser_type"
+      "mcp__playwright__browser_type",
+      "Bash(say \"I''ve completed searching the codebase for old dependencies. I found references to PrimeVue, FormKit, and UnoCSS in two documentation files, and old PrimeVue theme files in the public directory. The actual source code is clean with no imports of these old dependencies.\")"
     ],
     "deny": []
   }
