@@ -1,8 +1,10 @@
 import pkg from './package.json';
+import tailwindcss from '@tailwindcss/vite';
 
 export default defineNuxtConfig({
+  compatibilityDate: '2025-07-13',
   devtools: true,
-  ssr: false,
+  ssr: true,
   runtimeConfig: {
     public: {
       APP_VERSION: pkg.version,
@@ -12,15 +14,16 @@ export default defineNuxtConfig({
     }
   },
   modules: [
-    'nuxt-primevue',
-    '@formkit/nuxt',
-    '@unocss/nuxt',
+    'shadcn-nuxt',
     '@pinia/nuxt',
-    '@nuxtjs/i18n',
     '@nuxt/content',
     '@vueuse/nuxt',
     '@nuxtjs/supabase'
   ],
+  shadcn: {
+    prefix: '',
+    componentDir: './components/ui'
+  },
   content: {
     highlight: {
       theme: 'one-dark-pro',
@@ -28,32 +31,14 @@ export default defineNuxtConfig({
     }
     // Options
   },
-  i18n: {
-    lazy: true,
-    langDir: 'locales',
-    defaultLocale: 'en',
-    locales: [
-      { code: 'en', file: 'en.json', name: 'English' },
-      { code: 'de', file: 'de.json', name: 'German' }
-    ],
-
-    vueI18n: './vue-i18n.options.ts'
+  css: ['~/assets/css/tailwind.css'],
+  vite: {
+    plugins: [
+      tailwindcss()
+    ]
   },
-  primevue: {
-    components: {
-      exclude: ['Chart']
-    },
-    options: {
-      ripple: true
-    }
-  },
-  css: [
-    'primevue/resources/primevue.css',
-    'primeicons/primeicons.css',
-    '@sfxcode/formkit-primevue/dist/sass/formkit-primevue.scss'
-  ],
   build: {
-    transpile: ['nuxt', 'primevue', 'formkit-primevue']
+    transpile: ['nuxt']
   },
   sourcemap: {
     client: false,
@@ -70,7 +55,9 @@ export default defineNuxtConfig({
         '/terms-of-use',
         '/checkboxes',
         '/todo-list/*',
-        '/docs/*'
+        '/docs/*',
+        '/test-content',
+        '/api/_content/*'
       ]
     }
   }

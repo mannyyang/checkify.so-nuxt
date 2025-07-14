@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { Button } from '~/components/ui/button';
+import { LogIn } from 'lucide-vue-next';
+
 definePageMeta({
   layout: 'public'
 });
@@ -18,13 +21,11 @@ definePageMeta({
           Simply aggregate all your tasks in one place, gaining instant clarity
           and control over your workflow.
         </p>
-        <NuxtLink to="/my-todo-lists">
-          <Button
-            class="mt-8"
-            label="Login to get started"
-            icon="pi pi-sign-in"
-            size="large"
-          />
+        <NuxtLink to="/my-todo-lists" class="inline-block mt-8">
+          <Button size="lg" class="gap-2">
+            <LogIn class="w-4 h-4" />
+            Login to get started
+          </Button>
         </NuxtLink>
       </div>
       <div class="w-full lg:w-1/2 lg:ml-10">
@@ -116,16 +117,31 @@ definePageMeta({
         Notion + Checkify: Aggregate and Conquer your Todos
       </h1>
 
-      <NuxtLink to="/my-todo-lists">
-        <Button
-          class="mt-8"
-          label="Login to get started"
-          icon="pi pi-sign-in"
-          size="large"
-        />
+      <NuxtLink to="/my-todo-lists" class="inline-block mt-8">
+        <Button size="lg" class="gap-2">
+          <LogIn class="w-4 h-4" />
+          Login to get started
+        </Button>
       </NuxtLink>
     </div>
   </section>
+
+  <!-- Footer -->
+  <footer class="border-t py-8 px-4 mt-20">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+      <div class="text-sm text-muted-foreground">
+        © 2024 Checkify.so. All rights reserved.
+      </div>
+      <div class="flex space-x-6 text-sm">
+        <NuxtLink to="/privacy-policy" class="text-muted-foreground hover:text-foreground transition-colors">
+          Privacy Policy
+        </NuxtLink>
+        <NuxtLink to="/terms-of-use" class="text-muted-foreground hover:text-foreground transition-colors">
+          Terms of Use
+        </NuxtLink>
+      </div>
+    </div>
+  </footer>
 </template>
 
 <style scoped></style>

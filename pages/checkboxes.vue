@@ -1,6 +1,12 @@
 <script setup lang="ts">
 import { ToDoBlockObjectResponse } from '@notionhq/client/build/src/api-endpoints';
-import Button from 'primevue/button';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Separator } from '@/components/ui/separator';
+import { RefreshCw, Settings, ExternalLink } from 'lucide-vue-next';
 
 definePageMeta({
   layout: 'embed'
@@ -39,7 +45,7 @@ const metrics = computed(() => {
 });
 
 const percentage = computed(() => {
-  return ((metrics.value.checked / metrics.value.total) * 100).toFixed(1) || 0;
+  return ((metrics.value.checked / metrics.value.total) * 100) || 0;
 });
 
 const filtered = computed(() => {
@@ -69,7 +75,8 @@ const checkboxList = computed(() => {
   }
 });
 
-const onTodoUpdate = async (checkbox: ToDoBlockObjectResponse) => {
+const onTodoUpdate = async (checkbox: ToDoBlockObjectResponse, checked: boolean) => {
+  checkbox.to_do.checked = checked;
   await useFetch('/api/set-checkbox', {
     method: 'POST',
     body: checkbox
@@ -92,101 +99,121 @@ setTimeout(() => {
 </script>
 
 <template>
-  <div class="flex flex-col">
-    <div class="todos-container flex-1 relative">
-      <Toolbar class="fixed rounded-2 z-2">
-        <template #start>
-          <span class="text-lg font-bold mr-4">My Todos</span>
-        </template>
-
-        <template #center>
+  <div class="flex flex-col h-screen">
+    <!-- Header Toolbar -->
+    <div class="fixed top-0 left-0 right-0 z-10 bg-background border-b p-4">
+      <div class="flex items-center justify-between">
+        <span class="text-lg font-bold">My Todos</span>
+        
+        <div class="flex items-center gap-2">
           <Button
-            icon="pi pi-refresh"
-            label="Refresh"
-            :loading="pending"
-            @click="() => refresh()"
-          />
-        </template>
-
-        <template #end>
-          <Button
-            icon="pi pi-cog"
-            aria-label="Settings"
-            @click="() => (showSidebar = true)"
-          />
-        </template>
-      </Toolbar>
-
-      <ScrollPanel style="height: 100vh">
-        <div class="pt-20">
-          <div
-            v-for="item in checkboxList"
-            :key="item.page.id"
-            class="page-container"
+            variant="outline"
+            size="sm"
+            :disabled="pending"
+            @click="refresh"
           >
-            <div v-if="item.checkboxes.length" class="page pb-lg">
-              <h4>
-                {{ item.page.properties['Name'].title[0].plain_text }}
-              </h4>
+            <RefreshCw :class="{ 'animate-spin': pending }" class="w-4 h-4 mr-2" />
+            Refresh
+          </Button>
+          
+          <Sheet v-model:open="showSidebar">
+            <SheetTrigger as-child>
+              <Button variant="outline" size="sm">
+                <Settings class="w-4 h-4" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent>
+              <SheetHeader>
+                <SheetTitle>Settings</SheetTitle>
+              </SheetHeader>
+              
+              <div class="space-y-6 mt-6">
+                <!-- Progress Card -->
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Progress</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div class="space-y-4">
+                      <div class="text-3xl font-bold">
+                        {{ percentage.toFixed(1) }}%
+                        <span class="text-lg text-muted-foreground">
+                          ({{ metrics.checked }}/{{ metrics.total }})
+                        </span>
+                      </div>
+                      <Progress :value="percentage" class="w-full" />
+                      <div class="text-xl font-medium">
+                        {{ metrics.unchecked }} Remaining
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Separator />
+
+                <!-- Show Checked Toggle -->
+                <div class="flex items-center justify-between">
+                  <label for="show-checked" class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                    Show Checked Items
+                  </label>
+                  <Checkbox
+                    id="show-checked"
+                    :checked="showChecked"
+                    @update:checked="showChecked = $event"
+                  />
+                </div>
+              </div>
+            </SheetContent>
+          </Sheet>
+        </div>
+      </div>
+    </div>
+
+    <!-- Todo List Content -->
+    <div class="flex-1 overflow-auto pt-20 p-4">
+      <div v-if="!checkboxList || checkboxList.length === 0" class="text-center py-12 text-muted-foreground">
+        No todos found
+      </div>
+      
+      <div v-else class="space-y-6">
+        <div
+          v-for="item in checkboxList"
+          :key="item.page.id"
+          class="space-y-4"
+        >
+          <div v-if="item.checkboxes.length" class="space-y-3">
+            <h3 class="text-lg font-semibold border-b pb-2">
+              {{ item.page.properties['Name']?.title?.[0]?.plain_text }}
+            </h3>
+            
+            <div class="space-y-2">
               <div
                 v-for="checkbox in item.checkboxes"
                 :key="checkbox.id"
-                class="flex align-items-center mb-2"
+                class="flex items-start gap-3 p-2 rounded-lg hover:bg-accent"
               >
                 <Checkbox
-                  v-model="checkbox.to_do.checked"
-                  :input-id="checkbox.id"
-                  :value="checkbox.to_do.checked"
-                  binary
-                  @input="onTodoUpdate(checkbox)"
+                  :id="checkbox.id"
+                  :checked="checkbox.to_do.checked"
+                  @update:checked="onTodoUpdate(checkbox, $event)"
+                  class="mt-1"
                 />
-                <label :for="checkbox.id" class="ml-2">
-                  {{ checkbox.to_do.rich_text[0].plain_text }}
-                  <a
-                    class="pi pi-link"
-                    target="_blank"
-                    :href="parseBlockLink(checkbox.id, item.page.id)"
-                  />
+                <label :for="checkbox.id" class="flex-1 text-sm leading-relaxed cursor-pointer">
+                  {{ checkbox.to_do.rich_text?.[0]?.plain_text || '' }}
                 </label>
+                <a
+                  :href="parseBlockLink(checkbox.id, item.page.id)"
+                  target="_blank"
+                  class="text-muted-foreground hover:text-primary"
+                >
+                  <ExternalLink class="w-4 h-4" />
+                </a>
               </div>
             </div>
           </div>
         </div>
-      </ScrollPanel>
-    </div>
-
-    <Sidebar v-model:visible="showSidebar" position="right">
-      <div class="actions-container">
-        <Card
-          class="mb-4 shadow-none rounded-2 border-1 border-solid border-gray-400"
-        >
-          <template #title>
-            Todos
-          </template>
-          <template #content>
-            <span class="text-gray-900 font-medium text-3xl">
-              {{ percentage }}%
-              <span class="text-gray-600">
-                ({{ metrics.checked }}/{{ metrics.total }})
-              </span>
-            </span>
-            <ProgressBar class="my-3 pb-2" :value="percentage" />
-            <div class="text-xl font-medium">
-              {{ metrics.unchecked }} Remaining
-            </div>
-          </template>
-        </Card>
-
-        <Divider />
-
-        <Toolbar class="rounded-2">
-          <template #start>
-            <span class="mr-2">Show Checked</span>
-            <InputSwitch v-model="showChecked" />
-          </template>
-        </Toolbar>
       </div>
-    </Sidebar>
+    </div>
   </div>
 </template>
 

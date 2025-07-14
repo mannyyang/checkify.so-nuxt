@@ -1,60 +1,62 @@
 <script setup lang="ts">
 import type { DatabaseObjectResponse } from '@notionhq/client/build/src/api-endpoints';
-import type {
-  AutoCompleteCompleteEvent,
-  AutoCompleteItemSelectEvent
-} from 'primevue/autocomplete';
-import InputGroup from 'primevue/inputgroup';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Trash2, Copy, Plus, Search, Info, Check, FileText } from 'lucide-vue-next';
+import { toast } from 'vue-sonner';
 
-const response = ref({
-  data: {}
-});
+const isConnected = ref(false);
 const searchQuery = ref('');
 const searchResults = ref<any[]>([]);
-const todo_lists = ref<any[]>([]);
-const visible = ref(false);
+const todoLists = ref<any[]>([]);
+const showDeleteDialog = ref(false);
 const currentTodoList = ref();
+const isSearching = ref(false);
+
+// Debounce search functionality
+let searchTimeout: NodeJS.Timeout | null = null;
 
 onMounted(async () => {
-  response.value = await useFetch('/api/auth-notion');
+  // Set base URL for client-side link generation
+  baseUrl.value = window.location.origin;
+  
+  // Check if user is connected to Notion
+  const { data } = await useFetch('/api/auth-notion');
+  if (data.value?.is_auth) {
+    isConnected.value = true;
+  }
   await fetchTodoLists();
 });
 
-const searchDatabases = async (event: AutoCompleteCompleteEvent) => {
-  const query = event.query;
+const searchDatabases = async () => {
+  if (!searchQuery.value) return;
+  
+  isSearching.value = true;
+  const { data, error } = await useFetch('/api/search-notion', {
+    query: { query: searchQuery.value }
+  });
 
-  if (query) {
-    const { data, error } = await useFetch('/api/search-notion', {
-      query: { query }
-    });
-
-    if (error.value) {
-      console.error(error.value);
-      return;
-    }
-
-    console.log(data, error);
-
+  if (error.value) {
+    console.error(error.value);
+    toast.error('Failed to search databases');
+  } else {
     searchResults.value = data.value?.databases || [];
   }
+  
+  isSearching.value = false;
 };
 
 const getIcon = (option) => {
   if (option.icon) {
     const iconType = option.icon.type;
-    const url = option.icon[iconType].url;
-
+    const url = option.icon[iconType]?.url;
     return url;
   }
 };
 
-const onSelect = (item: AutoCompleteItemSelectEvent) => {
-  addDatabase(item.value);
-};
-
 const addDatabase = async (database: DatabaseObjectResponse) => {
-  todo_lists.value.push(database);
-
   const { error } = await useFetch('/api/todo-list', {
     method: 'POST',
     body: database
@@ -62,9 +64,13 @@ const addDatabase = async (database: DatabaseObjectResponse) => {
 
   if (error.value) {
     console.error(error.value);
+    toast.error('Failed to add database');
     return;
   }
 
+  toast.success('Database added successfully');
+  searchQuery.value = '';
+  searchResults.value = [];
   fetchTodoLists();
 };
 
@@ -76,264 +82,256 @@ const fetchTodoLists = async () => {
     return;
   }
 
-  todo_lists.value = data.value?.todo_lists;
+  todoLists.value = data.value?.todo_lists || [];
+  
+  // If we have todo lists, the user must be connected
+  if (todoLists.value.length > 0) {
+    isConnected.value = true;
+  }
 };
 
-const handleTodoListName = (todoList: {
-  todo_list_id: string;
-  notion_database_id: {
-    metadata: {
-      name: string;
-    };
-  };
-  name?: string;
-}) => {
+const handleTodoListName = (todoList: any) => {
   if (todoList.name) {
     return todoList.name;
   }
-
-  return todoList.notion_database_id.metadata.name;
+  return todoList.notion_database_id?.metadata?.title?.[0]?.plain_text || 'Untitled';
 };
+
+const connectNotion = () => {
+  // Using the navigateTo to go to connect-notion page which will handle the OAuth flow
+  navigateTo('/connect-notion');
+};
+
+const baseUrl = ref('');
 
 const handleLink = (todoList: { todo_list_id: string }) => {
-  return `https://checkify.so/todo-list/${todoList.todo_list_id}`;
+  const url = baseUrl.value || 'http://localhost:3000';
+  const link = `${url}/todo-list/${todoList.todo_list_id}`;
+  return link;
 };
 
-const handleCopyLink = (todoList: { todo_list_id: string }) => {
-  navigator.clipboard.writeText(handleLink(todoList));
+// Create reactive refs for each todo list link
+const todoListLinks = ref<Record<string, string>>({});
+
+// Watch todoLists and baseUrl to update links
+watch([todoLists, baseUrl], () => {
+  const newLinks: Record<string, string> = {};
+  todoLists.value.forEach(todoList => {
+    newLinks[todoList.todo_list_id] = handleLink(todoList);
+  });
+  todoListLinks.value = newLinks;
+}, { immediate: true });
+
+// Watch searchQuery with debounce for auto-search
+watch(searchQuery, (newQuery) => {
+  // Clear previous timeout
+  if (searchTimeout) {
+    clearTimeout(searchTimeout);
+  }
+  
+  // Clear results if query is empty
+  if (!newQuery.trim()) {
+    searchResults.value = [];
+    return;
+  }
+  
+  // Only search if connected
+  if (!isConnected.value) {
+    return;
+  }
+  
+  // Set new timeout for debounced search
+  searchTimeout = setTimeout(() => {
+    searchDatabases();
+  }, 500); // 500ms debounce
+});
+
+// Cleanup timeout on unmount
+onUnmounted(() => {
+  if (searchTimeout) {
+    clearTimeout(searchTimeout);
+  }
+});
+
+const handleCopyLink = async (todoList: any) => {
+  const link = handleLink(todoList);
+  try {
+    await navigator.clipboard.writeText(link);
+    toast.success('Link copied to clipboard');
+  } catch (err) {
+    toast.error('Failed to copy link');
+  }
 };
 
-const handleDeleteModal = (todoList: { todo_list_id: string }) => {
+const handleDeleteModal = (todoList: any) => {
   currentTodoList.value = todoList;
-  visible.value = true;
+  showDeleteDialog.value = true;
 };
 
-const clearCurrentTodoList = () => {
-  currentTodoList.value = null;
-};
+const deleteTodoList = async () => {
+  if (!currentTodoList.value) return;
 
-const confirmDelete = async () => {
-  const { error } = await useFetch(
-    `/api/todo-list/${currentTodoList.value.todo_list_id}`,
-    {
-      method: 'DELETE'
-    }
-  );
+  const { error } = await useFetch(`/api/todo-list/${currentTodoList.value.todo_list_id}`, {
+    method: 'DELETE'
+  });
 
   if (error.value) {
     console.error(error.value);
+    toast.error('Failed to delete todo list');
     return;
   }
 
-  todo_lists.value = todo_lists.value.filter(
-    todoList => todoList.todo_list_id !== currentTodoList.value.todo_list_id
-  );
-
-  clearCurrentTodoList();
-  visible.value = false;
-
+  toast.success('Todo list deleted successfully');
+  showDeleteDialog.value = false;
+  currentTodoList.value = null;
   fetchTodoLists();
 };
 </script>
 
 <template>
-  <div class="card">
-    <Panel class="mb-8" toggleable>
-      <template #header>
-        <h2 class="mb-0">
-          Get Started Here!
-        </h2>
-      </template>
-      <div class="flex items-center pb-4">
-        <i
-          class="pi pi-info-circle mr-4"
-          style="font-size: 1.5rem; color: var(--primary-color)"
-        />
-        <p>
-          You are one step away from creating your first to-do list. Connect
-          your Notion account to fetch all your checkboxes and checkify your
-          Notion databases.
-        </p>
-      </div>
-
-      <ConnectNotion class="mr-4" />
-      <InlineMessage v-if="response.data.is_auth" severity="success">
-        You are connected
-      </InlineMessage>
-    </Panel>
-
-    <Panel class="mb-8" toggleable>
-      <template #header>
-        <h2 class="mb-0">
-          Add Database
-        </h2>
-      </template>
-      <div class="flex items-center pb-4">
-        <i
-          class="pi pi-info-circle mr-4"
-          style="font-size: 1.5rem; color: var(--primary-color)"
-        />
-        <p>
-          Search for and select the database that you'll be creating your to-do
-          list from.
-        </p>
-      </div>
-
-      <div class="w-full flex">
-        <AutoComplete
-          v-model="searchQuery"
-          class="database-search w-full md:w-1/2 mr-4"
-          option-label="name"
-          placeholder="Search for a database"
-          :suggestions="searchResults"
-          :disabled="!response.data.is_auth"
-          @complete="searchDatabases"
-          @item-select="onSelect"
-        >
-          <template #option="slotProps">
-            <div class="flex align-options-center">
-              <img
-                v-if="slotProps.option.icon"
-                :alt="slotProps.option.name"
-                :src="getIcon(slotProps.option)"
-                class="mr-2"
-                style="width: 20px"
-              >
-              <div>{{ slotProps.option.name }}</div>
-            </div>
-          </template>
-        </AutoComplete>
-        <!-- <Button label="Refresh" icon="pi pi-refresh" /> -->
-      </div>
-    </Panel>
-
-    <Panel toggleable>
-      <template #header>
-        <h2 class="mb-0">
-          My Todo Lists
-        </h2>
-      </template>
-
-      <div class="flex items-center pb-4">
-        <i
-          class="pi pi-info-circle mr-4"
-          style="font-size: 1.5rem; color: var(--primary-color)"
-        />
-        <p>
-          Here are all the to-do lists you've created. Click on the copy icon to
-          copy the link for an embed. The first 45 pages in a database are used
-          and the first 50 blocks in a page are used.
-        </p>
-      </div>
-
-      <DataView
-        class="database-view"
-        data-key="id"
-        :value="todo_lists"
-        layout="grid"
-      >
-        <template #empty>
-          <p class="italic">
-            You haven't created any to-do lists yet.
-          </p>
-        </template>
-        <template #grid="slotProps">
-          <div class="p-grid">
-            <Card v-for="data in slotProps.items" class="todo-list__card">
-              <template #content>
-                <div class="flex items-center mb-4">
-                  <div class="todo-list__label flex-1 flex items-center">
-                    <img
-                      v-if="data.notion_database_id?.metadata.icon"
-                      class="mr-2"
-                      :alt="handleTodoListName(data)"
-                      :src="getIcon(data.notion_database_id?.metadata)"
-                      style="width: 20px"
-                    >
-                    <span class="font-semibold">
-                      {{ handleTodoListName(data) }}
-                    </span>
-                  </div>
-
-                  <Button
-                    text
-                    size="small"
-                    icon="pi pi-trash"
-                    severity="danger"
-                    @click="handleDeleteModal(data)"
-                  />
-                </div>
-                <InputGroup>
-                  <InputText :value="handleLink(data)" />
-                  <Button
-                    icon="pi pi-copy"
-                    severity="secondary"
-                    @click="handleCopyLink(data)"
-                  />
-                </InputGroup>
-              </template>
-            </Card>
+  <div class="space-y-6">
+    <!-- Get Started Here! Section -->
+    <Card>
+      <CardHeader>
+        <CardTitle class="text-2xl">Get Started Here!</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div class="space-y-4">
+          <div class="flex items-center gap-2 text-muted-foreground">
+            <Info class="w-6 h-6 text-primary shrink-0" />
+            <p>You are one step away from creating your first to-do list. Connect your Notion account to fetch all your checkboxes and checkify your Notion databases.</p>
           </div>
-        </template>
-      </DataView>
-    </Panel>
+          <div class="flex items-center gap-3">
+            <Button size="default" @click="connectNotion">
+              <img src="/notion-logo.svg" alt="Notion" class="w-4 h-4 mr-2" />
+              Connect Notion
+            </Button>
+            <span v-if="isConnected" class="text-green-600 flex items-center gap-2">
+              <Check class="w-5 h-5" />
+              You are connected
+            </span>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
 
-    <Dialog
-      v-model:visible="visible"
-      modal
-      header="Are you sure you want to delete?"
-      :style="{ width: '50rem' }"
-      :breakpoints="{ '1199px': '75vw', '575px': '90vw' }"
-    >
-      <div class="flex items-center">
-        <img
-          v-if="currentTodoList.notion_database_id.metadata.icon"
-          class="mr-2"
-          :alt="handleTodoListName(currentTodoList)"
-          :src="getIcon(currentTodoList.notion_database_id.metadata)"
-          style="width: 20px"
-        >
-        <span class="font-semibold">
-          {{ handleTodoListName(currentTodoList) }}
-        </span>
-      </div>
-      <template #footer>
-        <Button
-          label="Cancel"
-          autofocus
-          severity="secondary"
-          @click="visible = false"
-        />
-        <Button
-          label="Delete"
-          icon="pi pi-trash"
-          autofocus
-          severity="danger"
-          @click="confirmDelete"
-        />
-      </template>
+    <!-- Add Database Section -->
+    <Card>
+      <CardHeader>
+        <CardTitle class="text-2xl">Add Database</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div class="space-y-4">
+          <div class="flex items-center gap-2 text-muted-foreground">
+            <Info class="w-6 h-6 text-primary shrink-0" />
+            <p>Search for and select the database that you'll be creating your to-do list from.</p>
+          </div>
+          
+          <div class="mt-4">
+            <Input
+              v-model="searchQuery"
+              placeholder="Search for a database"
+              :disabled="!isConnected"
+              class="w-full"
+            />
+          </div>
+
+          <!-- Loading State -->
+          <div v-if="isSearching" class="flex items-center justify-center py-8">
+            <div class="flex items-center gap-2 text-muted-foreground">
+              <div class="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+              <span>Searching databases...</span>
+            </div>
+          </div>
+
+          <!-- Search Results -->
+          <div v-if="searchResults.length > 0" class="space-y-2 mt-4">
+            <div v-for="result in searchResults" :key="result.id" 
+                 class="flex items-center justify-between p-3 border rounded-lg hover:bg-accent cursor-pointer transition-colors"
+                 @click="addDatabase(result)">
+              <div class="flex items-center gap-2">
+                <img v-if="getIcon(result)" :src="getIcon(result)" class="w-5 h-5" />
+                <span>{{ result.title[0]?.plain_text || 'Untitled' }}</span>
+              </div>
+              <Plus class="w-4 h-4" />
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+
+    <!-- My Todo Lists Section -->
+    <Card>
+      <CardHeader>
+        <CardTitle class="text-2xl">My Todo Lists</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div class="space-y-4">
+          <div class="flex items-center gap-2 text-muted-foreground">
+            <Info class="w-6 h-6 text-primary shrink-0" />
+            <p>Here are all the to-do lists you've created. Click on the copy icon to copy the link for an embed. The first 45 pages in a database are used and the first 50 blocks in a page are used.</p>
+          </div>
+
+          <!-- Todo Lists Grid -->
+          <ClientOnly>
+            <div v-if="todoLists.length > 0" class="mt-6">
+            <div v-for="todoList in todoLists" :key="todoList.todo_list_id" class="mb-4">
+              <div class="flex items-center gap-2 mb-2">
+                <img
+                  v-if="getIcon(todoList.notion_database_id?.metadata)"
+                  :src="getIcon(todoList.notion_database_id?.metadata)"
+                  :alt="handleTodoListName(todoList)"
+                  class="w-5 h-5"
+                />
+                <FileText v-else class="w-5 h-5 text-gray-500" />
+                <span class="font-medium">{{ handleTodoListName(todoList) }}</span>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  class="h-6 w-6 ml-auto"
+                  @click="handleDeleteModal(todoList)"
+                >
+                  <Trash2 class="h-4 w-4 text-destructive" />
+                </Button>
+              </div>
+              <div class="flex gap-2 items-center">
+                <Input :model-value="todoListLinks[todoList.todo_list_id]" readonly class="flex-1 text-sm" />
+                <Button
+                  variant="secondary"
+                  size="icon"
+                  @click="handleCopyLink(todoList)"
+                  class="shrink-0"
+                >
+                  <Copy class="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Empty State -->
+          <div v-else class="text-center py-8">
+            <p class="text-muted-foreground">You haven't created any to-do lists yet.</p>
+          </div>
+          </ClientOnly>
+        </div>
+      </CardContent>
+    </Card>
+
+    <!-- Delete Confirmation Dialog -->
+    <Dialog v-model:open="showDeleteDialog">
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Delete Todo List</DialogTitle>
+          <DialogDescription>
+            Are you sure you want to delete "{{ currentTodoList ? handleTodoListName(currentTodoList) : '' }}"? 
+            This action cannot be undone.
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <Button variant="outline" @click="showDeleteDialog = false">Cancel</Button>
+          <Button variant="destructive" @click="deleteTodoList">Delete</Button>
+        </DialogFooter>
+      </DialogContent>
     </Dialog>
   </div>
 </template>
-
-<style lang="scss">
-.database-search {
-  .p-autocomplete-input {
-    width: 100%;
-  }
-}
-
-.database-view {
-  .p-grid {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(250px, 1fr));
-    grid-gap: 1rem;
-  }
-}
-
-.todo-list__card {
-  .p-card-content {
-    padding: 0;
-  }
-}
-</style>

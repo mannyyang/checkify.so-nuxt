@@ -1,5 +1,3 @@
-import { PrimeIcons } from 'primevue/api';
-
 export function useNavigationMenu () {
   const navigationMenu = () => {
     return [
@@ -9,7 +7,7 @@ export function useNavigationMenu () {
           {
             label: 'My Todo Lists',
             to: '/my-todo-lists',
-            icon: 'pi pi-fw pi-check-square'
+            icon: 'CheckSquare'
           }
         ]
       },
@@ -18,12 +16,12 @@ export function useNavigationMenu () {
         items: [
           {
             label: 'Connect Notion',
-            icon: 'pi pi-fw pi-key',
+            icon: 'Key',
             to: '/docs/connect-notion'
           },
           {
             label: 'Create a Todo List',
-            icon: 'pi pi-fw pi-book',
+            icon: 'Book',
             to: '/docs/create-todo-list'
           }
         ]
@@ -33,12 +31,12 @@ export function useNavigationMenu () {
         items: [
           {
             label: 'Login',
-            icon: 'pi pi-fw pi-sign-in',
+            icon: 'LogIn',
             to: '/login'
           },
           {
             label: 'Logout',
-            icon: 'pi pi-fw pi-sign-out',
+            icon: 'LogOut',
             to: '/logout'
           }
         ]

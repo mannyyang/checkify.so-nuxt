@@ -1,21 +1,44 @@
 <script setup lang="ts">
 import type { ToDoBlockObjectResponse } from '@notionhq/client/build/src/api-endpoints';
-import Button from 'primevue/button';
-import Dialog from 'primevue/dialog';
-import InputText from 'primevue/inputtext';
-import Toast from 'primevue/toast';
-import { useToast } from 'primevue/usetoast';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
+import { Separator } from '@/components/ui/separator';
+import { 
+  Sidebar, 
+  SidebarContent, 
+  SidebarGroup, 
+  SidebarGroupContent, 
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarProvider,
+  SidebarTrigger
+} from '@/components/ui/sidebar';
+import { toast } from 'vue-sonner';
+import { RefreshCw, Settings, ExternalLink, RotateCw } from 'lucide-vue-next';
+
+interface TodoListData {
+  pages: Array<{
+    page: any;
+    checkboxes: ToDoBlockObjectResponse[];
+  }>;
+  syncInfo?: {
+    syncDatabaseId: string | null;
+    lastSyncDate: string | null;
+  };
+}
 
 definePageMeta({
   layout: 'embed'
 });
 
 const route = useRoute();
-const toast = useToast();
 const posthog = usePostHog();
 
 const showChecked = ref(true);
-const showSidebar = ref(false);
 const showSyncDialog = ref(false);
 const syncParentPageId = ref('');
 const syncLoading = ref(false);
@@ -35,10 +58,11 @@ onMounted(() => {
   });
 });
 
-const { data, pending, refresh } = await useFetch(
+const { data, pending, refresh } = useFetch<TodoListData>(
   '/api/todo-list/' + route.params.todo_list_id,
   {
-    lazy: true
+    lazy: true,
+    server: false // This ensures the fetch only happens on client side
   }
 );
 
@@ -65,7 +89,7 @@ const metrics = computed(() => {
 });
 
 const percentage = computed(() => {
-  return ((metrics.value.checked / metrics.value.total) * 100).toFixed(1) || 0;
+  return ((metrics.value.checked / metrics.value.total) * 100) || 0;
 });
 
 const filtered = computed(() => {
@@ -103,7 +127,8 @@ watchEffect(() => {
   }
 });
 
-const onTodoUpdate = async (checkbox: ToDoBlockObjectResponse) => {
+const onTodoUpdate = async (checkbox: ToDoBlockObjectResponse, checked: boolean) => {
+  checkbox.to_do.checked = checked;
   await useFetch('/api/set-checkbox', {
     method: 'POST',
     body: checkbox
@@ -132,7 +157,16 @@ const syncToNotion = async () => {
 
   syncLoading.value = true;
   try {
-    const response = await $fetch('/api/todo-list/sync-to-notion', {
+    const response = await $fetch<{
+      success: boolean;
+      syncDatabaseId?: string;
+      syncResults: {
+        created: number;
+        updated: number;
+        errors: any[];
+      };
+      totalCheckboxes: number;
+    }>('/api/todo-list/sync-to-notion', {
       method: 'POST',
       body: {
         todo_list_id: route.params.todo_list_id,
@@ -141,23 +175,17 @@ const syncToNotion = async () => {
     });
 
     if (response.success) {
-      syncDatabaseId.value = response.syncDatabaseId;
+      syncDatabaseId.value = response.syncDatabaseId || null;
       lastSyncDate.value = new Date();
       showSyncDialog.value = false;
 
-      toast.add({
-        severity: 'success',
-        summary: 'Sync Successful',
-        detail: `Created: ${response.syncResults.created}, Updated: ${response.syncResults.updated}`,
-        life: 5000
+      toast.success('Sync Successful', {
+        description: `Created: ${response.syncResults.created}, Updated: ${response.syncResults.updated}`,
       });
     }
   } catch (error: any) {
-    toast.add({
-      severity: 'error',
-      summary: 'Sync Failed',
-      detail: error.message || 'Failed to sync to Notion',
-      life: 5000
+    toast.error('Sync Failed', {
+      description: error.message || 'Failed to sync to Notion',
     });
   } finally {
     syncLoading.value = false;
@@ -174,177 +202,217 @@ const formatDate = (date: Date | null) => {
 </script>
 
 <template>
-  <div class="flex flex-col">
-    <div class="todos-container flex-1 relative">
-      <Toolbar class="fixed rounded-2 z-2">
-        <template #start>
-          <span class="text-lg font-bold mr-4">My Todos</span>
-        </template>
+  <SidebarProvider :defaultOpen="false">
+    <div class="flex w-full h-screen">
+      <!-- Main Content -->
+      <div class="flex-1 flex flex-col">
+        <!-- Header Toolbar -->
+        <div class="flex items-center justify-between bg-background border-b p-4">
+          <span class="text-lg font-bold">My Todos</span>
+          
+          <div class="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              :disabled="pending"
+              @click="refresh"
+            >
+              <RefreshCw :class="{ 'animate-spin': pending }" class="w-4 h-4 mr-2" />
+              Refresh
+            </Button>
+            
+            <SidebarTrigger>
+              <Button variant="outline" size="sm">
+                <Settings class="w-4 h-4" />
+              </Button>
+            </SidebarTrigger>
+          </div>
+        </div>
 
-        <template #center>
-          <Button
-            icon="pi pi-refresh"
-            label="Refresh"
-            :loading="pending"
-            @click="() => refresh()"
-          />
-        </template>
-
-        <template #end>
-          <Button
-            icon="pi pi-cog"
-            aria-label="Settings"
-            @click="() => (showSidebar = true)"
-          />
-        </template>
-      </Toolbar>
-
-      <ScrollPanel style="height: 100vh">
-        <div class="pt-20">
-          <div
-            v-for="item in checkboxList"
-            :key="item.page.id"
-            class="page-container"
-          >
-            <div v-if="item.checkboxes.length" class="page pb-lg">
-              <h4>
-                {{ item.page.properties['Name']?.title?.[0]?.plain_text }}
-              </h4>
+        <!-- Todo List Content -->
+        <div class="flex-1 overflow-auto">
+      <div v-if="pending" class="text-center py-12 text-muted-foreground">
+        Loading todos...
+      </div>
+      <div v-else-if="checkboxList.length === 0" class="text-center py-12 text-muted-foreground">
+        No todos found
+      </div>
+      
+      <div v-else class="space-y-6">
+        <div
+          v-for="item in checkboxList"
+          :key="item.page.id"
+          class="space-y-4"
+        >
+          <div v-if="item.checkboxes.length" class="space-y-3">
+            <h3 class="text-lg font-semibold border-b pb-2">
+              {{ item.page.properties['Name']?.title?.[0]?.plain_text }}
+            </h3>
+            
+            <div class="space-y-2">
               <div
                 v-for="checkbox in item.checkboxes"
                 :key="checkbox.id"
-                class="flex align-items-center mb-2"
+                class="flex items-start gap-3 p-2 rounded-lg hover:bg-accent"
               >
                 <Checkbox
-                  v-model="checkbox.to_do.checked"
-                  :input-id="checkbox.id"
-                  :value="checkbox.to_do.checked"
-                  binary
-                  @input="onTodoUpdate(checkbox)"
+                  :id="checkbox.id"
+                  :checked="checkbox.to_do.checked"
+                  @update:checked="onTodoUpdate(checkbox, $event)"
+                  class="mt-1 h-5 w-5"
                 />
-                <label :for="checkbox.id" class="ml-2">
-                  {{
-                    checkbox.to_do.rich_text.length > 0
-                      ? checkbox.to_do.rich_text[0].plain_text
-                      : ''
-                  }}
+                <label :for="checkbox.id" class="flex-1 text-sm leading-relaxed cursor-pointer flex items-start gap-2">
+                  <span>
+                    {{
+                      checkbox.to_do.rich_text.length > 0
+                        ? checkbox.to_do.rich_text[0].plain_text
+                        : ''
+                    }}
+                  </span>
                   <a
-                    class="pi pi-link"
-                    target="_blank"
                     :href="parseBlockLink(checkbox.id, item.page.id)"
-                  />
+                    target="_blank"
+                    class="text-muted-foreground hover:text-primary inline-flex"
+                    @click.stop
+                  >
+                    <ExternalLink class="w-4 h-4" />
+                  </a>
                 </label>
               </div>
             </div>
           </div>
         </div>
-      </ScrollPanel>
-    </div>
-
-    <Sidebar v-model:visible="showSidebar" position="right">
-      <div class="actions-container">
-        <Card
-          class="mb-4 shadow-none rounded-2 border-1 border-solid border-gray-400"
-        >
-          <template #title>
-            Todos
-          </template>
-          <template #content>
-            <span class="text-gray-900 font-medium text-3xl">
-              {{ percentage }}%
-              <span class="text-gray-600">
-                ({{ metrics.checked }}/{{ metrics.total }})
-              </span>
-            </span>
-            <ProgressBar class="my-3 pb-2" :value="percentage" />
-            <div class="text-xl font-medium">
-              {{ metrics.unchecked }} Remaining
-            </div>
-          </template>
-        </Card>
-
-        <Divider />
-
-        <Toolbar class="rounded-2">
-          <template #start>
-            <span class="mr-2">Show Checked</span>
-            <InputSwitch v-model="showChecked" />
-          </template>
-        </Toolbar>
-
-        <Divider v-if="isNotionSyncEnabled" />
-
-        <Card v-if="isNotionSyncEnabled" class="mt-4 shadow-none rounded-2 border-1 border-solid border-gray-400">
-          <template #title>
-            Sync to Notion
-          </template>
-          <template #content>
-            <div class="flex flex-col gap-3">
-              <Button
-                label="Sync to Notion Database"
-                icon="pi pi-sync"
-                class="w-full"
-                :loading="syncLoading"
-                @click="syncToNotion"
-              />
-              <div v-if="lastSyncDate" class="text-sm text-gray-600">
-                Last synced: {{ formatDate(lastSyncDate) }}
-              </div>
-              <div v-if="syncDatabaseId" class="text-sm text-gray-600">
-                <a
-                  :href="`https://notion.so/${syncDatabaseId.replace(/-/g, '')}`"
-                  target="_blank"
-                  class="text-blue-600 hover:underline"
-                >
-                  View Sync Database <i class="pi pi-external-link text-xs" />
-                </a>
-              </div>
-            </div>
-          </template>
-        </Card>
       </div>
-    </Sidebar>
-
-    <Dialog
-      v-model:visible="showSyncDialog"
-      modal
-      :style="{ width: '450px' }"
-      header="Create Sync Database"
-    >
-      <div class="flex flex-col gap-3">
-        <p class="text-gray-700">
-          To create a sync database, please provide the Notion page ID where you want the database to be created.
-        </p>
-        <div class="flex flex-col gap-2">
-          <label for="pageId" class="font-medium">Parent Page ID</label>
-          <InputText
-            id="pageId"
-            v-model="syncParentPageId"
-            placeholder="Enter Notion page ID"
-            class="w-full"
-          />
-          <small class="text-gray-600">
-            You can find the page ID in the Notion URL after the workspace name
-          </small>
         </div>
       </div>
-      <template #footer>
-        <Button
-          label="Cancel"
-          text
-          @click="showSyncDialog = false"
-        />
-        <Button
-          label="Create & Sync"
-          :loading="syncLoading"
-          :disabled="!syncParentPageId"
-          @click="syncToNotion"
-        />
-      </template>
-    </Dialog>
 
-    <Toast />
-  </div>
+      <!-- Right Sidebar -->
+      <Sidebar side="right" collapsible="offcanvas">
+        <SidebarHeader>
+          <h2 class="text-lg font-semibold">Settings</h2>
+        </SidebarHeader>
+        
+        <SidebarContent>
+          <div class="space-y-6 p-4">
+            <!-- Progress Card -->
+            <Card>
+              <CardHeader>
+                <CardTitle>Progress</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div class="space-y-4">
+                  <div class="text-3xl font-bold">
+                    {{ percentage.toFixed(1) }}%
+                    <span class="text-lg text-muted-foreground">
+                      ({{ metrics.checked }}/{{ metrics.total }})
+                    </span>
+                  </div>
+                  <Progress :value="percentage" class="w-full" />
+                  <div class="text-xl font-medium">
+                    {{ metrics.unchecked }} Remaining
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Separator />
+
+            <!-- Show Checked Toggle -->
+            <div class="flex items-center justify-between">
+              <label for="show-checked" class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                Show Checked Items
+              </label>
+              <Checkbox
+                id="show-checked"
+                :checked="showChecked"
+                @update:checked="showChecked = $event"
+              />
+            </div>
+
+            <!-- Notion Sync Section -->
+            <div v-if="isNotionSyncEnabled">
+              <Separator />
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle>Sync to Notion</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div class="space-y-4">
+                    <Button
+                      class="w-full"
+                      :disabled="syncLoading"
+                      @click="syncToNotion"
+                    >
+                      <RotateCw :class="{ 'animate-spin': syncLoading }" class="w-4 h-4 mr-2" />
+                      Sync to Notion Database
+                    </Button>
+                    
+                    <div v-if="lastSyncDate" class="text-sm text-muted-foreground">
+                      Last synced: {{ formatDate(lastSyncDate) }}
+                    </div>
+                    
+                    <div v-if="syncDatabaseId" class="text-sm">
+                      <a
+                        :href="`https://notion.so/${syncDatabaseId.replace(/-/g, '')}`"
+                        target="_blank"
+                        class="text-primary hover:underline flex items-center gap-1"
+                      >
+                        View Sync Database
+                        <ExternalLink class="w-3 h-3" />
+                      </a>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </SidebarContent>
+      </Sidebar>
+    </div>
+
+    <!-- Sync Dialog -->
+    <Dialog v-model:open="showSyncDialog">
+      <DialogContent class="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Create Sync Database</DialogTitle>
+          <DialogDescription>
+            To create a sync database, please provide the Notion page ID where you want the database to be created.
+          </DialogDescription>
+        </DialogHeader>
+        
+        <div class="space-y-4 py-4">
+          <div class="space-y-2">
+            <label for="pageId" class="text-sm font-medium">Parent Page ID</label>
+            <Input
+              id="pageId"
+              v-model="syncParentPageId"
+              placeholder="Enter Notion page ID"
+            />
+            <p class="text-xs text-muted-foreground">
+              You can find the page ID in the Notion URL after the workspace name
+            </p>
+          </div>
+        </div>
+        
+        <DialogFooter>
+          <Button
+            variant="outline"
+            @click="showSyncDialog = false"
+          >
+            Cancel
+          </Button>
+          <Button
+            :disabled="!syncParentPageId || syncLoading"
+            @click="syncToNotion"
+          >
+            <RotateCw :class="{ 'animate-spin': syncLoading }" class="w-4 h-4 mr-2" />
+            Create & Sync
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  </SidebarProvider>
 </template>
 
 <style scoped></style>

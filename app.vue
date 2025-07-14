@@ -1,5 +1,6 @@
 <script setup>
 import { onMounted } from 'vue';
+import { Toaster } from '@/components/ui/sonner';
 
 const user = useSupabaseUser();
 const posthog = usePostHog();
@@ -43,20 +44,10 @@ useHead({
 <template>
   <NuxtLayout>
     <NuxtPage />
+    <Toaster />
   </NuxtLayout>
 </template>
 
-<style lang="scss">
-@import 'App.scss';
-
-// Global Overrides
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.p-icon-spin {
-  animation: spin 2s linear infinite;
-}
+<style>
+/* Animation moved to Tailwind - use animate-spin utility class instead */
 </style>

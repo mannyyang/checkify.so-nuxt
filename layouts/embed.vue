@@ -1,14 +1,12 @@
 <script setup lang="ts">
 import { computed, watch, ref } from 'vue';
+import { Toaster } from '@/components/ui/sonner';
 </script>
 
 <template>
   <div class="embed-layout">
-    <Link
-      rel="stylesheet"
-      :href="'https://cdn.jsdelivr.net/npm/primevue@3.38.0/resources/themes/fluent-light/theme.css'"
-    />
     <slot />
+    <Toaster />
   </div>
 </template>
 

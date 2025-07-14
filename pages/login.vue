@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+
 definePageMeta({
   layout: 'public'
 });
@@ -28,7 +31,7 @@ async function signInWithGoogle () {
       <img
         src="/layout/images/logo-green.png"
         alt="Checkify logo"
-        class="mb-5 w-6rem flex-shrink-0"
+        class="mb-5 w-24 h-24 flex-shrink-0"
       >
       <div style="border-radius: 56px; padding: 0.3rem">
         <div
@@ -45,19 +48,29 @@ async function signInWithGoogle () {
           <div>
             <Button
               class="w-full"
-              label="Sign in with Google"
               @click="signInWithGoogle"
             >
-              <template #icon>
-                <img
-                  class="w-7 h-7 mr-2"
-                  alt="Google sign-in"
-                  src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/24px-Google_%22G%22_logo.svg.png"
-                >
-              </template>
+              <img
+                class="w-5 h-5 mr-2"
+                alt="Google sign-in"
+                src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/24px-Google_%22G%22_logo.svg.png"
+              >
+              Sign in with Google
             </Button>
           </div>
         </div>
+      </div>
+    </div>
+    
+    <!-- Footer -->
+    <div class="absolute bottom-0 left-0 right-0 py-4 px-4">
+      <div class="flex justify-center space-x-6 text-sm">
+        <NuxtLink to="/privacy-policy" class="text-muted-foreground hover:text-foreground transition-colors">
+          Privacy Policy
+        </NuxtLink>
+        <NuxtLink to="/terms-of-use" class="text-muted-foreground hover:text-foreground transition-colors">
+          Terms of Use
+        </NuxtLink>
       </div>
     </div>
   </div>
