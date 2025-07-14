@@ -12,6 +12,7 @@ definePageMeta({
 
 const route = useRoute();
 const toast = useToast();
+const posthog = usePostHog();
 
 const showChecked = ref(true);
 const showSidebar = ref(false);
@@ -20,6 +21,19 @@ const syncParentPageId = ref('');
 const syncLoading = ref(false);
 const lastSyncDate = ref<Date | null>(null);
 const syncDatabaseId = ref<string | null>(null);
+
+const isNotionSyncEnabled = ref(false);
+
+// Check feature flag when component mounts and when flags load
+onMounted(() => {
+  // Check immediately
+  isNotionSyncEnabled.value = posthog.isFeatureEnabled('notion-database-sync') || false;
+
+  // Also check when flags are loaded
+  posthog.onFeatureFlags(() => {
+    isNotionSyncEnabled.value = posthog.isFeatureEnabled('notion-database-sync') || false;
+  });
+});
 
 const { data, pending, refresh } = await useFetch(
   '/api/todo-list/' + route.params.todo_list_id,
@@ -258,9 +272,9 @@ const formatDate = (date: Date | null) => {
           </template>
         </Toolbar>
 
-        <Divider />
+        <Divider v-if="isNotionSyncEnabled" />
 
-        <Card class="mt-4 shadow-none rounded-2 border-1 border-solid border-gray-400">
+        <Card v-if="isNotionSyncEnabled" class="mt-4 shadow-none rounded-2 border-1 border-solid border-gray-400">
           <template #title>
             Sync to Notion
           </template>

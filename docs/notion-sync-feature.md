@@ -3,6 +3,8 @@
 ## Overview
 This feature allows users to sync their aggregated checkboxes from Checkify to a new Notion database. This creates a centralized view of all todos across different Notion pages in a single Notion database.
 
+**Note**: This feature is currently controlled by the `notion-database-sync` PostHog feature flag and may not be available to all users.
+
 ## How It Works
 
 1. **Aggregation**: The system collects all checkbox items from the connected Notion pages

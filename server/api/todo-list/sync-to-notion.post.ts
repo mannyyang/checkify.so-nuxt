@@ -168,6 +168,9 @@ export default defineEventHandler(async (event) => {
     errors: []
   };
 
+  // Track synced pages for webhook updates
+  const syncedPages = [];
+
   for (const { checkbox, page } of allCheckboxes) {
     // @ts-ignore
     const checkboxData = checkbox;
@@ -224,6 +227,8 @@ export default defineEventHandler(async (event) => {
     };
 
     try {
+      let syncedPageId;
+
       if (existingPageId) {
         // Update existing page
         await notion.pages.update({
@@ -231,22 +236,45 @@ export default defineEventHandler(async (event) => {
           properties
         });
         syncResults.updated++;
+        syncedPageId = existingPageId;
       } else {
         // Create new page
-        await notion.pages.create({
+        const newPage = await notion.pages.create({
           parent: {
             database_id: syncDatabaseId
           },
           properties
         });
         syncResults.created++;
+        syncedPageId = newPage.id;
       }
+
+      // Track the synced page for webhook mapping
+      syncedPages.push({
+        todo_list_id: todoListId,
+        sync_database_id: syncDatabaseId,
+        page_id: syncedPageId,
+        block_id: blockId
+      });
     } catch (error: any) {
       consola.error(`Error syncing checkbox ${blockId}:`, error);
       syncResults.errors.push({
         blockId,
         error: error.message
       });
+    }
+  }
+
+  // Store the page-to-block mappings
+  if (syncedPages.length > 0) {
+    const { error: mappingError } = await supabase
+      .from('notion_sync_pages')
+      .upsert(syncedPages, {
+        onConflict: 'page_id'
+      });
+
+    if (mappingError) {
+      consola.error('Error storing page mappings:', mappingError);
     }
   }
 

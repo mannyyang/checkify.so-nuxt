@@ -1,4 +1,33 @@
 <script setup>
+import { onMounted } from 'vue';
+
+const user = useSupabaseUser();
+const posthog = usePostHog();
+
+onMounted(() => {
+  if (user.value) {
+    posthog.identify(user.value.id, {
+      email: user.value.email
+    });
+  }
+
+  // Wait for feature flags to load
+  posthog.onFeatureFlags(() => {
+    const isNotionSyncEnabled = posthog.isFeatureEnabled('notion-database-sync');
+    console.log('Notion Database Sync feature flag:', isNotionSyncEnabled);
+  });
+});
+
+watch(user, (newUser) => {
+  if (newUser) {
+    posthog.identify(newUser.id, {
+      email: newUser.email
+    });
+  } else {
+    posthog.reset();
+  }
+});
+
 useHead({
   title: 'Checkify.so',
   script: [
