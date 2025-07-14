@@ -123,6 +123,21 @@ nitro: {
 - DevTools support
 - Clean API compared to Vuex
 
+### 5. Analytics & Feature Management
+**Decision**: PostHog for analytics and feature flags
+
+**Implementation**:
+- Client-side plugin (`plugins/posthog.client.ts`)
+- Composable for easy access (`composables/usePostHog.ts`)
+- Feature flags for controlled rollouts
+- User identification on auth
+
+**Rationale**:
+- Single tool for analytics and feature flags
+- Easy integration with Vue/Nuxt
+- Privacy-focused with self-hosting option
+- Real-time feature flag updates
+
 ## Data Flow Architecture
 
 ### Authentication Flow

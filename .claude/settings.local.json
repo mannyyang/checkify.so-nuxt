@@ -21,7 +21,15 @@
       "Bash(supabase:*)",
       "Bash(cat:*)",
       "Bash(rm:*)",
-      "Bash(pnpm add:*)"
+      "Bash(pnpm add:*)",
+      "Bash(git push:*)",
+      "Bash(say \"All changes have been successfully committed and pushed to the remote repository. The commit includes PostHog analytics integration, Notion webhook support, and various UI improvements.\")",
+      "Bash(mkdir:*)",
+      "Bash(mv:*)",
+      "Bash(pnpm:*)",
+      "Bash(npx nuxi typecheck)",
+      "Bash(curl:*)",
+      "Bash(pkill:*)"
     ],
     "deny": []
   }

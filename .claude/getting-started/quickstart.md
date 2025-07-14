@@ -1,0 +1,170 @@
+# Quickstart Guide
+
+Get up and running with Checkify.so in 5 minutes.
+
+## Prerequisites
+
+- Node.js 18+ and pnpm
+- Supabase account
+- Notion account and integration
+
+## Local Development Setup
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/your-org/checkify.so-nuxt.git
+cd checkify.so-nuxt
+```
+
+### 2. Install Dependencies
+
+```bash
+pnpm install
+```
+
+### 3. Set Up Supabase
+
+1. Create a new Supabase project at [supabase.com](https://supabase.com)
+2. Run the database migrations:
+
+```bash
+# Using Supabase CLI
+supabase db push
+
+# Or manually run migrations in order:
+# - 20240101000000_initial_schema.sql
+# - 20250709232007_add_sync_database_columns.sql  
+# - 20250710063000_add_sync_tracking_table.sql
+```
+
+### 4. Configure Environment Variables
+
+Create a `.env` file:
+
+```env
+# Supabase
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_KEY=your-anon-key
+SUPABASE_SERVICE_KEY=your-service-key
+
+# App
+BASE_URL=http://localhost:3000
+
+# Notion OAuth (optional for local dev)
+NOTION_CLIENT_ID=your-notion-client-id
+NOTION_CLIENT_SECRET=your-notion-client-secret
+```
+
+### 5. Set Up Notion Integration
+
+1. Go to [Notion Integrations](https://www.notion.so/my-integrations)
+2. Create a new OAuth integration:
+   - Type: Public
+   - Redirect URI: `http://localhost:3000/api/connect-notion`
+   - Capabilities: Read content, Update content, Read user info
+
+### 6. Configure PostHog (Optional)
+
+Update `plugins/posthog.client.ts` with your project key:
+
+```typescript
+posthogLib.init('your-project-key', {
+  api_host: 'https://us.i.posthog.com',
+  person_profiles: 'identified_only'
+});
+```
+
+### 7. Start Development Server
+
+```bash
+pnpm dev
+```
+
+Visit http://localhost:3000
+
+## First Run Experience
+
+### 1. Sign In
+- Click "Sign in with Google"
+- Authenticate via Supabase
+
+### 2. Connect Notion
+- Click "Connect Notion"
+- Authorize the integration
+- Grant access to your workspace
+
+### 3. Select Databases
+- Choose which Notion databases to track
+- Click "Create Todo List"
+
+### 4. View Your Todos
+- All checkboxes from selected databases appear
+- Click checkboxes to toggle state
+- Changes sync instantly to Notion
+
+## Using Sync Features
+
+### Enable Feature Flag
+1. In PostHog, enable `notion-database-sync` flag
+2. Refresh the app
+
+### Create Sync Database
+1. Open a todo list
+2. Click settings (gear icon)
+3. Click "Sync to Notion Database"
+4. Provide parent page ID
+5. Click "Create & Sync"
+
+## Common Issues
+
+### "No todos found"
+- Ensure your Notion pages have checkbox blocks
+- Check that the integration has access to pages
+- Verify pages aren't archived
+
+### "Failed to connect Notion"
+- Check redirect URI matches exactly
+- Ensure client ID/secret are correct
+- Verify integration is published
+
+### "Sync failed"
+- Confirm you have edit permissions
+- Check parent page ID is valid
+- Ensure not hitting rate limits
+
+## Next Steps
+
+- Read the [Architecture Overview](../technical/architecture.md)
+- Explore [API Reference](../technical/api-reference.md)
+- Learn about [Feature Development](./development.md)
+- Configure [Webhooks](../features/webhook-integration.md)
+
+## Getting Help
+
+- Check existing [documentation](..)
+- Review [common issues](./development.md#troubleshooting)
+- Open an issue on GitHub
+- Contact support
+
+## Quick Commands
+
+```bash
+# Development
+pnpm dev              # Start dev server
+pnpm build            # Build for production
+pnpm preview          # Preview build
+
+# Testing
+pnpm test:unit        # Run unit tests
+pnpm test:ui          # Test with UI
+pnpm test:coverage    # Coverage report
+
+# Code Quality
+pnpm lint             # Run ESLint
+pnpm typecheck        # Run TypeScript checks
+
+# Database
+supabase db push      # Apply migrations
+supabase db reset     # Reset database
+```

@@ -250,6 +250,78 @@ Toggle a todo checkbox state in Notion.
 
 ---
 
+#### `POST /api/todo-list/sync-to-notion`
+Sync aggregated todos to a Notion database.
+
+**Request Body:**
+```json
+{
+  "todo_list_id": "uuid",
+  "parent_page_id": "notion-page-id (optional)"
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "syncDatabaseId": "notion-database-id",
+  "syncResults": {
+    "created": 10,
+    "updated": 5,
+    "errors": []
+  },
+  "totalCheckboxes": 15
+}
+```
+
+**Error Responses:**
+- `400 Bad Request` - Invalid todo_list_id
+- `401 Unauthorized` - User not authenticated
+- `404 Not Found` - Todo list not found
+- `500 Internal Error` - Notion API error
+
+---
+
+#### `POST /api/notion-webhook`
+Handle Notion webhook events for bidirectional sync.
+
+**Headers:**
+- `x-notion-signature` - Webhook signature for validation
+
+**Request Body:**
+```json
+{
+  "type": "page.updated",
+  "page": {
+    "id": "page-id",
+    "properties": {
+      "Status": {
+        "checkbox": true
+      },
+      "Block ID": {
+        "rich_text": [{"plain_text": "block-id"}]
+      }
+    }
+  }
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Webhook processed"
+}
+```
+
+**Error Responses:**
+- `400 Bad Request` - Invalid webhook payload
+- `401 Unauthorized` - Invalid signature
+- `404 Not Found` - Page not tracked
+
+---
+
 ### Public Endpoints
 
 #### `GET /api/products`

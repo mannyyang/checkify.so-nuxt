@@ -272,6 +272,58 @@ CREATE INDEX idx_todo_checked ON todo(checked);
 }
 ```
 
+### notion_sync_pages
+Tracks synced Notion database pages and their original checkbox blocks.
+
+```sql
+CREATE TABLE notion_sync_pages (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  todo_list_id UUID NOT NULL REFERENCES todo_list(todo_list_id) ON DELETE CASCADE,
+  sync_database_id TEXT NOT NULL,
+  page_id TEXT NOT NULL,
+  block_id TEXT NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(page_id)
+);
+```
+
+**Columns:**
+- `id`: Unique identifier
+- `todo_list_id`: Reference to the todo list
+- `sync_database_id`: Notion database ID where synced
+- `page_id`: Notion page ID in the synced database
+- `block_id`: Original checkbox block ID
+- `created_at`: Creation timestamp
+- `updated_at`: Last update timestamp
+
+**Indexes:**
+```sql
+CREATE INDEX idx_sync_pages_page_id ON notion_sync_pages(page_id);
+CREATE INDEX idx_sync_pages_todo_list ON notion_sync_pages(todo_list_id);
+```
+
+## Recent Schema Updates
+
+### todo_list Table Updates
+Added columns for Notion sync and webhook support:
+
+```sql
+ALTER TABLE todo_list
+ADD COLUMN notion_sync_database_id TEXT,
+ADD COLUMN last_sync_date TIMESTAMP WITH TIME ZONE,
+ADD COLUMN webhook_id TEXT,
+ADD COLUMN webhook_url TEXT,
+ADD COLUMN webhook_secret TEXT;
+```
+
+**New Columns:**
+- `notion_sync_database_id`: ID of the created Notion sync database
+- `last_sync_date`: Timestamp of last successful sync
+- `webhook_id`: Notion webhook subscription ID
+- `webhook_url`: URL where Notion sends webhook events
+- `webhook_secret`: Secret for webhook payload validation
+
 ## Relationships
 
 ### Foreign Key Constraints
