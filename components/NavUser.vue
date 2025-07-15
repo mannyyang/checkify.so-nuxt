@@ -88,29 +88,21 @@ const getInitials = (name: string) => {
             </div>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <!-- Commented out for future implementation -->
-          <!-- <DropdownMenuGroup>
-            <DropdownMenuItem>
-              <Sparkles />
-              Upgrade to Pro
+          <DropdownMenuGroup>
+            <DropdownMenuItem as-child>
+              <NuxtLink to="/settings" class="flex items-center w-full">
+                <BadgeCheck />
+                Account Settings
+              </NuxtLink>
+            </DropdownMenuItem>
+            <DropdownMenuItem as-child>
+              <NuxtLink to="/settings#billing" class="flex items-center w-full">
+                <CreditCard />
+                Billing
+              </NuxtLink>
             </DropdownMenuItem>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
-          <DropdownMenuGroup>
-            <DropdownMenuItem>
-              <BadgeCheck />
-              Account
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <CreditCard />
-              Billing
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <Bell />
-              Notifications
-            </DropdownMenuItem>
-          </DropdownMenuGroup>
-          <DropdownMenuSeparator /> -->
           <DropdownMenuItem as-child>
             <NuxtLink to="/logout" class="flex items-center w-full">
               <LogOut />

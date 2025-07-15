@@ -17,11 +17,18 @@ export default defineNuxtConfig({
     }
   },
   runtimeConfig: {
+    // Private keys (server-side only)
+    stripeSecretKey: process.env.STRIPE_SECRET_KEY,
+    stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
+    // Public keys (available on client)
     public: {
       APP_VERSION: pkg.version,
       APP_NAME: pkg.name,
       APP_MODE: process.env?.NODE_ENV,
-      BASE_URL: process.env?.BASE_URL
+      BASE_URL: process.env?.BASE_URL,
+      stripePublishableKey: process.env.STRIPE_PUBLISHABLE_KEY,
+      stripePriceIdPro: process.env.STRIPE_PRICE_ID_PRO,
+      stripePriceIdMax: process.env.STRIPE_PRICE_ID_MAX
     }
   },
   modules: [
@@ -77,6 +84,7 @@ export default defineNuxtConfig({
       callback: '/confirm',
       exclude: [
         '/',
+        '/pricing',
         '/privacy-policy',
         '/terms-of-use',
         '/checkboxes',

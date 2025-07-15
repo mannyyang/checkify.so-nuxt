@@ -1,4 +1,4 @@
-export type SubscriptionTier = 'free' | 'pro' | 'enterprise';
+export type SubscriptionTier = 'free' | 'pro' | 'max';
 
 export interface SubscriptionLimits {
   maxPages: number | undefined;
@@ -35,7 +35,7 @@ const SUBSCRIPTION_TIERS: Record<SubscriptionTier, SubscriptionLimits> = {
       apiAccess: false
     }
   },
-  enterprise: {
+  max: {
     maxPages: undefined, // unlimited
     maxCheckboxesPerPage: undefined, // unlimited
     maxTodoLists: -1, // unlimited
@@ -49,10 +49,12 @@ const SUBSCRIPTION_TIERS: Record<SubscriptionTier, SubscriptionLimits> = {
 };
 
 export const useSubscription = () => {
-  // TODO: This should fetch from Supabase/Stripe
-  // For now, we'll use a reactive state that can be updated
-  const currentTier = useState<SubscriptionTier>('subscription-tier', () => 'free');
+  // Fetch subscription data from API
+  const { data: subscriptionData, refresh } = useFetch('/api/subscription', {
+    default: () => ({ tier: 'free' as SubscriptionTier, status: 'active' })
+  });
 
+  const currentTier = computed(() => subscriptionData.value?.tier || 'free');
   const limits = computed(() => SUBSCRIPTION_TIERS[currentTier.value]);
 
   const canAccessFeature = (feature: keyof SubscriptionLimits['features']) => {
@@ -72,11 +74,9 @@ export const useSubscription = () => {
     }
   };
 
-  // Mock function to upgrade tier (would connect to Stripe)
-  const upgradeTier = async (newTier: SubscriptionTier) => {
-    // TODO: Process payment through Stripe
-    // For now, just update the tier
-    currentTier.value = newTier;
+  // Navigate to pricing page for upgrades
+  const upgradeTier = async () => {
+    await navigateTo('/pricing');
   };
 
   return {
@@ -85,6 +85,7 @@ export const useSubscription = () => {
     canAccessFeature,
     isWithinLimits,
     upgradeTier,
+    refreshSubscription: refresh,
     SUBSCRIPTION_TIERS
   };
 };

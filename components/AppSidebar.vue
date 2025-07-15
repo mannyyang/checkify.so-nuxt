@@ -25,6 +25,15 @@ import { CheckSquare, Home } from 'lucide-vue-next'
 
 const user = useSupabaseUser();
 
+// Fetch subscription data
+const { data: subscription } = await useFetch('/api/subscription');
+
+const tierLabels = {
+  free: 'Free',
+  pro: 'Pro',
+  max: 'Max'
+};
+
 // Navigation data for Checkify
 const data = {
   user: computed(() => {
@@ -40,7 +49,7 @@ const data = {
     {
       name: 'Checkify.so',
       logo: CheckSquare,
-      plan: 'Free',
+      plan: tierLabels[subscription.value?.tier || 'free'],
     },
   ],
   navMain: [

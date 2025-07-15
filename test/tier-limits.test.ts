@@ -7,7 +7,7 @@ console.log('Testing Tier Limits Configuration\n');
 const testScenarios = [
   { tier: 'free', pages: 15, checkboxes: 60 },
   { tier: 'pro', pages: 120, checkboxes: 250 },
-  { tier: 'enterprise', pages: 500, checkboxes: 1000 }
+  { tier: 'max', pages: 500, checkboxes: 1000 }
 ];
 
 for (const scenario of testScenarios) {

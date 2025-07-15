@@ -370,7 +370,7 @@ const formatDate = (date: Date | null) => {
                       </template>
                     </p>
                     <p v-if="data.metadata.limits?.tier === 'free'" class="text-xs text-yellow-700 mt-1">
-                      Upgrade to Pro for up to 100 pages or Enterprise for unlimited access
+                      Upgrade to Pro for up to 100 pages or Max for unlimited access
                     </p>
                   </div>
                   <div v-if="data.metadata.errors.length > 0" class="mt-2 p-2 bg-red-50 rounded-md">

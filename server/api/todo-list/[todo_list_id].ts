@@ -28,7 +28,7 @@ const TIER_LIMITS = {
     maxPages: 100,
     maxCheckboxesPerPage: 200
   },
-  enterprise: {
+  max: {
     maxPages: undefined, // unlimited
     maxCheckboxesPerPage: undefined // unlimited
   }
@@ -41,15 +41,29 @@ export default defineEventHandler(async (event) => {
     throw new Error('No todo_list_id found');
   }
 
-  // Get user context (this would include subscription data)
+  // Get user context
   const user = event.context.user;
 
-  // TODO: Fetch subscription tier from database based on user.id
-  // For now, check query parameter for testing (remove in production)
+  // Fetch user's subscription tier from database
+  let userTier: keyof typeof TIER_LIMITS = 'free';
+
+  if (user?.id) {
+    const { data: profile } = await supabase
+      .from('user_profiles')
+      .select('subscription_tier')
+      .eq('user_id', user.id)
+      .single();
+
+    if (profile?.subscription_tier && ['free', 'pro', 'max'].includes(profile.subscription_tier)) {
+      userTier = profile.subscription_tier as keyof typeof TIER_LIMITS;
+    }
+  }
+
+  // Allow tier override for testing (remove in production)
   const testTier = getQuery(event).tier as string;
-  const userTier = testTier && ['free', 'pro', 'enterprise'].includes(testTier)
-    ? testTier
-    : 'free'; // Default to free tier
+  if (testTier && ['free', 'pro', 'max'].includes(testTier)) {
+    userTier = testTier as keyof typeof TIER_LIMITS;
+  }
 
   const tierLimits = TIER_LIMITS[userTier as keyof typeof TIER_LIMITS];
 

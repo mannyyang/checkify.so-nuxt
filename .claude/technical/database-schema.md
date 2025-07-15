@@ -231,7 +231,35 @@ CREATE INDEX idx_page_parent ON page(notion_parent_id);
 }
 ```
 
-### 7. todo
+### 7. user_profiles
+
+Stores user subscription and billing information.
+
+```sql
+CREATE TABLE user_profiles (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    stripe_customer_id TEXT UNIQUE,
+    subscription_tier TEXT NOT NULL DEFAULT 'free' CHECK (subscription_tier IN ('free', 'pro', 'max')),
+    subscription_status TEXT DEFAULT 'active' CHECK (subscription_status IN ('active', 'canceled', 'past_due', 'trialing')),
+    subscription_expires_at TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    UNIQUE(user_id)
+);
+```
+
+**Columns:**
+- `id`: Unique identifier
+- `user_id`: Reference to auth.users
+- `stripe_customer_id`: Stripe customer ID for billing
+- `subscription_tier`: Current tier (free, pro, max)
+- `subscription_status`: Stripe subscription status
+- `subscription_expires_at`: When canceled subscription expires
+- `created_at`: Creation timestamp
+- `updated_at`: Last update timestamp
+
+### 8. todo
 
 Individual todo items from Notion blocks.
 
