@@ -5,6 +5,17 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-07-13',
   devtools: true,
   ssr: true,
+  app: {
+    head: {
+      script: [
+        {
+          src: 'https://cloud.umami.is/script.js',
+          defer: true,
+          'data-website-id': '0a308b81-ba46-4f8e-af5e-b4b3224967e9'
+        }
+      ]
+    }
+  },
   runtimeConfig: {
     public: {
       APP_VERSION: pkg.version,

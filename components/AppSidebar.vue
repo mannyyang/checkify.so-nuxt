@@ -21,7 +21,7 @@ const props = withDefaults(defineProps<SidebarProps>(), {
   collapsible: 'icon',
 })
 
-import { CheckSquare, Key, Book, LogIn, LogOut, Home, FileText } from 'lucide-vue-next'
+import { CheckSquare, Home } from 'lucide-vue-next'
 
 const user = useSupabaseUser();
 
@@ -66,16 +66,6 @@ const data = {
       name: 'Create a Todo List',
       url: '/docs/create-todo-list',
       icon: BookOpen,
-    },
-    {
-      name: 'Privacy Policy',
-      url: '/privacy-policy',
-      icon: FileText,
-    },
-    {
-      name: 'Terms of Use',
-      url: '/terms-of-use',
-      icon: FileText,
     },
   ],
 }
