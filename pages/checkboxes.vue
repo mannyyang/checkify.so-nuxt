@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { ToDoBlockObjectResponse } from '@notionhq/client/build/src/api-endpoints';
+import { RefreshCw, Settings, ExternalLink } from 'lucide-vue-next';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Separator } from '@/components/ui/separator';
-import { RefreshCw, Settings, ExternalLink } from 'lucide-vue-next';
 
 definePageMeta({
   layout: 'embed'
@@ -104,7 +104,7 @@ setTimeout(() => {
     <div class="fixed top-0 left-0 right-0 z-10 bg-background border-b p-4">
       <div class="flex items-center justify-between">
         <span class="text-lg font-bold">My Todos</span>
-        
+
         <div class="flex items-center gap-2">
           <Button
             variant="outline"
@@ -115,7 +115,7 @@ setTimeout(() => {
             <RefreshCw :class="{ 'animate-spin': pending }" class="w-4 h-4 mr-2" />
             Refresh
           </Button>
-          
+
           <Sheet v-model:open="showSidebar">
             <SheetTrigger as-child>
               <Button variant="outline" size="sm">
@@ -126,7 +126,7 @@ setTimeout(() => {
               <SheetHeader>
                 <SheetTitle>Settings</SheetTitle>
               </SheetHeader>
-              
+
               <div class="space-y-6 mt-6">
                 <!-- Progress Card -->
                 <Card>
@@ -174,7 +174,7 @@ setTimeout(() => {
       <div v-if="!checkboxList || checkboxList.length === 0" class="text-center py-12 text-muted-foreground">
         No todos found
       </div>
-      
+
       <div v-else class="space-y-6">
         <div
           v-for="item in checkboxList"
@@ -185,7 +185,7 @@ setTimeout(() => {
             <h3 class="text-lg font-semibold border-b pb-2">
               {{ item.page.properties['Name']?.title?.[0]?.plain_text }}
             </h3>
-            
+
             <div class="space-y-2">
               <div
                 v-for="checkbox in item.checkboxes"
@@ -195,8 +195,8 @@ setTimeout(() => {
                 <Checkbox
                   :id="checkbox.id"
                   :checked="checkbox.to_do.checked"
-                  @update:checked="onTodoUpdate(checkbox, $event)"
                   class="mt-1"
+                  @update:checked="onTodoUpdate(checkbox, $event)"
                 />
                 <label :for="checkbox.id" class="flex-1 text-sm leading-relaxed cursor-pointer">
                   {{ checkbox.to_do.rich_text?.[0]?.plain_text || '' }}

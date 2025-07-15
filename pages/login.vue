@@ -61,7 +61,7 @@ async function signInWithGoogle () {
         </div>
       </div>
     </div>
-    
+
     <!-- Footer -->
     <div class="absolute bottom-0 left-0 right-0 py-4 px-4">
       <div class="flex justify-center space-x-6 text-sm">

@@ -33,8 +33,10 @@ onMounted(async () => {
     <Card class="w-96">
       <CardContent class="pt-6">
         <div class="flex flex-col items-center space-y-4">
-          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-          <p class="text-center text-muted-foreground">Connecting to Notion...</p>
+          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+          <p class="text-center text-muted-foreground">
+            Connecting to Notion...
+          </p>
         </div>
       </CardContent>
     </Card>

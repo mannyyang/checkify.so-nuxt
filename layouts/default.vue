@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import AppSidebar from '@/components/AppSidebar.vue'
+import AppSidebar from '@/components/AppSidebar.vue';
 import {
   SidebarInset,
   SidebarProvider,
-  SidebarTrigger,
-} from '@/components/ui/sidebar'
-import { Separator } from '@/components/ui/separator'
+  SidebarTrigger
+} from '@/components/ui/sidebar';
+import { Separator } from '@/components/ui/separator';
 </script>
 
 <template>
@@ -19,7 +19,9 @@ import { Separator } from '@/components/ui/separator'
             orientation="vertical"
             class="mr-2 data-[orientation=vertical]:h-4"
           />
-          <h2 class="text-lg font-semibold">Checkify.so</h2>
+          <h2 class="text-lg font-semibold">
+            Checkify.so
+          </h2>
         </div>
       </header>
       <div class="flex flex-1 flex-col gap-4 p-4 pt-0">

@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import type { DatabaseObjectResponse } from '@notionhq/client/build/src/api-endpoints';
+import { Trash2, Copy, Plus, Search, Check, FileText, ExternalLink } from 'lucide-vue-next';
+import { toast } from 'vue-sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Trash2, Copy, Plus, Search, Info, Check, FileText } from 'lucide-vue-next';
-import { toast } from 'vue-sonner';
 
 const isConnected = ref(false);
 const searchQuery = ref('');
@@ -21,7 +21,7 @@ let searchTimeout: NodeJS.Timeout | null = null;
 onMounted(async () => {
   // Set base URL for client-side link generation
   baseUrl.value = window.location.origin;
-  
+
   // Check if user is connected to Notion
   const { data } = await useFetch('/api/auth-notion');
   if (data.value?.is_auth) {
@@ -31,8 +31,8 @@ onMounted(async () => {
 });
 
 const searchDatabases = async () => {
-  if (!searchQuery.value) return;
-  
+  if (!searchQuery.value) { return; }
+
   isSearching.value = true;
   const { data, error } = await useFetch('/api/search-notion', {
     query: { query: searchQuery.value }
@@ -44,7 +44,7 @@ const searchDatabases = async () => {
   } else {
     searchResults.value = data.value?.databases || [];
   }
-  
+
   isSearching.value = false;
 };
 
@@ -83,7 +83,7 @@ const fetchTodoLists = async () => {
   }
 
   todoLists.value = data.value?.todo_lists || [];
-  
+
   // If we have todo lists, the user must be connected
   if (todoLists.value.length > 0) {
     isConnected.value = true;
@@ -116,7 +116,7 @@ const todoListLinks = ref<Record<string, string>>({});
 // Watch todoLists and baseUrl to update links
 watch([todoLists, baseUrl], () => {
   const newLinks: Record<string, string> = {};
-  todoLists.value.forEach(todoList => {
+  todoLists.value.forEach((todoList) => {
     newLinks[todoList.todo_list_id] = handleLink(todoList);
   });
   todoListLinks.value = newLinks;
@@ -128,18 +128,18 @@ watch(searchQuery, (newQuery) => {
   if (searchTimeout) {
     clearTimeout(searchTimeout);
   }
-  
+
   // Clear results if query is empty
   if (!newQuery.trim()) {
     searchResults.value = [];
     return;
   }
-  
+
   // Only search if connected
   if (!isConnected.value) {
     return;
   }
-  
+
   // Set new timeout for debounced search
   searchTimeout = setTimeout(() => {
     searchDatabases();
@@ -163,13 +163,18 @@ const handleCopyLink = async (todoList: any) => {
   }
 };
 
+const openInNewTab = (todoList: any) => {
+  const link = handleLink(todoList);
+  window.open(link, '_blank');
+};
+
 const handleDeleteModal = (todoList: any) => {
   currentTodoList.value = todoList;
   showDeleteDialog.value = true;
 };
 
 const deleteTodoList = async () => {
-  if (!currentTodoList.value) return;
+  if (!currentTodoList.value) { return; }
 
   const { error } = await useFetch(`/api/todo-list/${currentTodoList.value.todo_list_id}`, {
     method: 'DELETE'
@@ -193,17 +198,18 @@ const deleteTodoList = async () => {
     <!-- Get Started Here! Section -->
     <Card>
       <CardHeader>
-        <CardTitle class="text-2xl">Get Started Here!</CardTitle>
+        <CardTitle class="text-2xl">
+          Get Started Here!
+        </CardTitle>
       </CardHeader>
       <CardContent>
         <div class="space-y-4">
-          <div class="flex items-center gap-2 text-muted-foreground">
-            <Info class="w-6 h-6 text-primary shrink-0" />
-            <p>You are one step away from creating your first to-do list. Connect your Notion account to fetch all your checkboxes and checkify your Notion databases.</p>
-          </div>
+          <p class="text-muted-foreground">
+            You are one step away from creating your first to-do list. Connect your Notion account to fetch all your checkboxes and checkify your Notion databases.
+          </p>
           <div class="flex items-center gap-3">
             <Button size="default" @click="connectNotion">
-              <img src="/notion-logo.svg" alt="Notion" class="w-4 h-4 mr-2" />
+              <img src="/notion-logo.svg" alt="Notion" class="w-4 h-4 mr-2">
               Connect Notion
             </Button>
             <span v-if="isConnected" class="text-green-600 flex items-center gap-2">
@@ -218,15 +224,16 @@ const deleteTodoList = async () => {
     <!-- Add Database Section -->
     <Card>
       <CardHeader>
-        <CardTitle class="text-2xl">Add Database</CardTitle>
+        <CardTitle class="text-2xl">
+          Add Database
+        </CardTitle>
       </CardHeader>
       <CardContent>
         <div class="space-y-4">
-          <div class="flex items-center gap-2 text-muted-foreground">
-            <Info class="w-6 h-6 text-primary shrink-0" />
-            <p>Search for and select the database that you'll be creating your to-do list from.</p>
-          </div>
-          
+          <p class="text-muted-foreground">
+            Search for and select the database that you'll be creating your to-do list from.
+          </p>
+
           <div class="mt-4">
             <Input
               v-model="searchQuery"
@@ -239,18 +246,21 @@ const deleteTodoList = async () => {
           <!-- Loading State -->
           <div v-if="isSearching" class="flex items-center justify-center py-8">
             <div class="flex items-center gap-2 text-muted-foreground">
-              <div class="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+              <div class="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
               <span>Searching databases...</span>
             </div>
           </div>
 
           <!-- Search Results -->
           <div v-if="searchResults.length > 0" class="space-y-2 mt-4">
-            <div v-for="result in searchResults" :key="result.id" 
-                 class="flex items-center justify-between p-3 border rounded-lg hover:bg-accent cursor-pointer transition-colors"
-                 @click="addDatabase(result)">
+            <div
+              v-for="result in searchResults"
+              :key="result.id"
+              class="flex items-center justify-between p-3 border rounded-lg hover:bg-accent cursor-pointer transition-colors"
+              @click="addDatabase(result)"
+            >
               <div class="flex items-center gap-2">
-                <img v-if="getIcon(result)" :src="getIcon(result)" class="w-5 h-5" />
+                <img v-if="getIcon(result)" :src="getIcon(result)" class="w-5 h-5">
                 <span>{{ result.title[0]?.plain_text || 'Untitled' }}</span>
               </div>
               <Plus class="w-4 h-4" />
@@ -263,55 +273,74 @@ const deleteTodoList = async () => {
     <!-- My Todo Lists Section -->
     <Card>
       <CardHeader>
-        <CardTitle class="text-2xl">My Todo Lists</CardTitle>
+        <CardTitle class="text-2xl">
+          My Todo Lists
+        </CardTitle>
       </CardHeader>
       <CardContent>
         <div class="space-y-4">
-          <div class="flex items-center gap-2 text-muted-foreground">
-            <Info class="w-6 h-6 text-primary shrink-0" />
-            <p>Here are all the to-do lists you've created. Click on the copy icon to copy the link for an embed. The first 45 pages in a database are used and the first 50 blocks in a page are used.</p>
-          </div>
+          <p class="text-muted-foreground">
+            Here are all the to-do lists you've created. Click the URL to open it, use the copy button to copy the link, or click the external link button to open in a new tab.
+          </p>
 
           <!-- Todo Lists Grid -->
           <ClientOnly>
             <div v-if="todoLists.length > 0" class="mt-6">
-            <div v-for="todoList in todoLists" :key="todoList.todo_list_id" class="mb-4">
-              <div class="flex items-center gap-2 mb-2">
-                <img
-                  v-if="getIcon(todoList.notion_database_id?.metadata)"
-                  :src="getIcon(todoList.notion_database_id?.metadata)"
-                  :alt="handleTodoListName(todoList)"
-                  class="w-5 h-5"
-                />
-                <FileText v-else class="w-5 h-5 text-gray-500" />
-                <span class="font-medium">{{ handleTodoListName(todoList) }}</span>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  class="h-6 w-6 ml-auto"
-                  @click="handleDeleteModal(todoList)"
-                >
-                  <Trash2 class="h-4 w-4 text-destructive" />
-                </Button>
-              </div>
-              <div class="flex gap-2 items-center">
-                <Input :model-value="todoListLinks[todoList.todo_list_id]" readonly class="flex-1 text-sm" />
-                <Button
-                  variant="secondary"
-                  size="icon"
-                  @click="handleCopyLink(todoList)"
-                  class="shrink-0"
-                >
-                  <Copy class="h-4 w-4" />
-                </Button>
+              <div v-for="todoList in todoLists" :key="todoList.todo_list_id" class="mb-4">
+                <div class="flex items-center gap-2 mb-2">
+                  <img
+                    v-if="getIcon(todoList.notion_database_id?.metadata)"
+                    :src="getIcon(todoList.notion_database_id?.metadata)"
+                    :alt="handleTodoListName(todoList)"
+                    class="w-5 h-5"
+                  >
+                  <FileText v-else class="w-5 h-5 text-gray-500" />
+                  <span class="font-medium">{{ handleTodoListName(todoList) }}</span>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    class="h-6 w-6 ml-auto"
+                    @click="handleDeleteModal(todoList)"
+                  >
+                    <Trash2 class="h-4 w-4 text-destructive" />
+                  </Button>
+                </div>
+                <div class="flex gap-2 items-center">
+                  <Input
+                    :model-value="todoListLinks[todoList.todo_list_id]"
+                    readonly
+                    class="flex-1 text-sm cursor-pointer hover:bg-accent/50 transition-colors"
+                    title="Click to open in new tab"
+                    @click="openInNewTab(todoList)"
+                  />
+                  <Button
+                    variant="secondary"
+                    size="icon"
+                    class="shrink-0"
+                    title="Copy link"
+                    @click="handleCopyLink(todoList)"
+                  >
+                    <Copy class="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="icon"
+                    class="shrink-0"
+                    title="Open in new tab"
+                    @click="openInNewTab(todoList)"
+                  >
+                    <ExternalLink class="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             </div>
-          </div>
 
-          <!-- Empty State -->
-          <div v-else class="text-center py-8">
-            <p class="text-muted-foreground">You haven't created any to-do lists yet.</p>
-          </div>
+            <!-- Empty State -->
+            <div v-else class="text-center py-8">
+              <p class="text-muted-foreground">
+                You haven't created any to-do lists yet.
+              </p>
+            </div>
           </ClientOnly>
         </div>
       </CardContent>
@@ -323,13 +352,17 @@ const deleteTodoList = async () => {
         <DialogHeader>
           <DialogTitle>Delete Todo List</DialogTitle>
           <DialogDescription>
-            Are you sure you want to delete "{{ currentTodoList ? handleTodoListName(currentTodoList) : '' }}"? 
+            Are you sure you want to delete "{{ currentTodoList ? handleTodoListName(currentTodoList) : '' }}"?
             This action cannot be undone.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
-          <Button variant="outline" @click="showDeleteDialog = false">Cancel</Button>
-          <Button variant="destructive" @click="deleteTodoList">Delete</Button>
+          <Button variant="outline" @click="showDeleteDialog = false">
+            Cancel
+          </Button>
+          <Button variant="destructive" @click="deleteTodoList">
+            Delete
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

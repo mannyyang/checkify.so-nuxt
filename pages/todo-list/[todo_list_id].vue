@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import type { ToDoBlockObjectResponse } from '@notionhq/client/build/src/api-endpoints';
+import { toast } from 'vue-sonner';
+import { RefreshCw, Settings, ExternalLink, RotateCw } from 'lucide-vue-next';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -7,18 +9,16 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
-import { 
-  Sidebar, 
-  SidebarContent, 
-  SidebarGroup, 
-  SidebarGroupContent, 
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupContent,
   SidebarGroupLabel,
   SidebarHeader,
   SidebarProvider,
   SidebarTrigger
 } from '@/components/ui/sidebar';
-import { toast } from 'vue-sonner';
-import { RefreshCw, Settings, ExternalLink, RotateCw } from 'lucide-vue-next';
 
 interface TodoListData {
   pages: Array<{
@@ -28,6 +28,20 @@ interface TodoListData {
   syncInfo?: {
     syncDatabaseId: string | null;
     lastSyncDate: string | null;
+  };
+  metadata?: {
+    totalPages: number;
+    totalCheckboxes: number;
+    pagesWithCheckboxes: number;
+    extractionComplete: boolean;
+    errors: string[];
+    limits?: {
+      tier: string;
+      maxPages?: number;
+      maxCheckboxesPerPage?: number;
+      pagesLimited: boolean;
+      reachedPageLimit: boolean;
+    };
   };
 }
 
@@ -180,12 +194,12 @@ const syncToNotion = async () => {
       showSyncDialog.value = false;
 
       toast.success('Sync Successful', {
-        description: `Created: ${response.syncResults.created}, Updated: ${response.syncResults.updated}`,
+        description: `Created: ${response.syncResults.created}, Updated: ${response.syncResults.updated}`
       });
     }
   } catch (error: any) {
     toast.error('Sync Failed', {
-      description: error.message || 'Failed to sync to Notion',
+      description: error.message || 'Failed to sync to Notion'
     });
   } finally {
     syncLoading.value = false;
@@ -202,14 +216,14 @@ const formatDate = (date: Date | null) => {
 </script>
 
 <template>
-  <SidebarProvider :defaultOpen="false">
+  <SidebarProvider :default-open="false">
     <div class="flex w-full h-screen">
       <!-- Main Content -->
       <div class="flex-1 flex flex-col">
         <!-- Header Toolbar -->
         <div class="flex items-center justify-between bg-background border-b p-4">
           <span class="text-lg font-bold">My Todos</span>
-          
+
           <div class="flex items-center gap-2">
             <Button
               variant="outline"
@@ -220,7 +234,7 @@ const formatDate = (date: Date | null) => {
               <RefreshCw :class="{ 'animate-spin': pending }" class="w-4 h-4 mr-2" />
               Refresh
             </Button>
-            
+
             <SidebarTrigger>
               <Button variant="outline" size="sm">
                 <Settings class="w-4 h-4" />
@@ -231,67 +245,69 @@ const formatDate = (date: Date | null) => {
 
         <!-- Todo List Content -->
         <div class="flex-1 overflow-auto">
-      <div v-if="pending" class="text-center py-12 text-muted-foreground">
-        Loading todos...
-      </div>
-      <div v-else-if="checkboxList.length === 0" class="text-center py-12 text-muted-foreground">
-        No todos found
-      </div>
-      
-      <div v-else class="space-y-6">
-        <div
-          v-for="item in checkboxList"
-          :key="item.page.id"
-          class="space-y-4"
-        >
-          <div v-if="item.checkboxes.length" class="space-y-3">
-            <h3 class="text-lg font-semibold border-b pb-2">
-              {{ item.page.properties['Name']?.title?.[0]?.plain_text }}
-            </h3>
-            
-            <div class="space-y-2">
-              <div
-                v-for="checkbox in item.checkboxes"
-                :key="checkbox.id"
-                class="flex items-start gap-3 p-2 rounded-lg hover:bg-accent"
-              >
-                <Checkbox
-                  :id="checkbox.id"
-                  :checked="checkbox.to_do.checked"
-                  @update:checked="onTodoUpdate(checkbox, $event)"
-                  class="mt-1 h-5 w-5"
-                />
-                <label :for="checkbox.id" class="flex-1 text-sm leading-relaxed cursor-pointer flex items-start gap-2">
-                  <span>
-                    {{
-                      checkbox.to_do.rich_text.length > 0
-                        ? checkbox.to_do.rich_text[0].plain_text
-                        : ''
-                    }}
-                  </span>
-                  <a
-                    :href="parseBlockLink(checkbox.id, item.page.id)"
-                    target="_blank"
-                    class="text-muted-foreground hover:text-primary inline-flex"
-                    @click.stop
+          <div v-if="pending" class="text-center py-12 text-muted-foreground">
+            Loading todos...
+          </div>
+          <div v-else-if="checkboxList.length === 0" class="text-center py-12 text-muted-foreground">
+            No todos found
+          </div>
+
+          <div v-else class="space-y-6">
+            <div
+              v-for="item in checkboxList"
+              :key="item.page.id"
+              class="space-y-4"
+            >
+              <div v-if="item.checkboxes.length" class="space-y-3">
+                <h3 class="text-lg font-semibold border-b pb-2">
+                  {{ item.page.properties['Name']?.title?.[0]?.plain_text }}
+                </h3>
+
+                <div class="space-y-2">
+                  <div
+                    v-for="checkbox in item.checkboxes"
+                    :key="checkbox.id"
+                    class="flex items-start gap-3 p-2 rounded-lg hover:bg-accent"
                   >
-                    <ExternalLink class="w-4 h-4" />
-                  </a>
-                </label>
+                    <Checkbox
+                      :id="checkbox.id"
+                      :checked="checkbox.to_do.checked"
+                      class="mt-1 h-5 w-5"
+                      @update:checked="onTodoUpdate(checkbox, $event)"
+                    />
+                    <label :for="checkbox.id" class="flex-1 text-sm leading-relaxed cursor-pointer flex items-start gap-2">
+                      <span>
+                        {{
+                          checkbox.to_do.rich_text.length > 0
+                            ? checkbox.to_do.rich_text[0].plain_text
+                            : ''
+                        }}
+                      </span>
+                      <a
+                        :href="parseBlockLink(checkbox.id, item.page.id)"
+                        target="_blank"
+                        class="text-muted-foreground hover:text-primary inline-flex"
+                        @click.stop
+                      >
+                        <ExternalLink class="w-4 h-4" />
+                      </a>
+                    </label>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </div>
         </div>
       </div>
 
       <!-- Right Sidebar -->
       <Sidebar side="right" collapsible="offcanvas">
         <SidebarHeader>
-          <h2 class="text-lg font-semibold">Settings</h2>
+          <h2 class="text-lg font-semibold">
+            Settings
+          </h2>
         </SidebarHeader>
-        
+
         <SidebarContent>
           <div class="space-y-6 p-4">
             <!-- Progress Card -->
@@ -315,6 +331,62 @@ const formatDate = (date: Date | null) => {
               </CardContent>
             </Card>
 
+            <!-- Extraction Info Card -->
+            <Card v-if="data?.metadata">
+              <CardHeader>
+                <CardTitle>Extraction Info</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div class="space-y-2 text-sm">
+                  <div class="flex justify-between">
+                    <span class="text-muted-foreground">Total Pages:</span>
+                    <span class="font-medium">{{ data.metadata.totalPages }}</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-muted-foreground">Total Checkboxes:</span>
+                    <span class="font-medium">{{ data.metadata.totalCheckboxes }}</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-muted-foreground">Pages with Todos:</span>
+                    <span class="font-medium">{{ data.metadata.pagesWithCheckboxes }}</span>
+                  </div>
+                  <div v-if="data.metadata.limits" class="mt-3 pt-3 border-t">
+                    <div class="flex justify-between">
+                      <span class="text-muted-foreground">Tier:</span>
+                      <span class="font-medium capitalize">{{ data.metadata.limits.tier }}</span>
+                    </div>
+                    <div v-if="data.metadata.limits.maxPages" class="flex justify-between">
+                      <span class="text-muted-foreground">Page Limit:</span>
+                      <span class="font-medium">{{ data.metadata.limits.maxPages }}</span>
+                    </div>
+                  </div>
+                  <div v-if="!data.metadata.extractionComplete" class="mt-2 p-2 bg-yellow-50 rounded-md">
+                    <p class="text-xs text-yellow-800">
+                      <template v-if="data.metadata.limits?.reachedPageLimit">
+                        ⚠️ Page limit reached ({{ data.metadata.limits.tier }} tier: {{ data.metadata.limits.maxPages }} pages max)
+                      </template>
+                      <template v-else>
+                        ⚠️ Some data may be missing due to extraction limits
+                      </template>
+                    </p>
+                    <p v-if="data.metadata.limits?.tier === 'free'" class="text-xs text-yellow-700 mt-1">
+                      Upgrade to Pro for up to 100 pages or Enterprise for unlimited access
+                    </p>
+                  </div>
+                  <div v-if="data.metadata.errors.length > 0" class="mt-2 p-2 bg-red-50 rounded-md">
+                    <p class="text-xs text-red-800 mb-1">
+                      Extraction errors:
+                    </p>
+                    <ul class="text-xs text-red-700 list-disc list-inside">
+                      <li v-for="(error, index) in data.metadata.errors" :key="index">
+                        {{ error }}
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
             <Separator />
 
             <!-- Show Checked Toggle -->
@@ -332,7 +404,7 @@ const formatDate = (date: Date | null) => {
             <!-- Notion Sync Section -->
             <div v-if="isNotionSyncEnabled">
               <Separator />
-              
+
               <Card>
                 <CardHeader>
                   <CardTitle>Sync to Notion</CardTitle>
@@ -347,11 +419,11 @@ const formatDate = (date: Date | null) => {
                       <RotateCw :class="{ 'animate-spin': syncLoading }" class="w-4 h-4 mr-2" />
                       Sync to Notion Database
                     </Button>
-                    
+
                     <div v-if="lastSyncDate" class="text-sm text-muted-foreground">
                       Last synced: {{ formatDate(lastSyncDate) }}
                     </div>
-                    
+
                     <div v-if="syncDatabaseId" class="text-sm">
                       <a
                         :href="`https://notion.so/${syncDatabaseId.replace(/-/g, '')}`"
@@ -380,7 +452,7 @@ const formatDate = (date: Date | null) => {
             To create a sync database, please provide the Notion page ID where you want the database to be created.
           </DialogDescription>
         </DialogHeader>
-        
+
         <div class="space-y-4 py-4">
           <div class="space-y-2">
             <label for="pageId" class="text-sm font-medium">Parent Page ID</label>
@@ -394,7 +466,7 @@ const formatDate = (date: Date | null) => {
             </p>
           </div>
         </div>
-        
+
         <DialogFooter>
           <Button
             variant="outline"

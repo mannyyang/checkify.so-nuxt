@@ -12,10 +12,10 @@ definePageMeta({
   <div class="min-h-screen bg-white dark:bg-gray-900">
     <!-- Hero Section -->
     <HeroSection />
-    
+
     <!-- Features Section -->
     <FeaturesSection />
-    
+
     <!-- Footer Section -->
     <FooterSection />
   </div>

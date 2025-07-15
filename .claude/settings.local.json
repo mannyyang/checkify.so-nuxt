@@ -46,7 +46,12 @@
       "mcp__playwright__browser_close",
       "mcp__playwright__browser_type",
       "Bash(say \"I''ve completed searching the codebase for old dependencies. I found references to PrimeVue, FormKit, and UnoCSS in two documentation files, and old PrimeVue theme files in the public directory. The actual source code is clean with no imports of these old dependencies.\")",
-      "Bash(say \"I''ve finished redesigning the Checkify landing page with a modern navigation bar, animated hero section, feature cards, and enhanced footer. The page now matches the Websyte AI style while keeping all the original content.\")"
+      "Bash(say \"I''ve finished redesigning the Checkify landing page with a modern navigation bar, animated hero section, feature cards, and enhanced footer. The page now matches the Websyte AI style while keeping all the original content.\")",
+      "Bash(say \"Fixed the Railway deployment error by removing the unused better-sqlite3 dependency. The package was causing build failures because it requires Python and build tools to compile native bindings, which aren''t available in Railway''s environment. You can now commit these changes and redeploy to Railway.\")",
+      "Bash(say \"Successfully committed and pushed the fix to GitHub. The Railway deployment should now work without the better-sqlite3 build errors.\")",
+      "Bash(say \"I''ve enhanced your Nuxt Content configuration with better markdown support, table of contents, navigation fields, and fixed TypeScript errors. Your docs are already properly structured with frontmatter and can be accessed at /docs paths.\")",
+      "Bash(git restore:*)",
+      "Bash(say:*)"
     ],
     "deny": []
   }

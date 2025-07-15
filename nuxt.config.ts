@@ -1,5 +1,5 @@
-import pkg from './package.json';
 import tailwindcss from '@tailwindcss/vite';
+import pkg from './package.json';
 
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-13',

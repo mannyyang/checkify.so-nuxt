@@ -5,6 +5,11 @@ import type {
 } from '@notionhq/client/build/src/api-endpoints';
 import { createClient } from '@supabase/supabase-js';
 import { consola } from 'consola';
+import {
+  fetchAllDatabasePages,
+  fetchAllChildBlocks,
+  processPagesInBatches
+} from '~/server/utils/notion-pagination';
 
 const supabase = createClient(
   process.env.SUPABASE_URL || '',
@@ -13,12 +18,40 @@ const supabase = createClient(
 
 type CheckboxBlock = ToDoBlockObjectResponse & {};
 
-export default defineEventHandler(async (event) => {
-  const todo_list_id = getRouterParam(event, 'todo_list_id');
+// Define tier limits
+const TIER_LIMITS = {
+  free: {
+    maxPages: 10,
+    maxCheckboxesPerPage: 50
+  },
+  pro: {
+    maxPages: 100,
+    maxCheckboxesPerPage: 200
+  },
+  enterprise: {
+    maxPages: undefined, // unlimited
+    maxCheckboxesPerPage: undefined // unlimited
+  }
+};
 
-  if (!todo_list_id) {
+export default defineEventHandler(async (event) => {
+  const todoListId = getRouterParam(event, 'todo_list_id');
+
+  if (!todoListId) {
     throw new Error('No todo_list_id found');
   }
+
+  // Get user context (this would include subscription data)
+  const user = event.context.user;
+
+  // TODO: Fetch subscription tier from database based on user.id
+  // For now, check query parameter for testing (remove in production)
+  const testTier = getQuery(event).tier as string;
+  const userTier = testTier && ['free', 'pro', 'enterprise'].includes(testTier)
+    ? testTier
+    : 'free'; // Default to free tier
+
+  const tierLimits = TIER_LIMITS[userTier as keyof typeof TIER_LIMITS];
 
   const { data, error } = await supabase
     .from('todo_list')
@@ -27,7 +60,7 @@ export default defineEventHandler(async (event) => {
       notion_sync_database_id,
       last_sync_date
     `)
-    .eq('todo_list_id', todo_list_id);
+    .eq('todo_list_id', todoListId);
 
   if (error) {
     throw error;
@@ -39,53 +72,106 @@ export default defineEventHandler(async (event) => {
 
   const {
     // @ts-ignore
-    notion_database_id: { notion_database_id, access_token }
+    notion_database_id: { notion_database_id: notionDatabaseId, access_token: accessToken }
   } = data[0];
 
-  const notion = new Client({ auth: access_token });
+  const notion = new Client({ auth: accessToken });
 
-  const databasePages = await notion.databases.query({
-    database_id: notion_database_id,
-    page_size: 60
-  });
+  // Track extraction metadata
+  const extractionErrors: string[] = [];
+  let totalCheckboxes = 0;
 
-  const pages = databasePages.results || [];
+  try {
+    // Fetch pages with tier-based limit
+    const { pages, totalPages, wasLimited: pagesLimited } = await fetchAllDatabasePages(
+      notion,
+      notionDatabaseId,
+      tierLimits.maxPages
+    );
 
-  const pagesWithBlocks = await Promise.all(
-    pages.map(async (pageBlock) => {
-      const childrenBlocksResp = await notion.blocks.children.list({
-        block_id: pageBlock.id,
-        page_size: 100
-      });
+    consola.info(`Fetched ${totalPages} pages from database`);
 
-      // consola.log('PAGE', pageBlock);
+    // Process pages in batches to get checkboxes
+    const pagesWithBlocks = await processPagesInBatches(
+      pages,
+      5, // Process 5 pages at a time
+      async (pageBlock) => {
+        try {
+          // Fetch child blocks with tier-based limit
+          const { blocks, totalBlocks, wasLimited: blocksLimited } = await fetchAllChildBlocks(
+            notion,
+            pageBlock.id,
+            tierLimits.maxCheckboxesPerPage
+          );
 
-      const checkboxBlocks = childrenBlocksResp.results.filter((childBlock) => {
-        if (isFullBlock(childBlock)) {
-          return childBlock.type === 'to_do';
+          // Filter for checkbox blocks
+          const checkboxBlocks = blocks.filter((childBlock) => {
+            if (isFullBlock(childBlock)) {
+              return childBlock.type === 'to_do';
+            }
+            return false;
+          }) as CheckboxBlock[];
+
+          totalCheckboxes += checkboxBlocks.length;
+
+          return {
+            page: pageBlock,
+            checkboxes: checkboxBlocks,
+            metadata: {
+              totalBlocks,
+              wasLimited: blocksLimited
+            }
+          };
+        } catch (error) {
+          const errorMsg = `Failed to fetch blocks for page ${pageBlock.id}: ${error}`;
+          consola.error(errorMsg);
+          extractionErrors.push(errorMsg);
+
+          // Return page with empty checkboxes on error
+          return {
+            page: pageBlock,
+            checkboxes: [],
+            metadata: {
+              totalBlocks: 0,
+              wasLimited: false,
+              error: errorMsg
+            }
+          };
         }
-      }) as CheckboxBlock[];
+      }
+    );
 
-      // consola.log('CHECKBOXES', checkboxBlocks);
+    // Filter out pages without checkboxes
+    const pagesWithCheckboxes = pagesWithBlocks.filter((block) => {
+      return block.checkboxes.length > 0;
+    });
 
-      const item = {
-        page: pageBlock as PageObjectResponse,
-        checkboxes: checkboxBlocks
-      };
-
-      return item;
-    })
-  );
-
-  const pagesWithCheckboxes = pagesWithBlocks.filter((block) => {
-    return block.checkboxes.length > 0;
-  });
-
-  return {
-    pages: pagesWithCheckboxes,
-    syncInfo: {
-      syncDatabaseId: data[0].notion_sync_database_id,
-      lastSyncDate: data[0].last_sync_date
-    }
-  };
+    return {
+      pages: pagesWithCheckboxes,
+      syncInfo: {
+        syncDatabaseId: data[0].notion_sync_database_id,
+        lastSyncDate: data[0].last_sync_date
+      },
+      metadata: {
+        totalPages,
+        totalCheckboxes,
+        pagesWithCheckboxes: pagesWithCheckboxes.length,
+        extractionComplete: !pagesLimited && extractionErrors.length === 0,
+        errors: extractionErrors,
+        limits: {
+          tier: userTier,
+          maxPages: tierLimits.maxPages,
+          maxCheckboxesPerPage: tierLimits.maxCheckboxesPerPage,
+          pagesLimited,
+          reachedPageLimit: pagesLimited && tierLimits.maxPages ? totalPages >= tierLimits.maxPages : false
+        }
+      }
+    };
+  } catch (error) {
+    consola.error('Failed to fetch todo list:', error);
+    throw createError({
+      statusCode: 500,
+      statusMessage: `Failed to fetch todo list: ${error}`
+    });
+  }
 });

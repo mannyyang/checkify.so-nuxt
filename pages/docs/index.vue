@@ -4,5 +4,5 @@ await navigateTo('/docs/connect-notion');
 </script>
 
 <template>
-  <div></div>
+  <div />
 </template>

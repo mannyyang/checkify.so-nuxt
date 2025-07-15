@@ -16,10 +16,10 @@ const { data: page } = await useAsyncData(
   <div class="markdown-wrapper">
     <div v-if="page" class="markdown-layout">
       <h1 class="text-3xl font-bold mb-4">
-        <i class="pi pi-fw text-3xl mr-2" :class="`pi-${page.icon}`" v-if="page.icon" />
+        <i v-if="page.icon" class="pi pi-fw text-3xl mr-2" :class="`pi-${page.icon}`" />
         {{ page.title }}
       </h1>
-      <hr class="mb-4" />
+      <hr class="mb-4">
       <ContentRenderer :value="page" class="prose max-w-none" />
     </div>
     <div v-else class="text-center py-8">
