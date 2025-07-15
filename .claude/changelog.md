@@ -2,6 +2,68 @@
 
 All notable changes to Checkify.so are documented here.
 
+## [2025.07.15] - 2025-07-15
+
+### Added
+
+- **Subscription Tiers & Extraction Limits**
+  - Implemented tier-based limits for todo extraction
+  - Free tier: 10 pages max, 50 checkboxes per page
+  - Pro tier: 100 pages max, 200 checkboxes per page  
+  - Enterprise tier: Unlimited pages and checkboxes
+  - Created `useSubscription` composable for tier management
+  - Added tier information display in extraction metadata
+
+- **Full Pagination Support**
+  - Created `server/utils/notion-pagination.ts` with reusable pagination utilities
+  - `fetchAllDatabasePages()` - Paginated database page fetching
+  - `fetchAllChildBlocks()` - Paginated child block fetching
+  - `processPagesInBatches()` - Batch processing for performance
+  - Rate limiting with configurable delays between requests
+  - No more data loss for databases larger than 60 pages
+
+- **Comprehensive Test Suite**
+  - Unit tests for pagination utilities
+  - API endpoint tests with mocking
+  - Integration tests for large dataset scenarios
+  - E2E test scenarios documentation
+  - Test utilities and mock factories
+
+- **UI/UX Improvements**
+  - Added clickable external link buttons to todo list URLs
+  - Made URL input fields clickable to open in new tab
+  - Added hover effects and tooltips for better interaction
+  - Removed info icons for cleaner interface
+  - Updated descriptions to reflect current functionality
+  - Dashboard now redirects to My Todo Lists page
+
+### Changed
+
+- **API Updates**
+  - `/api/todo-list/[todo_list_id]` now respects tier limits
+  - Added metadata response with extraction details
+  - Improved error handling for partial failures
+  - Support for testing tiers via query parameter
+
+- **Frontend Updates**
+  - Todo list page displays extraction metadata
+  - Shows current tier and limits
+  - Warns when limits are reached
+  - Suggests upgrades for free tier users
+
+### Technical Details
+
+- **New Files Created**:
+  - `composables/useSubscription.ts` - Subscription tier management
+  - `server/utils/notion-pagination.ts` - Pagination utilities
+  - Multiple test files for comprehensive coverage
+
+### Known Limitations
+
+- Tier selection currently defaults to free (Stripe integration pending)
+  - Test with `?tier=pro` or `?tier=enterprise` query parameter
+- Rate limiting adds ~100ms delay between API requests
+
 ## [2025.07.14] - 2025-07-14
 
 ### Changed
@@ -130,7 +192,7 @@ All notable changes to Checkify.so are documented here.
 - **Toast Notifications**: Real-time feedback for user actions
 
 ### Technical Stack
-- **Frontend**: Nuxt 3, Vue 3, PrimeVue, UnoCSS
+- **Frontend**: Nuxt 3, Vue 3, shadcn/ui, Tailwind CSS v4
 - **Backend**: Supabase (Auth, Database, Realtime)
 - **Integration**: Notion API v2
 - **Analytics**: PostHog
@@ -147,7 +209,7 @@ All notable changes to Checkify.so are documented here.
 ## Known Issues
 - Webhook delivery can take up to 60 seconds
 - Rate limiting on Notion API (3 requests/second)
-- Maximum 100 pages with 100 checkboxes each per sync
+- Tier limits are enforced at extraction time
 
 ## Upcoming Features
 - Bulk operations for todos

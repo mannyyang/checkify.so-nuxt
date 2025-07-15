@@ -15,6 +15,7 @@ Welcome to the comprehensive documentation for Checkify.so - a powerful todo man
 - **[Database Sync](./features/notion-sync-feature.md)** - Export todos to Notion database
 - **[Webhook Integration](./features/webhook-integration.md)** - Bidirectional sync setup
 - **[PostHog Integration](./features/posthog-integration.md)** - Analytics and feature flags
+- **[Subscription Tiers](./features/subscription-tiers.md)** - Pricing and limits
 
 ### 🔧 Technical Reference
 - **[Architecture](./technical/architecture.md)** - System design and tech stack
@@ -64,7 +65,7 @@ User → Nuxt 3 (SSR) → Supabase Auth → Google OAuth
 
 ## 🚦 Current Status
 
-- **Version**: 2025.07.14
+- **Version**: 2025.07.15
 - **Stage**: Production
 - **Notable Features**:
   - ✅ Notion OAuth integration
@@ -76,6 +77,9 @@ User → Nuxt 3 (SSR) → Supabase Auth → Google OAuth
   - ✅ Modern UI with shadcn/ui components
   - ✅ Responsive design with Tailwind CSS v4
   - ✅ Client-side data fetching for better performance
+  - ✅ Subscription tiers with smart limits
+  - ✅ Full pagination support for large databases
+  - ✅ Comprehensive test coverage
 
 ## 🛠️ Tech Stack
 
@@ -115,4 +119,4 @@ Checkify.so is open source software licensed under the MIT license. See the LICE
 
 ---
 
-*Last updated: July 14, 2025*
+*Last updated: July 15, 2025*

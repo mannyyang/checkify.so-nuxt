@@ -35,6 +35,13 @@ Checkify.so is a powerful todo management tool that bridges Notion's organizatio
 - **Feature Flags**: Control feature rollout dynamically
 - **User Identification**: Automatic user tracking for authenticated sessions
 
+### 💎 Subscription Tiers (NEW)
+- **Free Tier**: 10 pages, 50 checkboxes per page, 3 todo lists
+- **Pro Tier ($9/mo)**: 100 pages, 200 checkboxes per page, unlimited lists
+- **Enterprise Tier ($29/mo)**: Unlimited everything, API access, priority support
+- **Smart Limits**: Clear feedback when limits are reached
+- **Upgrade Prompts**: Contextual suggestions for tier upgrades
+
 ## Recent Updates
 
 ### PostHog Integration (NEW)

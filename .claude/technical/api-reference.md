@@ -144,31 +144,59 @@ Get a specific todo list with all pages and todos.
 **URL Parameters:**
 - `id` (number, required) - Todo list ID
 
+**Query Parameters:**
+- `tier` (string, optional) - Test different subscription tiers (`free`, `pro`, `enterprise`)
+
 **Response:**
 ```json
 {
-  "todo_list_id": 123,
   "pages": [
     {
-      "page_id": 456,
-      "block_text": "Project Alpha",
-      "notion_block_id": "page-uuid",
-      "todos": [
+      "page": {
+        "id": "page-uuid",
+        "properties": {
+          "Name": {
+            "title": [{"plain_text": "Project Alpha"}]
+          }
+        }
+      },
+      "checkboxes": [
         {
-          "todo_id": 789,
-          "block_text": "Complete design",
-          "checked": false,
-          "notion_block_id": "block-uuid"
+          "id": "block-uuid",
+          "type": "to_do",
+          "to_do": {
+            "rich_text": [{"plain_text": "Complete design"}],
+            "checked": false
+          }
         }
       ]
     }
-  ]
+  ],
+  "syncInfo": {
+    "syncDatabaseId": "sync-db-uuid",
+    "lastSyncDate": "2024-01-01T00:00:00.000Z"
+  },
+  "metadata": {
+    "totalPages": 15,
+    "totalCheckboxes": 127,
+    "pagesWithCheckboxes": 12,
+    "extractionComplete": false,
+    "errors": [],
+    "limits": {
+      "tier": "free",
+      "maxPages": 10,
+      "maxCheckboxesPerPage": 50,
+      "pagesLimited": true,
+      "reachedPageLimit": true
+    }
+  }
 }
 ```
 
 **Error Responses:**
 - `401 Unauthorized` - User not authenticated
 - `404 Not Found` - Todo list not found
+- `500 Internal Server Error` - Notion API error
 
 ---
 
