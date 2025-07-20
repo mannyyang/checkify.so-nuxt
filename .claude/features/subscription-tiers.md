@@ -4,17 +4,16 @@ Checkify.so offers flexible pricing tiers to match your todo management needs.
 
 ## Tier Comparison
 
-| Feature | Free | Pro ($9/mo) | Enterprise ($29/mo) |
-|---------|------|-------------|-------------------|
-| **Pages per Database** | 10 | 100 | Unlimited |
-| **Checkboxes per Page** | 50 | 200 | Unlimited |
+| Feature | Free | Pro ($6.99/mo) | Max ($19.99/mo) |
+|---------|------|----------------|------------------|
+| **Pages per Database** | 10 | 100 | 500 |
+| **Checkboxes per Page** | 25 | 200 | 1000 |
 | **Todo Lists** | 3 | Unlimited | Unlimited |
-| **Sync Frequency** | 60 min | 15 min | 5 min |
-| **Notion Database Sync** | ❌ | ✅ | ✅ |
+| **Notion Sync** | ✅ | ✅ | ✅ |
 | **Webhook Support** | ❌ | ✅ | ✅ |
-| **Priority Support** | ❌ | ✅ | ✅ |
-| **API Access** | ❌ | ❌ | ✅ |
-| **Team Features** | ❌ | ❌ | ✅ |
+| **Support** | Basic | Email | Priority Email |
+| **Real-time Sync** | ❌ | ❌ | ✅ |
+| **Custom Integrations** | ❌ | ❌ | ✅ |
 
 ## Free Tier
 
@@ -22,9 +21,9 @@ Perfect for personal use and trying out Checkify.
 
 ### Limits
 - **10 pages** per Notion database
-- **50 checkboxes** per page
+- **25 checkboxes** per page
 - **3 todo lists** maximum
-- **Basic features** only
+- **Basic support** only
 
 ### Use Cases
 - Personal task management
@@ -54,30 +53,29 @@ Ideal for power users and professionals.
 - Content planning
 - Large personal databases
 
-## Enterprise Tier
+## Max Tier
 
-Built for teams and organizations.
+Built for power users and teams who need the highest limits.
 
 ### Limits
-- **Unlimited pages**
-- **Unlimited checkboxes**
+- **500 pages** per Notion database
+- **1000 checkboxes** per page
 - **Unlimited todo lists**
 - **All features included**
 
 ### Additional Features
 - Everything in Pro tier
-- API access for custom integrations
-- Real-time sync (5 minutes)
-- Multiple team members
-- Shared todo lists
-- Custom branding (coming soon)
-- Dedicated support
+- Real-time Notion sync
+- Custom integrations
+- Priority email support
+- Advanced analytics (coming soon)
+- Team collaboration features (coming soon)
 
 ### Use Cases
 - Large teams
-- Multiple departments
-- Custom workflows
-- Enterprise integration
+- Content creators with extensive databases
+- Project managers with complex workflows
+- Organizations with high-volume task management
 
 ## How Limits Work
 
@@ -98,7 +96,7 @@ When fetching todos from Notion:
 During development, you can test different tiers by adding a query parameter:
 - `?tier=free` - Test free tier limits
 - `?tier=pro` - Test pro tier limits
-- `?tier=enterprise` - Test unlimited access
+- `?tier=max` - Test max tier limits
 
 ## Implementation Details
 
@@ -124,30 +122,38 @@ if (isWithinLimits('pages', 50)) {
 const TIER_LIMITS = {
   free: {
     maxPages: 10,
-    maxCheckboxesPerPage: 50
+    maxCheckboxesPerPage: 25,
+    maxTodoLists: 3
   },
   pro: {
     maxPages: 100,
-    maxCheckboxesPerPage: 200
+    maxCheckboxesPerPage: 200,
+    maxTodoLists: undefined // unlimited
   },
-  enterprise: {
-    maxPages: undefined, // unlimited
-    maxCheckboxesPerPage: undefined
+  max: {
+    maxPages: 500,
+    maxCheckboxesPerPage: 1000,
+    maxTodoLists: undefined // unlimited
   }
 };
 ```
 
 ## Future Enhancements
 
+### Recently Implemented
+- ✅ Stripe payment integration
+- ✅ Subscription management portal
+- ✅ Automatic tier enforcement
+- ✅ Webhook-based subscription sync
+
 ### Planned Features
-- Stripe payment integration
 - Usage analytics dashboard
-- Granular permissions
-- Custom limit configurations
-- Team billing management
+- Team collaboration features
+- Advanced filtering options
+- Custom integrations API
 
 ### Pricing Adjustments
-- Annual billing discounts
+- Annual billing discounts (coming soon)
 - Student/nonprofit pricing
-- Volume discounts for enterprise
+- Volume discounts for teams
 - Custom enterprise agreements

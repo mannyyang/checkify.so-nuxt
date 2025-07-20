@@ -1,4 +1,4 @@
-import { TIER_LIMITS, type TierName } from '~/utils/pricing';
+import { TIER_LIMITS, type TierName } from '~/lib/pricing';
 
 export type SubscriptionTier = TierName;
 

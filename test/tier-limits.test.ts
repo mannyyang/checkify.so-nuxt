@@ -1,5 +1,5 @@
 // Quick test to verify tier limits are working
-import { TIER_LIMITS } from '../utils/pricing';
+import { TIER_LIMITS } from '../lib/pricing';
 
 console.log('Testing Tier Limits Configuration\n');
 

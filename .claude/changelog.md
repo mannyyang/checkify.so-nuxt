@@ -2,6 +2,76 @@
 
 All notable changes to Checkify.so are documented here.
 
+## [2025.07.20] - 2025-07-20
+
+### Added
+
+- **Complete Stripe Payment Integration**
+  - Stripe checkout for new subscriptions
+  - Billing portal for subscription management
+  - Automatic subscription syncing on login
+  - Webhook handling for real-time updates
+  - Support for upgrades, downgrades, cancellations, and reactivations
+  
+- **Updated Pricing Structure**
+  - Free tier: $0/month (10 pages, 25 checkboxes per page)
+  - Pro tier: $6.99/month (100 pages, 200 checkboxes per page, webhooks)
+  - Max tier: $19.99/month (500 pages, 1000 checkboxes per page, real-time sync)
+  
+- **Database Updates**
+  - New `user_profiles` table with subscription data
+  - Stripe customer ID and subscription tracking
+  - Automatic profile creation on user signup
+  - Row Level Security for user data protection
+  
+- **New API Endpoints**
+  - `/api/stripe/create-checkout-session` - Initialize new subscriptions
+  - `/api/stripe/create-portal-session` - Access billing management
+  - `/api/stripe/webhook` - Handle Stripe events
+  - `/api/stripe/cancel-subscription` - Cancel subscriptions
+  - `/api/stripe/reactivate-subscription` - Reactivate cancelled subscriptions
+  - `/api/stripe/update-subscription` - Change subscription plans
+  - `/api/subscription` - Get current subscription status
+  
+- **UI Components**
+  - Dedicated pricing page with tier comparison
+  - Billing section in settings page
+  - Subscription status indicators
+  - Upgrade/downgrade flows
+  
+- **Development Features**
+  - Debug endpoints for subscription troubleshooting
+  - Test support for different subscription tiers
+  - Comprehensive error handling and logging
+  
+### Changed
+
+- **Tier Limits Enforcement**
+  - Updated free tier checkbox limit from 50 to 25 per page
+  - Enterprise tier renamed to "Max" tier
+  - Added strict limit enforcement at API level
+  
+- **User Experience**
+  - Auto-sync Stripe customer on login via `useStripeSync` composable
+  - Graceful handling of subscription state mismatches
+  - Clear messaging for tier limits and upgrade prompts
+  
+### Technical Details
+
+- **New Files Created**:
+  - `composables/useStripeSync.ts` - Auto-sync Stripe customers
+  - `server/api/stripe/*` - All Stripe-related endpoints
+  - `server/middleware/ensure-user-profile.ts` - Profile creation middleware
+  - `test/subscription-flow.test.ts` - Subscription flow tests
+  - `lib/pricing.ts` - Centralized pricing configuration
+  
+- **Environment Variables Added**:
+  - `STRIPE_SECRET_KEY` - Stripe API key
+  - `STRIPE_PUBLISHABLE_KEY` - Public Stripe key
+  - `STRIPE_WEBHOOK_SECRET` - Webhook signature validation
+  - `STRIPE_PRICE_ID_PRO` - Pro tier price ID
+  - `STRIPE_PRICE_ID_MAX` - Max tier price ID
+
 ## [2025.07.15] - 2025-07-15
 
 ### Added

@@ -350,6 +350,245 @@ Handle Notion webhook events for bidirectional sync.
 
 ---
 
+### Subscription & Billing
+
+#### `GET /api/subscription`
+Get current subscription status for the authenticated user.
+
+**Response:**
+```json
+{
+  "tier": "pro",
+  "status": "active",
+  "stripe_customer_id": "cus_xxxxx",
+  "stripe_subscription_id": "sub_xxxxx",
+  "current_period_end": "2024-02-01T00:00:00.000Z",
+  "cancel_at_period_end": false
+}
+```
+
+**Error Responses:**
+- `401 Unauthorized` - User not authenticated
+
+---
+
+#### `POST /api/stripe/create-checkout-session`
+Create a Stripe checkout session for new subscriptions.
+
+**Request Body:**
+```json
+{
+  "priceId": "price_xxxxx",
+  "successUrl": "/success",
+  "cancelUrl": "/pricing"
+}
+```
+
+**Response:**
+```json
+{
+  "sessionId": "cs_xxxxx",
+  "url": "https://checkout.stripe.com/..."
+}
+```
+
+**Error Responses:**
+- `400 Bad Request` - Invalid price ID or already subscribed
+- `401 Unauthorized` - User not authenticated
+- `500 Internal Server Error` - Stripe API error
+
+---
+
+#### `POST /api/stripe/create-portal-session`
+Create a Stripe billing portal session for subscription management.
+
+**Request Body:**
+```json
+{
+  "returnUrl": "/settings"
+}
+```
+
+**Response:**
+```json
+{
+  "url": "https://billing.stripe.com/..."
+}
+```
+
+**Error Responses:**
+- `400 Bad Request` - No Stripe customer ID found
+- `401 Unauthorized` - User not authenticated
+- `500 Internal Server Error` - Stripe API error
+
+---
+
+#### `POST /api/stripe/update-subscription`
+Update subscription to a different tier.
+
+**Request Body:**
+```json
+{
+  "newPriceId": "price_xxxxx"
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "subscription": {
+    "id": "sub_xxxxx",
+    "status": "active",
+    "items": [{"price": {"id": "price_xxxxx"}}]
+  }
+}
+```
+
+**Error Responses:**
+- `400 Bad Request` - Invalid price ID or no active subscription
+- `401 Unauthorized` - User not authenticated
+- `500 Internal Server Error` - Stripe API error
+
+---
+
+#### `POST /api/stripe/cancel-subscription`
+Cancel the active subscription at period end.
+
+**Response:**
+```json
+{
+  "success": true,
+  "subscription": {
+    "id": "sub_xxxxx",
+    "cancel_at_period_end": true,
+    "current_period_end": 1234567890
+  }
+}
+```
+
+**Error Responses:**
+- `400 Bad Request` - No active subscription found
+- `401 Unauthorized` - User not authenticated
+- `500 Internal Server Error` - Stripe API error
+
+---
+
+#### `POST /api/stripe/reactivate-subscription`
+Reactivate a cancelled subscription before period end.
+
+**Response:**
+```json
+{
+  "success": true,
+  "subscription": {
+    "id": "sub_xxxxx",
+    "cancel_at_period_end": false,
+    "status": "active"
+  }
+}
+```
+
+**Error Responses:**
+- `400 Bad Request` - No cancelled subscription found
+- `401 Unauthorized` - User not authenticated
+- `500 Internal Server Error` - Stripe API error
+
+---
+
+#### `POST /api/stripe/webhook`
+Handle Stripe webhook events.
+
+**Headers:**
+- `stripe-signature` - Webhook signature for validation
+
+**Request Body:**
+Stripe event object (varies by event type)
+
+**Response:**
+```json
+{
+  "received": true
+}
+```
+
+**Handled Events:**
+- `customer.subscription.created`
+- `customer.subscription.updated`
+- `customer.subscription.deleted`
+- `invoice.payment_failed`
+- `invoice.payment_succeeded`
+
+**Error Responses:**
+- `400 Bad Request` - Invalid signature or payload
+- `500 Internal Server Error` - Processing error
+
+---
+
+#### `POST /api/stripe/sync-customer`
+Sync or create Stripe customer for the user.
+
+**Response:**
+```json
+{
+  "customerId": "cus_xxxxx",
+  "email": "user@example.com"
+}
+```
+
+**Error Responses:**
+- `401 Unauthorized` - User not authenticated
+- `500 Internal Server Error` - Stripe API error
+
+---
+
+#### `POST /api/stripe/sync-subscription`
+Sync subscription status from Stripe to database.
+
+**Response:**
+```json
+{
+  "success": true,
+  "subscription": {
+    "tier": "pro",
+    "status": "active",
+    "current_period_end": "2024-02-01T00:00:00.000Z"
+  }
+}
+```
+
+**Error Responses:**
+- `401 Unauthorized` - User not authenticated
+- `500 Internal Server Error` - Sync error
+
+---
+
+#### `GET /api/stripe/debug-subscription` (Development Only)
+Debug endpoint to check subscription state.
+
+**Response:**
+```json
+{
+  "database": {
+    "tier": "pro",
+    "status": "active",
+    "stripe_subscription_id": "sub_xxxxx"
+  },
+  "stripe": {
+    "id": "sub_xxxxx",
+    "status": "active",
+    "current_period_end": 1234567890,
+    "items": [{"price": {"id": "price_xxxxx"}}]
+  },
+  "inSync": true
+}
+```
+
+**Error Responses:**
+- `401 Unauthorized` - User not authenticated
+
+---
+
 ### Public Endpoints
 
 #### `GET /api/products`
@@ -437,6 +676,22 @@ export default defineEventHandler(async (event) => {
 - Depends on your plan
 - Monitor usage in dashboard
 - Implement caching where possible
+
+## Middleware
+
+### `ensure-user-profile`
+
+Automatically creates a user profile if one doesn't exist. Applied to all authenticated routes.
+
+```typescript
+// Creates user_profiles entry with:
+{
+  user_id: user.id,
+  email: user.email,
+  tier: 'free',
+  status: 'active'
+}
+```
 
 ## Best Practices
 
@@ -529,7 +784,24 @@ Currently, all APIs are unversioned. Future versions will follow:
 
 ## Webhooks
 
-Currently not implemented. Future considerations:
-- Notion webhook support
-- Real-time updates
-- Event-driven architecture
+### Stripe Webhooks
+
+Stripe webhooks are handled at `/api/stripe/webhook`. Configure your webhook endpoint in the Stripe dashboard with the following events:
+
+- `customer.subscription.created`
+- `customer.subscription.updated`
+- `customer.subscription.deleted`
+- `invoice.payment_failed`
+- `invoice.payment_succeeded`
+
+**Security:**
+- Webhook signature validation using `stripe-signature` header
+- Environment variable `STRIPE_WEBHOOK_SECRET` required
+
+### Notion Webhooks
+
+Notion webhooks are handled at `/api/notion-webhook` for bidirectional sync. This enables real-time updates when todos are checked in Notion.
+
+**Security:**
+- Signature validation using `x-notion-signature` header
+- Only available for Pro and Max tiers

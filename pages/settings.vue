@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { CreditCard, Loader2, Check, X } from 'lucide-vue-next';
 import { toast } from 'vue-sonner';
-import { PRICING_TIERS, type TierName } from '~/utils/pricing';
+import { PRICING_TIERS, type TierName } from '~/lib/pricing';
 
 definePageMeta({
   layout: 'default'

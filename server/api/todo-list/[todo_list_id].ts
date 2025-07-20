@@ -10,7 +10,7 @@ import {
   fetchAllChildBlocks,
   processPagesInBatches
 } from '~/server/utils/notion-pagination';
-import { TIER_LIMITS, type TierName } from '~/utils/pricing';
+import { TIER_LIMITS, type TierName } from '~/lib/pricing';
 
 const supabase = createClient(
   process.env.SUPABASE_URL || '',
