@@ -1,5 +1,5 @@
 // Quick test to verify tier limits are working
-import { TIER_LIMITS } from '../server/api/todo-list/[todo_list_id]';
+import { TIER_LIMITS } from '../utils/pricing';
 
 console.log('Testing Tier Limits Configuration\n');
 

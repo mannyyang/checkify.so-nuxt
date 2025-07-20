@@ -1,11 +1,11 @@
-import { stripe, supabaseAdmin } from '~/server/utils/stripe';
+import { stripe, supabaseAdmin, verifyAndSyncStripeCustomer } from '~/server/utils/stripe';
 import { serverSupabaseUser } from '#supabase/server';
 
 export default defineEventHandler(async (event) => {
   // Get authenticated user
   const user = await serverSupabaseUser(event);
 
-  if (!user) {
+  if (!user || !user.email) {
     throw createError({
       statusCode: 401,
       statusMessage: 'Unauthorized'
@@ -27,10 +27,25 @@ export default defineEventHandler(async (event) => {
       });
     }
 
+    // Verify customer exists in Stripe before creating portal session
+    let customerId = profile.stripe_customer_id;
+    try {
+      const customer = await stripe.customers.retrieve(customerId);
+      if (customer.deleted) {
+        throw new Error('Customer was deleted');
+      }
+    } catch (verifyError) {
+      // Customer doesn't exist, sync it
+      console.log(`Customer ${customerId} not found, syncing...`);
+      customerId = await verifyAndSyncStripeCustomer(user.id, user.email);
+    }
+
     // Create portal session
     const session = await stripe.billingPortal.sessions.create({
-      customer: profile.stripe_customer_id,
+      customer: customerId,
       return_url: `${useRuntimeConfig().public.BASE_URL}/settings`
+      // Optional: specify features available in the portal
+      // configuration: 'bpc_1234567890' // Use a specific portal configuration ID
     });
 
     return {

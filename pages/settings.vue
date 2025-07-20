@@ -1,36 +1,108 @@
 <script setup lang="ts">
-import { CreditCard, Loader2 } from 'lucide-vue-next';
+import { CreditCard, Loader2, Check, X } from 'lucide-vue-next';
 import { toast } from 'vue-sonner';
+import { PRICING_TIERS, type TierName } from '~/utils/pricing';
 
 definePageMeta({
-  layout: 'dashboard'
+  layout: 'default'
 });
 
 const user = useSupabaseUser();
-const { data: subscription, refresh: refreshSubscription } = await useFetch('/api/subscription');
+const { data: subscription, refresh: refreshSubscription, pending: subscriptionLoading } = await useFetch('/api/subscription');
 const isLoadingPortal = ref(false);
+const isRefreshing = ref(false);
+const isUpgrading = ref(false);
+const showDebug = ref(false);
+
+// Get runtime config for Stripe price IDs
+const config = useRuntimeConfig();
+
+// Use shared pricing tiers with price IDs
+const tiers = PRICING_TIERS.map(tier => ({
+  ...tier,
+  priceId: tier.id === 'pro'
+    ? config.public.stripePriceIdPro
+    : tier.id === 'max'
+      ? config.public.stripePriceIdMax
+      : undefined
+}));
+
+const currentTier = computed(() => subscription.value?.tier || 'free');
+const hasActiveSubscription = computed(() =>
+  subscription.value?.status === 'active' &&
+  subscription.value?.tier !== 'free'
+);
+
+// Manual refresh function
+async function manualRefresh () {
+  isRefreshing.value = true;
+  try {
+    // Sync from Stripe first
+    await $fetch('/api/stripe/sync-subscription', { method: 'POST' });
+    await refreshSubscription();
+    await refreshNuxtData();
+    toast.success('Subscription data refreshed');
+  } catch (error) {
+    toast.error('Failed to refresh subscription data');
+  } finally {
+    isRefreshing.value = false;
+  }
+}
 
 // Check for success from Stripe checkout
-onMounted(() => {
+onMounted(async () => {
   const route = useRoute();
   if (route.query.success === 'true') {
-    toast.success(`You've been upgraded to the ${route.query.tier} plan!`);
-    // Clear query params
-    navigateTo('/settings', { replace: true });
-    // Refresh subscription data
-    refreshSubscription();
+    const targetTier = route.query.tier as string;
+    toast.success(`Processing your upgrade to the ${targetTier} plan...`);
+
+    // Poll for subscription update with retry logic
+    let retries = 0;
+    const maxRetries = 10;
+    const retryDelay = 1500; // 1.5 seconds between retries
+
+    const checkSubscriptionUpdate = async () => {
+      // Try to sync from Stripe first
+      if (retries > 2) {
+        try {
+          await $fetch('/api/stripe/sync-subscription', { method: 'POST' });
+        } catch (error) {
+          // Failed to sync subscription
+        }
+      }
+
+      await refreshSubscription();
+      await refreshNuxtData();
+
+      // Check if subscription was updated
+      if (subscription.value?.tier === targetTier) {
+        toast.success(`Successfully upgraded to ${targetTier} plan!`);
+        // Clear query params
+        navigateTo('/settings', { replace: true });
+      } else if (retries < maxRetries) {
+        retries++;
+        setTimeout(checkSubscriptionUpdate, retryDelay);
+      } else {
+        toast.error('Subscription update is taking longer than expected. Please refresh the page in a moment.');
+        // Clear query params anyway
+        navigateTo('/settings', { replace: true });
+      }
+    };
+
+    // Start checking after initial delay for webhook
+    setTimeout(checkSubscriptionUpdate, 2000);
   }
 });
 
 async function openBillingPortal () {
   if (!subscription.value?.hasStripeCustomer) {
-    navigateTo('/pricing');
+    toast.error('No billing information found. Please upgrade to a paid plan first.');
     return;
   }
 
   isLoadingPortal.value = true;
   try {
-    const { data } = await $fetch('/api/stripe/create-portal-session', {
+    const data = await $fetch('/api/stripe/create-portal-session', {
       method: 'POST'
     });
 
@@ -38,7 +110,6 @@ async function openBillingPortal () {
       window.location.href = data.url;
     }
   } catch (error) {
-    console.error('Error opening billing portal:', error);
     toast.error('Failed to open billing portal. Please try again.');
   } finally {
     isLoadingPortal.value = false;
@@ -56,6 +127,115 @@ const tierColors = {
   pro: 'bg-blue-100 text-blue-800',
   max: 'bg-purple-100 text-purple-800'
 };
+
+// Handle plan upgrade/change
+async function handleUpgrade (tier: string, priceId?: string) {
+  if (!priceId || tier === 'free' || tier === currentTier.value) {
+    return;
+  }
+
+  isUpgrading.value = true;
+  try {
+    // Check if user has an active subscription
+    if (hasActiveSubscription.value) {
+      // Use update endpoint for existing subscriptions
+      const data = await $fetch('/api/stripe/update-subscription', {
+        method: 'POST',
+        body: {
+          priceId,
+          tier
+        }
+      });
+
+      if (data?.success) {
+        toast.success('Your subscription is being updated. You will receive an email confirmation shortly.');
+        // Refresh the subscription data
+        await refreshSubscription();
+        await refreshNuxtData();
+      }
+    } else {
+      // Use create checkout session for new subscriptions
+      const data = await $fetch('/api/stripe/create-checkout-session', {
+        method: 'POST',
+        body: {
+          priceId,
+          tier
+        }
+      });
+
+      if (data?.url) {
+        window.location.href = data.url;
+      } else {
+        toast.error('Invalid response from server');
+      }
+    }
+  } catch (error: any) {
+    const errorMessage = error.data?.statusMessage || 'Failed to process subscription. Please try again.';
+    toast.error(errorMessage);
+  } finally {
+    isUpgrading.value = false;
+  }
+}
+
+// Handle subscription cancellation
+async function handleCancelSubscription () {
+  const confirmed = confirm('Are you sure you want to cancel your subscription? You will keep access until the end of your current billing period.');
+
+  if (!confirmed) {
+    return;
+  }
+
+  isUpgrading.value = true;
+  try {
+    const result = await $fetch('/api/stripe/cancel-subscription', {
+      method: 'POST'
+    });
+
+    if (result.success) {
+      toast.success(result.message);
+      // Refresh subscription data
+      await refreshSubscription();
+      await refreshNuxtData();
+    }
+  } catch (error: any) {
+    const errorMessage = error.data?.statusMessage || 'Failed to cancel subscription. Please try again.';
+    toast.error(errorMessage);
+  } finally {
+    isUpgrading.value = false;
+  }
+}
+
+// Handle subscription reactivation
+async function handleReactivateSubscription () {
+  isUpgrading.value = true;
+  try {
+    const result = await $fetch('/api/stripe/reactivate-subscription', {
+      method: 'POST'
+    });
+
+    if (result.success) {
+      toast.success(result.message);
+      // Refresh subscription data
+      await refreshSubscription();
+      await refreshNuxtData();
+    }
+  } catch (error: any) {
+    const errorMessage = error.data?.statusMessage || 'Failed to reactivate subscription. Please try again.';
+    toast.error(errorMessage);
+  } finally {
+    isUpgrading.value = false;
+  }
+}
+
+// Add debug data fetch function
+async function fetchDebugData () {
+  try {
+    const debugData = await $fetch('/api/stripe/debug-subscription');
+    alert(JSON.stringify(debugData, null, 2));
+  } catch (error) {
+    toast.error('Failed to fetch debug data');
+  }
+}
 </script>
 
 <template>
@@ -94,14 +274,25 @@ const tierColors = {
           <h2 class="text-xl font-semibold">
             Billing & Subscription
           </h2>
-          <span
-            :class="[
-              'px-3 py-1 rounded-full text-sm font-medium',
-              tierColors[subscription?.tier || 'free']
-            ]"
-          >
-            {{ tierLabels[subscription?.tier || 'free'] }} Plan
-          </span>
+          <div class="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="ghost"
+              :disabled="isRefreshing"
+              @click="manualRefresh"
+            >
+              <Loader2 v-if="isRefreshing" class="w-4 h-4 animate-spin" />
+              <span v-else>↻</span>
+            </Button>
+            <span
+              :class="[
+                'px-3 py-1 rounded-full text-sm font-medium',
+                tierColors[subscription?.tier || 'free']
+              ]"
+            >
+              {{ tierLabels[subscription?.tier || 'free'] }} Plan
+            </span>
+          </div>
         </div>
 
         <div class="space-y-4">
@@ -109,20 +300,23 @@ const tierColors = {
             <label class="text-sm text-gray-600">Current Plan</label>
             <p class="font-medium">
               {{ tierLabels[subscription?.tier || 'free'] }}
-              <template v-if="subscription?.tier === 'free'">
-                - $0/month
-              </template>
-              <template v-else-if="subscription?.tier === 'pro'">
-                - $9/month
-              </template>
-              <template v-else-if="subscription?.tier === 'max'">
-                - $29/month
-              </template>
+              <span v-if="subscription?.tier === 'free'">- $0/month</span>
+              <span v-else-if="subscription?.tier === 'pro'">- $6.99/month</span>
+              <span v-else-if="subscription?.tier === 'max'">- $19.99/month</span>
             </p>
           </div>
 
           <div v-if="subscription?.expiresAt" class="text-sm text-amber-600">
             Your subscription will expire on {{ new Date(subscription.expiresAt).toLocaleDateString() }}
+            <Button
+              v-if="subscription?.status === 'canceled'"
+              size="sm"
+              variant="link"
+              class="ml-2 text-amber-600 hover:text-amber-700"
+              @click="handleReactivateSubscription"
+            >
+              Reactivate
+            </Button>
           </div>
 
           <div class="flex gap-3 pt-2">
@@ -137,20 +331,159 @@ const tierColors = {
               Manage Billing
             </Button>
             <Button
-              v-if="subscription?.tier === 'free'"
-              variant="default"
-              @click="navigateTo('/pricing')"
+              v-if="hasActiveSubscription && subscription?.status !== 'canceled'"
+              :disabled="isUpgrading"
+              variant="outline"
+              class="text-red-600 hover:text-red-700"
+              @click="handleCancelSubscription"
             >
-              Upgrade Plan
+              Cancel Subscription
             </Button>
           </div>
 
-          <p v-if="subscription?.hasStripeCustomer" class="text-sm text-gray-600">
+          <p v-if="subscription?.hasStripeCustomer" class="text-sm text-gray-600 mb-6">
             Manage your subscription, update payment methods, and download invoices.
           </p>
-          <p v-else class="text-sm text-gray-600">
-            Upgrade to a paid plan to unlock more features and remove limits.
+        </div>
+
+        <!-- Pricing Tiers -->
+        <div class="border-t pt-6">
+          <h3 class="text-lg font-semibold mb-4">
+            Available Plans
+          </h3>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div
+              v-for="tier in tiers"
+              :key="tier.id"
+              :class="[
+                'rounded-lg border p-6',
+                tier.id === currentTier ? 'border-indigo-600 bg-indigo-50' : 'border-gray-200 bg-white',
+                tier.highlighted && tier.id !== currentTier ? 'ring-2 ring-indigo-600' : ''
+              ]"
+            >
+              <!-- Tier Header -->
+              <div class="mb-4">
+                <h4 class="text-lg font-bold text-gray-900">
+                  {{ tier.name }}
+                </h4>
+                <p class="text-sm text-gray-600">
+                  {{ tier.description }}
+                </p>
+                <p class="mt-2">
+                  <span class="text-2xl font-bold text-gray-900">{{ tier.price }}</span>
+                  <span v-if="tier.price !== '$0'" class="text-sm text-gray-600">/month</span>
+                </p>
+              </div>
+
+              <!-- Features (compact) -->
+              <ul class="space-y-2 mb-4">
+                <li v-for="feature in tier.features.slice(0, 4)" :key="feature.text" class="flex items-start">
+                  <Component
+                    :is="feature.included ? Check : X"
+                    :class="[
+                      'h-4 w-4 flex-shrink-0 mt-0.5',
+                      feature.included ? 'text-green-500' : 'text-gray-300'
+                    ]"
+                  />
+                  <span class="ml-2 text-sm text-gray-700">{{ feature.text }}</span>
+                </li>
+              </ul>
+
+              <!-- CTA Button -->
+              <div>
+                <Button
+                  v-if="subscriptionLoading"
+                  class="w-full"
+                  size="sm"
+                  variant="outline"
+                  disabled
+                >
+                  Loading...
+                </Button>
+                <Button
+                  v-else-if="tier.id === currentTier"
+                  class="w-full"
+                  size="sm"
+                  variant="outline"
+                  disabled
+                >
+                  Current Plan
+                </Button>
+                <Button
+                  v-else-if="tier.id === 'free' && hasActiveSubscription"
+                  class="w-full"
+                  size="sm"
+                  variant="outline"
+                  @click="handleCancelSubscription"
+                >
+                  Cancel Subscription
+                </Button>
+                <Button
+                  v-else-if="tier.id === 'free' && !hasActiveSubscription"
+                  class="w-full"
+                  size="sm"
+                  variant="outline"
+                  disabled
+                >
+                  Current Plan
+                </Button>
+                <Button
+                  v-else
+                  class="w-full"
+                  size="sm"
+                  :variant="tier.highlighted ? 'default' : 'outline'"
+                  :disabled="isUpgrading || subscriptionLoading"
+                  @click="handleUpgrade(tier.id, tier.priceId)"
+                >
+                  <template v-if="isUpgrading">
+                    <Loader2 class="w-4 h-4 animate-spin" />
+                  </template>
+                  <template v-else-if="hasActiveSubscription && tier.id !== 'free'">
+                    Switch to {{ tier.name }}
+                  </template>
+                  <template v-else>
+                    Upgrade to {{ tier.name }}
+                  </template>
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          <p class="text-xs text-gray-500 mt-4 text-center">
+            <a href="/pricing" class="underline">View full feature comparison</a>
           </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Debug Section (hidden by default) -->
+    <div class="mt-6 text-center">
+      <button
+        class="text-xs text-gray-500 hover:text-gray-700"
+        @click="showDebug = !showDebug"
+      >
+        {{ showDebug ? 'Hide' : 'Show' }} Debug Info
+      </button>
+    </div>
+
+    <div v-if="showDebug" class="bg-gray-100 rounded-lg border shadow-sm mt-4 p-4">
+      <h3 class="font-semibold mb-2">
+        Debug Information
+      </h3>
+      <div class="space-y-2 text-sm font-mono">
+        <div>User ID: {{ user?.id }}</div>
+        <div>Email: {{ user?.email }}</div>
+        <div>Subscription Tier: {{ subscription?.tier }}</div>
+        <div>Subscription Status: {{ subscription?.status }}</div>
+        <div>Has Stripe Customer: {{ subscription?.hasStripeCustomer }}</div>
+        <div>
+          <Button
+            size="sm"
+            variant="outline"
+            @click="fetchDebugData"
+          >
+            Fetch Stripe Debug Data
+          </Button>
         </div>
       </div>
     </div>

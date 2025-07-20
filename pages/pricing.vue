@@ -1,101 +1,108 @@
 <script setup lang="ts">
 import { Check, X } from 'lucide-vue-next';
 import { toast } from 'vue-sonner';
+import { PRICING_TIERS, type TierName } from '~/utils/pricing';
 
 definePageMeta({
-  layout: 'marketing'
+  layout: 'public'
 });
 
-// Fetch current subscription
-const { data: subscription } = await useFetch('/api/subscription');
+// Check if user is authenticated
+const user = useSupabaseUser();
+
+// Fetch current subscription only if authenticated
+const { data: subscription, pending: subscriptionLoading } = await useFetch('/api/subscription', {
+  // Only fetch if user is authenticated
+  immediate: !!user.value,
+  watch: [user]
+});
 
 const isLoading = ref(false);
 const currentTier = computed(() => subscription.value?.tier || 'free');
+const hasActiveSubscription = computed(() =>
+  subscription.value?.status === 'active' &&
+  subscription.value?.tier !== 'free'
+);
 
 // Get runtime config for Stripe price IDs
 const config = useRuntimeConfig();
 
-const tiers = [
-  {
-    name: 'Free',
-    id: 'free',
-    price: '$0',
-    description: 'Perfect for personal use',
-    features: [
-      { text: '10 Notion pages', included: true },
-      { text: '50 checkboxes per page', included: true },
-      { text: '3 todo lists', included: true },
-      { text: 'Basic support', included: true },
-      { text: 'Notion sync', included: false },
-      { text: 'Webhooks', included: false },
-      { text: 'Priority support', included: false },
-      { text: 'API access', included: false }
-    ],
-    cta: 'Current Plan',
-    disabled: true
-  },
-  {
-    name: 'Pro',
-    id: 'pro',
-    price: '$9',
-    priceId: config.public.stripePriceIdPro,
-    description: 'For power users',
-    features: [
-      { text: '100 Notion pages', included: true },
-      { text: '200 checkboxes per page', included: true },
-      { text: 'Unlimited todo lists', included: true },
-      { text: 'Email support', included: true },
-      { text: 'Notion sync', included: true },
-      { text: 'Webhooks', included: true },
-      { text: 'Priority support', included: true },
-      { text: 'API access', included: false }
-    ],
-    cta: 'Upgrade to Pro',
-    highlighted: true
-  },
-  {
-    name: 'Max',
-    id: 'max',
-    price: '$29',
-    priceId: config.public.stripePriceIdMax,
-    description: 'For teams and enterprises',
-    features: [
-      { text: 'Unlimited Notion pages', included: true },
-      { text: 'Unlimited checkboxes', included: true },
-      { text: 'Unlimited todo lists', included: true },
-      { text: 'Priority email support', included: true },
-      { text: 'Notion sync', included: true },
-      { text: 'Webhooks', included: true },
-      { text: 'Priority support', included: true },
-      { text: 'API access', included: true }
-    ],
-    cta: 'Upgrade to Max'
-  }
-];
+// Add price IDs to tiers based on runtime config
+const tiers = PRICING_TIERS.map(tier => ({
+  ...tier,
+  priceId: tier.id === 'pro'
+    ? config.public.stripePriceIdPro
+    : tier.id === 'max'
+      ? config.public.stripePriceIdMax
+      : undefined,
+  disabled: tier.id === 'free'
+}));
 
 async function handleUpgrade (tier: string, priceId?: string) {
-  if (!priceId || tier === 'free') { return; }
+  if (!priceId || tier === 'free') {
+    return;
+  }
+
+  // Check if user is authenticated
+  if (!user.value) {
+    // Redirect to login page with return URL
+    await navigateTo('/login?redirect=/pricing');
+    return;
+  }
+
+  // Prevent action if subscription data is still loading
+  if (subscriptionLoading.value) {
+    toast.error('Please wait while we load your subscription data');
+    return;
+  }
 
   isLoading.value = true;
   try {
-    const { data } = await $fetch('/api/stripe/create-checkout-session', {
-      method: 'POST',
-      body: {
-        priceId,
-        tier
-      }
-    });
+    // Check if user has an active subscription
+    if (hasActiveSubscription.value) {
+      // Use update endpoint for existing subscriptions
+      const data = await $fetch('/api/stripe/update-subscription', {
+        method: 'POST',
+        body: {
+          priceId,
+          tier
+        }
+      });
 
-    if (data?.url) {
-      window.location.href = data.url;
+      if (data?.success) {
+        toast.success('Your subscription is being updated. You will receive an email confirmation shortly.');
+        // Refresh the subscription data
+        await refresh();
+      }
+    } else {
+      // Use create checkout session for new subscriptions
+      const data = await $fetch('/api/stripe/create-checkout-session', {
+        method: 'POST',
+        body: {
+          priceId,
+          tier
+        }
+      });
+
+      if (data?.url) {
+        window.location.href = data.url;
+      } else {
+        toast.error('Invalid response from server');
+      }
     }
-  } catch (error) {
-    console.error('Error creating checkout session:', error);
-    toast.error('Failed to start checkout. Please try again.');
+  } catch (error: any) {
+    // Show the error message from the server if available
+    const errorMessage = error.data?.statusMessage || 'Failed to process subscription. Please try again.';
+    toast.error(errorMessage);
   } finally {
     isLoading.value = false;
   }
 }
+
+// Add refresh function to reload subscription data
+const refresh = async () => {
+  await refreshNuxtData('subscription');
+};
 </script>
 
 <template>
@@ -154,7 +161,15 @@ async function handleUpgrade (tier: string, priceId?: string) {
           <!-- CTA Button -->
           <div class="mt-8">
             <Button
-              v-if="tier.id === currentTier"
+              v-if="subscriptionLoading"
+              class="w-full"
+              variant="outline"
+              disabled
+            >
+              Loading...
+            </Button>
+            <Button
+              v-else-if="tier.id === currentTier"
               class="w-full"
               variant="outline"
               disabled
@@ -162,7 +177,15 @@ async function handleUpgrade (tier: string, priceId?: string) {
               Current Plan
             </Button>
             <Button
-              v-else-if="tier.id === 'free'"
+              v-else-if="tier.id === 'free' && hasActiveSubscription"
+              class="w-full"
+              variant="outline"
+              @click="() => navigateTo('/settings')"
+            >
+              Manage Subscription
+            </Button>
+            <Button
+              v-else-if="tier.id === 'free' && !hasActiveSubscription"
               class="w-full"
               variant="outline"
               disabled
@@ -173,10 +196,18 @@ async function handleUpgrade (tier: string, priceId?: string) {
               v-else
               class="w-full"
               :variant="tier.highlighted ? 'default' : 'outline'"
-              :disabled="isLoading"
+              :disabled="isLoading || subscriptionLoading"
               @click="handleUpgrade(tier.id, tier.priceId)"
             >
-              {{ isLoading ? 'Loading...' : tier.cta }}
+              <template v-if="isLoading">
+                Loading...
+              </template>
+              <template v-else-if="hasActiveSubscription && tier.id !== 'free'">
+                Switch to {{ tier.name }}
+              </template>
+              <template v-else>
+                {{ tier.cta }}
+              </template>
             </Button>
           </div>
 

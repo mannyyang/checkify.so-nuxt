@@ -10,6 +10,7 @@ import {
   fetchAllChildBlocks,
   processPagesInBatches
 } from '~/server/utils/notion-pagination';
+import { TIER_LIMITS, type TierName } from '~/utils/pricing';
 
 const supabase = createClient(
   process.env.SUPABASE_URL || '',
@@ -17,22 +18,6 @@ const supabase = createClient(
 );
 
 type CheckboxBlock = ToDoBlockObjectResponse & {};
-
-// Define tier limits
-const TIER_LIMITS = {
-  free: {
-    maxPages: 10,
-    maxCheckboxesPerPage: 50
-  },
-  pro: {
-    maxPages: 100,
-    maxCheckboxesPerPage: 200
-  },
-  max: {
-    maxPages: undefined, // unlimited
-    maxCheckboxesPerPage: undefined // unlimited
-  }
-};
 
 export default defineEventHandler(async (event) => {
   const todoListId = getRouterParam(event, 'todo_list_id');
@@ -45,7 +30,7 @@ export default defineEventHandler(async (event) => {
   const user = event.context.user;
 
   // Fetch user's subscription tier from database
-  let userTier: keyof typeof TIER_LIMITS = 'free';
+  let userTier: TierName = 'free';
 
   if (user?.id) {
     const { data: profile } = await supabase
@@ -55,17 +40,17 @@ export default defineEventHandler(async (event) => {
       .single();
 
     if (profile?.subscription_tier && ['free', 'pro', 'max'].includes(profile.subscription_tier)) {
-      userTier = profile.subscription_tier as keyof typeof TIER_LIMITS;
+      userTier = profile.subscription_tier as TierName;
     }
   }
 
   // Allow tier override for testing (remove in production)
   const testTier = getQuery(event).tier as string;
   if (testTier && ['free', 'pro', 'max'].includes(testTier)) {
-    userTier = testTier as keyof typeof TIER_LIMITS;
+    userTier = testTier as TierName;
   }
 
-  const tierLimits = TIER_LIMITS[userTier as keyof typeof TIER_LIMITS];
+  const tierLimits = TIER_LIMITS[userTier];
 
   const { data, error } = await supabase
     .from('todo_list')

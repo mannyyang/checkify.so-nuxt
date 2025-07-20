@@ -1,4 +1,4 @@
-import { stripe, getOrCreateStripeCustomer } from '~/server/utils/stripe';
+import { stripe, getOrCreateStripeCustomer, supabaseAdmin } from '~/server/utils/stripe';
 import { serverSupabaseUser } from '#supabase/server';
 
 export default defineEventHandler(async (event) => {
@@ -26,7 +26,52 @@ export default defineEventHandler(async (event) => {
     // Get or create Stripe customer
     const customerId = await getOrCreateStripeCustomer(user.id, user.email);
 
-    // Create checkout session
+    // Check if user already has an active subscription
+    const { data: profile } = await supabaseAdmin
+      .from('user_profiles')
+      .select('subscription_tier, subscription_status, stripe_customer_id')
+      .eq('user_id', user.id)
+      .single();
+
+    // Check if user already has an active subscription
+    if (profile && profile.subscription_status === 'active' && profile.subscription_tier !== 'free') {
+      // User already has an active subscription
+      if (profile.subscription_tier === tier) {
+        throw createError({
+          statusCode: 400,
+          statusMessage: `You already have an active ${tier} subscription`
+        });
+      }
+
+      // If trying to subscribe to a different tier, they should use the update endpoint
+      throw createError({
+        statusCode: 400,
+        statusMessage: 'You already have an active subscription. Please use the billing portal to change your plan.'
+      });
+    }
+
+    // Check if there are any existing subscriptions for this customer
+    const existingSubscriptions = await stripe.subscriptions.list({
+      customer: customerId,
+      status: 'active',
+      limit: 1
+    });
+
+    if (existingSubscriptions.data.length > 0) {
+      // Customer has active subscriptions in Stripe that we don't know about
+      // This is a data inconsistency that should be resolved
+      console.error('Data inconsistency: Customer has active Stripe subscription but not in database', {
+        customerId,
+        userId: user.id
+      });
+
+      throw createError({
+        statusCode: 400,
+        statusMessage: 'You already have an active subscription. Please contact support if you believe this is an error.'
+      });
+    }
+
+    // Create checkout session for new subscription
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       payment_method_types: ['card'],
@@ -49,6 +94,12 @@ export default defineEventHandler(async (event) => {
     };
   } catch (error: any) {
     console.error('Error creating checkout session:', error);
+
+    // Re-throw if it's already a createError
+    if (error.statusCode) {
+      throw error;
+    }
+
     throw createError({
       statusCode: 500,
       statusMessage: error.message || 'Failed to create checkout session'

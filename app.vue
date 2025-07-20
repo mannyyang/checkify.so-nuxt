@@ -1,9 +1,11 @@
 <script setup>
 import { onMounted } from 'vue';
 import { Toaster } from '@/components/ui/sonner';
+import 'vue-sonner/style.css';
 
 const user = useSupabaseUser();
 const posthog = usePostHog();
+const { syncStripeCustomer } = useStripeSync();
 
 onMounted(() => {
   if (user.value) {
@@ -15,7 +17,6 @@ onMounted(() => {
   // Wait for feature flags to load
   posthog.onFeatureFlags(() => {
     const isNotionSyncEnabled = posthog.isFeatureEnabled('notion-database-sync');
-    console.log('Notion Database Sync feature flag:', isNotionSyncEnabled);
   });
 });
 

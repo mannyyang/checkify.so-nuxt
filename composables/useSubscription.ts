@@ -1,49 +1,41 @@
-export type SubscriptionTier = 'free' | 'pro' | 'max';
+import { TIER_LIMITS, type TierName } from '~/utils/pricing';
+
+export type SubscriptionTier = TierName;
 
 export interface SubscriptionLimits {
-  maxPages: number | undefined;
-  maxCheckboxesPerPage: number | undefined;
+  maxPages: number;
+  maxCheckboxesPerPage: number;
   maxTodoLists: number;
   features: {
     notionSync: boolean;
     webhooks: boolean;
     prioritySupport: boolean;
-    apiAccess: boolean;
   };
 }
 
 const SUBSCRIPTION_TIERS: Record<SubscriptionTier, SubscriptionLimits> = {
   free: {
-    maxPages: 10,
-    maxCheckboxesPerPage: 50,
-    maxTodoLists: 3,
+    ...TIER_LIMITS.free,
     features: {
-      notionSync: false,
+      notionSync: true,
       webhooks: false,
-      prioritySupport: false,
-      apiAccess: false
+      prioritySupport: false
     }
   },
   pro: {
-    maxPages: 100,
-    maxCheckboxesPerPage: 200,
-    maxTodoLists: -1, // unlimited
+    ...TIER_LIMITS.pro,
     features: {
       notionSync: true,
       webhooks: true,
-      prioritySupport: true,
-      apiAccess: false
+      prioritySupport: true
     }
   },
   max: {
-    maxPages: undefined, // unlimited
-    maxCheckboxesPerPage: undefined, // unlimited
-    maxTodoLists: -1, // unlimited
+    ...TIER_LIMITS.max,
     features: {
       notionSync: true,
       webhooks: true,
-      prioritySupport: true,
-      apiAccess: true
+      prioritySupport: true
     }
   }
 };
@@ -64,9 +56,9 @@ export const useSubscription = () => {
   const isWithinLimits = (resource: 'pages' | 'checkboxes' | 'todoLists', count: number) => {
     switch (resource) {
       case 'pages':
-        return limits.value.maxPages === undefined || count <= limits.value.maxPages;
+        return count <= limits.value.maxPages;
       case 'checkboxes':
-        return limits.value.maxCheckboxesPerPage === undefined || count <= limits.value.maxCheckboxesPerPage;
+        return count <= limits.value.maxCheckboxesPerPage;
       case 'todoLists':
         return limits.value.maxTodoLists === -1 || count <= limits.value.maxTodoLists;
       default:

@@ -16,11 +16,16 @@ async function updateUserSubscription (customerId: string, subscription: Stripe.
   // Determine tier from price ID
   let tier: 'free' | 'pro' | 'max' = 'free';
   const priceId = subscription.items.data[0]?.price.id;
-  const config = useRuntimeConfig();
 
-  if (priceId === config.public.stripePriceIdPro) {
+  // Get price IDs from environment variables directly since runtime config might not work in webhook context
+  const stripePriceIdPro = process.env.STRIPE_PRICE_ID_PRO;
+  const stripePriceIdMax = process.env.STRIPE_PRICE_ID_MAX;
+
+  consola.info(`Checking price ID: ${priceId} against Pro: ${stripePriceIdPro}, Max: ${stripePriceIdMax}`);
+
+  if (priceId === stripePriceIdPro) {
     tier = 'pro';
-  } else if (priceId === config.public.stripePriceIdMax) {
+  } else if (priceId === stripePriceIdMax) {
     tier = 'max';
   }
 
@@ -55,10 +60,15 @@ async function updateUserSubscription (customerId: string, subscription: Stripe.
     updateData.subscription_expires_at = null;
   }
 
-  await supabaseAdmin
+  const { error } = await supabaseAdmin
     .from('user_profiles')
     .update(updateData)
     .eq('user_id', userId);
+
+  if (error) {
+    consola.error(`Failed to update subscription for user ${userId}:`, error);
+    throw error;
+  }
 
   consola.info(`Updated subscription for user ${userId}: ${tier} (${status})`);
 }
