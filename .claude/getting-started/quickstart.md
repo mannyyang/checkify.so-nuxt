@@ -52,9 +52,9 @@ SUPABASE_SERVICE_KEY=your-service-key
 # App
 BASE_URL=http://localhost:3000
 
-# Notion OAuth (optional for local dev)
-NOTION_CLIENT_ID=your-notion-client-id
-NOTION_CLIENT_SECRET=your-notion-client-secret
+# Notion OAuth (required for Notion integration)
+NOTION_OAUTH_CLIENT_ID=your-notion-oauth-client-id
+NOTION_OAUTH_CLIENT_SECRET=your-notion-oauth-client-secret
 
 # Stripe (required for subscription features)
 STRIPE_SECRET_KEY=sk_test_xxxxx
@@ -74,14 +74,47 @@ STRIPE_PRICE_ID_MAX=price_xxxxx
 
 ### 6. Set Up Stripe (Required for Subscriptions)
 
-1. Create a [Stripe account](https://stripe.com) (use test mode for development)
-2. Set up products and prices:
-   - Pro: $6.99/month
-   - Max: $19.99/month
-3. Configure webhook endpoint:
-   - URL: `http://localhost:3000/api/stripe/webhook`
-   - Events: subscription.*, invoice.*
-4. Copy the webhook signing secret to `.env`
+1. **Create a Stripe Account**
+   - Go to [Stripe Dashboard](https://dashboard.stripe.com)
+   - Use test mode for development (toggle in dashboard)
+
+2. **Create Products and Prices**
+   - Navigate to Products → Create Product
+   - Create "Checkify Pro" product:
+     - Price: $6.99/month (recurring)
+     - Copy the price ID (starts with `price_`)
+   - Create "Checkify Max" product:
+     - Price: $19.99/month (recurring)
+     - Copy the price ID
+
+3. **Set Up Webhook Endpoint**
+   - Go to Developers → Webhooks → Add endpoint
+   - Endpoint URL: `http://localhost:3000/api/stripe/webhook`
+   - Select events:
+     - `checkout.session.completed`
+     - `customer.subscription.created`
+     - `customer.subscription.updated`
+     - `customer.subscription.deleted`
+     - `invoice.payment_failed`
+   - Copy the signing secret (starts with `whsec_`)
+
+4. **Update Environment Variables**
+   ```env
+   STRIPE_SECRET_KEY=sk_test_xxxxx        # From API keys page
+   STRIPE_PUBLISHABLE_KEY=pk_test_xxxxx   # From API keys page
+   STRIPE_WEBHOOK_SECRET=whsec_xxxxx      # From webhook endpoint
+   STRIPE_PRICE_ID_PRO=price_xxxxx        # Pro tier price ID
+   STRIPE_PRICE_ID_MAX=price_xxxxx        # Max tier price ID
+   ```
+
+5. **Test Webhook Locally**
+   ```bash
+   # Install Stripe CLI
+   brew install stripe/stripe-cli/stripe
+   
+   # Forward webhooks to local server
+   stripe listen --forward-to localhost:3000/api/stripe/webhook
+   ```
 
 For detailed Stripe setup, see [Stripe Integration Guide](../features/stripe-integration.md).
 

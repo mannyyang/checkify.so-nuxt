@@ -77,8 +77,7 @@ Checkify.so solves a common problem with Notion: while it's great for organizing
 4. **Set up Supabase**
    
    The app requires the following tables in Supabase:
-   - `profiles` - User profiles
-   - `user_profiles` - Subscription and billing data
+   - `user_profiles` - User profiles with subscription and billing data
    - `notion_access_token` - Notion OAuth tokens
    - `notion_access_token_user` - User-token relationships
    - `notion_database` - Connected Notion databases
@@ -90,7 +89,11 @@ Checkify.so solves a common problem with Notion: while it's great for organizing
    
    - Create a Notion integration at https://www.notion.so/my-integrations
    - Set up OAuth with redirect URL: `{BASE_URL}/api/connect-notion`
-   - Add client ID and secret to your environment
+   - Add the following to your `.env` file:
+     ```env
+     NOTION_OAUTH_CLIENT_ID=your_notion_client_id
+     NOTION_OAUTH_CLIENT_SECRET=your_notion_client_secret
+     ```
 
 ## 🏃‍♂️ Development
 

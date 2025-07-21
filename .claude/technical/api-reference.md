@@ -564,23 +564,42 @@ Sync subscription status from Stripe to database.
 ---
 
 #### `GET /api/stripe/debug-subscription` (Development Only)
-Debug endpoint to check subscription state.
+Debug endpoint to check subscription state and Stripe configuration.
 
 **Response:**
 ```json
 {
+  "user": {
+    "id": "user-uuid",
+    "email": "user@example.com"
+  },
   "database": {
     "tier": "pro",
     "status": "active",
+    "stripe_customer_id": "cus_xxxxx",
     "stripe_subscription_id": "sub_xxxxx"
   },
   "stripe": {
-    "id": "sub_xxxxx",
-    "status": "active",
-    "current_period_end": 1234567890,
-    "items": [{"price": {"id": "price_xxxxx"}}]
+    "customer": {
+      "id": "cus_xxxxx",
+      "email": "user@example.com",
+      "deleted": false
+    },
+    "subscriptions": [
+      {
+        "id": "sub_xxxxx",
+        "status": "active",
+        "priceId": "price_xxxxx",
+        "productId": "prod_xxxxx",
+        "created": "2024-01-01T00:00:00.000Z",
+        "current_period_end": "2024-02-01T00:00:00.000Z"
+      }
+    ]
   },
-  "inSync": true
+  "environment": {
+    "STRIPE_PRICE_ID_PRO": "price_xxxxx",
+    "STRIPE_PRICE_ID_MAX": "price_xxxxx"
+  }
 }
 ```
 
@@ -641,6 +660,14 @@ All errors follow this format:
 - `429` - Too Many Requests (rate limited)
 - `500` - Internal Server Error
 
+### Application-Specific Error Codes
+
+- `SUBSCRIPTION_REQUIRED` - Feature requires paid subscription
+- `TIER_LIMIT_EXCEEDED` - Subscription tier limit reached
+- `ALREADY_EXISTS` - Resource already exists (e.g., duplicate subscription)
+- `INVALID_REQUEST` - Request validation failed
+- `AUTHENTICATION_FAILED` - Auth token invalid or expired
+
 ### Error Handling Example
 
 ```typescript
@@ -681,7 +708,7 @@ export default defineEventHandler(async (event) => {
 
 ### `ensure-user-profile`
 
-Automatically creates a user profile if one doesn't exist. Applied to all authenticated routes.
+Automatically creates a user profile and Stripe customer if they don't exist. Applied to all authenticated routes.
 
 ```typescript
 // Creates user_profiles entry with:
@@ -689,9 +716,17 @@ Automatically creates a user profile if one doesn't exist. Applied to all authen
   user_id: user.id,
   email: user.email,
   tier: 'free',
-  status: 'active'
+  status: 'active',
+  stripe_customer_id: 'cus_xxxxx' // Auto-created Stripe customer
 }
 ```
+
+This middleware:
+- Checks if user profile exists
+- Creates profile if missing
+- Creates Stripe customer if missing
+- Syncs email with Stripe
+- Runs on every authenticated request
 
 ## Best Practices
 

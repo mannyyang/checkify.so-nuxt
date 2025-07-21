@@ -259,6 +259,13 @@ CREATE TABLE user_profiles (
 - `created_at`: Creation timestamp
 - `updated_at`: Last update timestamp
 
+**Indexes:**
+```sql
+CREATE INDEX idx_user_profiles_user_id ON user_profiles(user_id);
+CREATE INDEX idx_user_profiles_stripe_customer_id ON user_profiles(stripe_customer_id);
+CREATE INDEX idx_user_profiles_subscription_tier ON user_profiles(subscription_tier);
+```
+
 ### 8. todo
 
 Individual todo items from Notion blocks.

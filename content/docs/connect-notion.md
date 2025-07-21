@@ -9,7 +9,7 @@ connect Notion to Checkify.so. Here's a step-by-step guide to doing it.
 1. [Sign up](https://checkify.so/login) for a Checkify.so account with your
    Google account if you haven't already done so. Logging in is the same as signing up.
 2. This will take you to the home page. If it does not redirect, you can go [here](https://checkify.so/my-todo-lists).
-3. Click the "Connect Notion" button on the NotionApps home page. This will redirect you to a Notion Authorization page.
+3. Click the "Connect Notion" button on the Checkify.so home page. This will redirect you to a Notion Authorization page.
 
 ![Checkify.so Connect](/docs/connect-notion.jpg)
 

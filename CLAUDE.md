@@ -85,10 +85,15 @@ User → Nuxt 3 SPA → Supabase Auth → Google OAuth
 
 Required environment variables in `.env`:
 ```
+# Supabase
 SUPABASE_URL=
 SUPABASE_KEY=
 SUPABASE_SERVICE_KEY=
 BASE_URL=
+
+# Notion OAuth (required for Notion integration)
+NOTION_OAUTH_CLIENT_ID=
+NOTION_OAUTH_CLIENT_SECRET=
 
 # Stripe (required for subscriptions)
 STRIPE_SECRET_KEY=
@@ -98,7 +103,7 @@ STRIPE_PRICE_ID_PRO=
 STRIPE_PRICE_ID_MAX=
 ```
 
-Additional Notion OAuth credentials needed (see [Notion Integration](.claude/features/notion-integration.md) for setup).
+See [Notion Integration](.claude/features/notion-integration.md) for detailed Notion OAuth setup instructions.
 
 ## Development Philosophy
 
