@@ -1,5 +1,5 @@
 import { Client, isFullBlock } from '@notionhq/client';
-import {
+import type {
   ToDoBlockObjectResponse,
   PageObjectResponse
 } from '@notionhq/client/build/src/api-endpoints';

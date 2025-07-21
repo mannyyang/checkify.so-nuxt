@@ -103,7 +103,7 @@ export async function fetchAllChildBlocks (
         start_cursor: startCursor
       });
 
-      allBlocks.push(...response.results);
+      allBlocks.push(...response.results.filter((block): block is BlockObjectResponse => 'type' in block));
       hasMore = response.has_more;
       startCursor = response.next_cursor || undefined;
 

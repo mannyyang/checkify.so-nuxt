@@ -42,13 +42,12 @@ export default defineEventHandler(async (event) => {
     throw new Error('Todo list not found');
   }
 
-  // @ts-ignore
   const { notion_database_id: notionDb } = todoListData;
-  const notion = new Client({ auth: notionDb.access_token });
+  const notion = new Client({ auth: notionDb[0].access_token });
 
   // Get all checkboxes from the source database
   const databasePages = await notion.databases.query({
-    database_id: notionDb.notion_database_id,
+    database_id: notionDb[0].notion_database_id,
     page_size: 100
   });
 
@@ -81,7 +80,7 @@ export default defineEventHandler(async (event) => {
   // Create or update the sync database
   if (!syncDatabaseId) {
     // Create new database
-    const targetPageId = parentPageId || notionDb.metadata?.parent?.page_id;
+    const targetPageId = parentPageId || notionDb[0].metadata?.parent?.page_id;
 
     if (!targetPageId) {
       throw new Error('No parent page ID provided for creating sync database');
@@ -165,7 +164,7 @@ export default defineEventHandler(async (event) => {
   const syncResults = {
     created: 0,
     updated: 0,
-    errors: []
+    errors: [] as Array<{ blockId: string; error: string }>
   };
 
   // Track synced pages for webhook updates
@@ -187,13 +186,13 @@ export default defineEventHandler(async (event) => {
         title: [
           {
             text: {
-              content: checkboxData.to_do.rich_text?.[0]?.plain_text || 'Untitled Todo'
+              content: 'to_do' in checkboxData && checkboxData.to_do ? (checkboxData as any).to_do.rich_text?.[0]?.plain_text || 'Untitled Todo' : 'Untitled Todo'
             }
           }
         ]
       },
       Status: {
-        checkbox: checkboxData.to_do.checked
+        checkbox: 'to_do' in checkboxData && checkboxData.to_do ? (checkboxData as any).to_do.checked : false
       },
       Page: {
         rich_text: [

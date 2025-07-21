@@ -59,7 +59,7 @@ export function useNotionSync (options: UseNotionSyncOptions = {}) {
     const redirectUri = `${window.location.origin}/api/auth-notion`;
 
     const authUrl = new URL('https://api.notion.com/v1/oauth/authorize');
-    authUrl.searchParams.append('client_id', clientId);
+    authUrl.searchParams.append('client_id', clientId as string);
     authUrl.searchParams.append('response_type', 'code');
     authUrl.searchParams.append('owner', 'user');
     authUrl.searchParams.append('redirect_uri', redirectUri);

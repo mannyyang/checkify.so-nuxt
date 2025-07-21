@@ -28,9 +28,9 @@ export default defineEventHandler(async (event) => {
         const customer = await stripe.customers.retrieve(profile.stripe_customer_id);
         stripeData = {
           id: customer.id,
-          email: customer.email,
+          email: 'email' in customer ? customer.email : 'deleted',
           deleted: customer.deleted,
-          metadata: customer.metadata
+          metadata: 'metadata' in customer ? customer.metadata : {}
         };
 
         // Get subscriptions from Stripe
@@ -45,7 +45,7 @@ export default defineEventHandler(async (event) => {
           priceId: sub.items.data[0]?.price.id,
           productId: sub.items.data[0]?.price.product,
           created: new Date(sub.created * 1000).toISOString(),
-          current_period_end: new Date(sub.current_period_end * 1000).toISOString()
+          current_period_end: 'current_period_end' in sub && sub.current_period_end ? new Date((sub as any).current_period_end * 1000).toISOString() : null
         }));
       } catch (stripeError: any) {
         stripeData = { error: stripeError.message };
@@ -73,6 +73,6 @@ export default defineEventHandler(async (event) => {
       }
     });
   } catch (error: any) {
-    return handleError(event, error, 'get debug data');
+    return handleError(event, error);
   }
 });

@@ -23,7 +23,6 @@ async function updateUserSubscription (customerId: string, subscription: Stripe.
   const stripePriceIdPro = process.env.STRIPE_PRICE_ID_PRO;
   const stripePriceIdMax = process.env.STRIPE_PRICE_ID_MAX;
 
-
   if (priceId === stripePriceIdPro) {
     tier = 'pro';
   } else if (priceId === stripePriceIdMax) {
@@ -55,8 +54,8 @@ async function updateUserSubscription (customerId: string, subscription: Stripe.
   };
 
   // Set expiration date for canceled subscriptions
-  if (status === 'canceled' && subscription.current_period_end) {
-    updateData.subscription_expires_at = new Date(subscription.current_period_end * 1000).toISOString();
+  if (status === 'canceled' && 'current_period_end' in subscription && subscription.current_period_end) {
+    updateData.subscription_expires_at = new Date((subscription as any).current_period_end * 1000).toISOString();
   } else {
     updateData.subscription_expires_at = null;
   }
@@ -158,9 +157,9 @@ export default defineEventHandler(async (event) => {
       case 'invoice.payment_failed': {
         const invoice = stripeEvent.data.object as Stripe.Invoice;
 
-        if (invoice.subscription) {
+        if ('subscription' in invoice && invoice.subscription) {
           const subscription = await stripe.subscriptions.retrieve(
-            invoice.subscription as string
+            (invoice as any).subscription as string
           );
 
           await updateUserSubscription(

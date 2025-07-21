@@ -70,12 +70,16 @@ export const useUserStore = defineStore('user', {
       this.error = null;
 
       try {
-        const { data } = await $fetch('/api/user/profile', {
+        const response = await $fetch('/api/user/profile', {
           method: 'GET'
         });
 
-        if (data?.profile) {
-          this.setProfile(data.profile);
+        if (response && typeof response === 'object') {
+          if ('data' in response && response.data && typeof response.data === 'object' && 'profile' in response.data) {
+            this.setProfile((response.data as any).profile);
+          } else if ('profile' in response) {
+            this.setProfile((response as any).profile);
+          }
         }
       } catch (error: any) {
         this.error = error.data?.message || 'Failed to fetch user profile';
@@ -92,12 +96,16 @@ export const useUserStore = defineStore('user', {
       this.error = null;
 
       try {
-        const { data } = await $fetch('/api/notion/auth', {
+        const response = await $fetch('/api/notion/auth', {
           method: 'GET'
         });
 
-        if (data?.notionAuth) {
-          this.setNotionAuth(data.notionAuth);
+        if (response && typeof response === 'object') {
+          if ('data' in response && response.data && typeof response.data === 'object' && 'notionAuth' in response.data) {
+            this.setNotionAuth((response.data as any).notionAuth);
+          } else if ('notionAuth' in response) {
+            this.setNotionAuth((response as any).notionAuth);
+          }
         }
       } catch (error: any) {
         // It's okay if Notion auth doesn't exist yet

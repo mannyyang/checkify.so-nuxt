@@ -46,8 +46,18 @@ export const useSubscription = () => {
   });
 
   // Extract subscription data from API response
-  const subscriptionData = computed(() => subscriptionResponse.value?.data || subscriptionResponse.value);
-  const currentTier = computed(() => subscriptionData.value?.tier || 'free');
+  const subscriptionData = computed<{ tier: SubscriptionTier; status: string; hasStripeCustomer?: boolean }>(() => {
+    const response = subscriptionResponse.value;
+    if (!response) { return { tier: 'free', status: 'active' }; }
+    if ('data' in response && response.data && 'tier' in response.data) {
+      return response.data as { tier: SubscriptionTier; status: string; hasStripeCustomer?: boolean };
+    }
+    if ('tier' in response) {
+      return response as unknown as { tier: SubscriptionTier; status: string; hasStripeCustomer?: boolean };
+    }
+    return { tier: 'free', status: 'active' };
+  });
+  const currentTier = computed(() => subscriptionData.value.tier);
   const limits = computed(() => SUBSCRIPTION_TIERS[currentTier.value]);
 
   const canAccessFeature = (feature: keyof SubscriptionLimits['features']) => {

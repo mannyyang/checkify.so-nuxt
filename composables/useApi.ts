@@ -44,7 +44,8 @@ export function useApi<T = any> (
     try {
       const response = await $fetch<ApiResponse<T>>(getUrl(), {
         ...fetchOptions,
-        ...overrideOptions
+        ...overrideOptions,
+        method: (overrideOptions?.method || fetchOptions?.method) as any
       });
 
       if (!response.success) {
@@ -85,9 +86,9 @@ export function useApi<T = any> (
   }
 
   return {
-    data: readonly(data),
-    error: readonly(error),
-    loading: readonly(loading),
+    data: data as Ref<T | null>,
+    error: error as Ref<ApiError | null>,
+    loading: loading as Ref<boolean>,
     execute,
     refresh
   };

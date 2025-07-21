@@ -27,7 +27,7 @@ export default defineEventHandler(async (event) => {
     }
 
     const { error: todo_list_error } = await supabase.from('todo_list').upsert({
-      user_id: user.id,
+      user_id: user!.id,
       notion_database_id: body.id
     });
 

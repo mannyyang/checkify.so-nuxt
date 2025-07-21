@@ -18,6 +18,6 @@ export default defineEventHandler(async (event) => {
       message: 'Stripe customer synced successfully'
     });
   } catch (error: any) {
-    return handleError(event, error, 'sync Stripe customer');
+    return handleError(event, error);
   }
 });

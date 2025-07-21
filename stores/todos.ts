@@ -74,29 +74,31 @@ export const useTodosStore = defineStore('todos', {
     },
 
     filteredTodos: (state): Todo[] => {
-      let todos = state.currentTodos;
+      const currentListId = state.currentListId;
+      if (!currentListId) { return []; }
+      let todos = state.todos.get(currentListId) || [];
 
       // Apply filters
       if (state.filter.checked !== undefined) {
-        todos = todos.filter(todo => todo.checked === state.filter.checked);
+        todos = todos.filter((todo: Todo) => todo.checked === state.filter.checked);
       }
 
       if (state.filter.tags?.length) {
-        todos = todos.filter(todo =>
-          todo.tags?.some(tag => state.filter.tags?.includes(tag))
+        todos = todos.filter((todo: Todo) =>
+          todo.tags?.some((tag: string) => state.filter.tags?.includes(tag))
         );
       }
 
       if (state.filter.priority) {
-        todos = todos.filter(todo => todo.priority === state.filter.priority);
+        todos = todos.filter((todo: Todo) => todo.priority === state.filter.priority);
       }
 
       if (state.filter.searchQuery) {
         const query = state.filter.searchQuery.toLowerCase();
-        todos = todos.filter(todo =>
+        todos = todos.filter((todo: Todo) =>
           todo.text.toLowerCase().includes(query) ||
           todo.pageTitle?.toLowerCase().includes(query) ||
-          todo.tags?.some(tag => tag.toLowerCase().includes(query))
+          todo.tags?.some((tag: string) => tag.toLowerCase().includes(query))
         );
       }
 
@@ -104,9 +106,9 @@ export const useTodosStore = defineStore('todos', {
       const sortBy = state.filter.sortBy || 'createdAt';
       const sortOrder = state.filter.sortOrder || 'desc';
 
-      todos.sort((a, b) => {
-        let aVal = a[sortBy as keyof Todo];
-        let bVal = b[sortBy as keyof Todo];
+      todos.sort((a: Todo, b: Todo) => {
+        let aVal: any = a[sortBy as keyof Todo];
+        let bVal: any = b[sortBy as keyof Todo];
 
         if (sortBy === 'priority') {
           const priorityOrder = { high: 3, medium: 2, low: 1, undefined: 0 };
@@ -126,17 +128,23 @@ export const useTodosStore = defineStore('todos', {
     },
 
     completedCount: (state): number => {
-      return state.currentTodos.filter(todo => todo.checked).length;
+      if (!state.currentListId) { return 0; }
+      const todos = state.todos.get(state.currentListId) || [];
+      return todos.filter((todo: Todo) => todo.checked).length;
     },
 
     totalCount: (state): number => {
-      return state.currentTodos.length;
+      if (!state.currentListId) { return 0; }
+      const todos = state.todos.get(state.currentListId) || [];
+      return todos.length;
     },
 
     allTags: (state): string[] => {
       const tags = new Set<string>();
-      state.currentTodos.forEach((todo) => {
-        todo.tags?.forEach(tag => tags.add(tag));
+      if (!state.currentListId) { return []; }
+      const todos = state.todos.get(state.currentListId) || [];
+      todos.forEach((todo: Todo) => {
+        todo.tags?.forEach((tag: string) => tags.add(tag));
       });
       return Array.from(tags).sort();
     },
@@ -199,12 +207,16 @@ export const useTodosStore = defineStore('todos', {
       this.error = null;
 
       try {
-        const { data } = await $fetch('/api/todo-list', {
+        const response = await $fetch('/api/todo-list', {
           method: 'GET'
         });
 
-        if (data?.todo_lists) {
-          this.setLists(data.todo_lists);
+        if (response && typeof response === 'object') {
+          if ('data' in response && response.data && typeof response.data === 'object' && 'todo_lists' in response.data) {
+            this.setLists((response.data as any).todo_lists);
+          } else if ('todo_lists' in response) {
+            this.setLists((response as any).todo_lists);
+          }
         }
       } catch (error: any) {
         this.error = error.data?.message || 'Failed to fetch todo lists';
@@ -224,12 +236,16 @@ export const useTodosStore = defineStore('todos', {
       this.error = null;
 
       try {
-        const { data } = await $fetch(`/api/todo-list/${listId}`, {
+        const response = await $fetch(`/api/todo-list/${listId}`, {
           method: 'GET'
         });
 
-        if (data?.todos) {
-          this.setTodos(listId, data.todos);
+        if (response && typeof response === 'object') {
+          if ('data' in response && response.data && typeof response.data === 'object' && 'todos' in response.data) {
+            this.setTodos(listId, (response.data as any).todos);
+          } else if ('todos' in response) {
+            this.setTodos(listId, (response as any).todos);
+          }
         }
       } catch (error: any) {
         this.error = error.data?.message || 'Failed to fetch todos';
@@ -270,14 +286,15 @@ export const useTodosStore = defineStore('todos', {
 
     async createList (databaseId: string) {
       try {
-        const { data } = await $fetch('/api/todo-list', {
+        const response = await $fetch('/api/todo-list', {
           method: 'POST',
           body: { notion_database_id: databaseId }
         });
+        const data = response && typeof response === 'object' && 'data' in response ? response.data : response;
 
-        if (data?.todo_list) {
-          this.lists.push(data.todo_list);
-          return data.todo_list;
+        if (data && typeof data === 'object' && 'todo_list' in data) {
+          this.lists.push((data as any).todo_list);
+          return (data as any).todo_list;
         }
       } catch (error: any) {
         this.error = error.data?.message || 'Failed to create todo list';

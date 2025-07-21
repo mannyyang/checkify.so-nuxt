@@ -1,4 +1,5 @@
 // Simple unit tests for notion-pagination that can be run directly
+import { describe, test, expect, vi } from 'vitest';
 import {
   fetchAllDatabasePages,
   fetchAllChildBlocks,
@@ -8,11 +9,11 @@ import {
 // Mock Notion client
 const createMockClient = () => ({
   databases: {
-    query: jest.fn()
+    query: vi.fn()
   },
   blocks: {
     children: {
-      list: jest.fn()
+      list: vi.fn()
     }
   }
 });

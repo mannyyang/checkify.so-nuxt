@@ -28,6 +28,8 @@ export function createMockPage (id: string, title: string): PageObjectResponse {
       database_id: 'database-id'
     },
     archived: false,
+    in_trash: false,
+    public_url: null,
     properties: {
       Name: {
         id: 'title',

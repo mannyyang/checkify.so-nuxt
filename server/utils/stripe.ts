@@ -6,7 +6,7 @@ const config = useRuntimeConfig();
 
 // Initialize Stripe
 export const stripe = new Stripe(config.stripeSecretKey || '', {
-  apiVersion: '2024-12-18.acacia'
+  apiVersion: '2024-12-18.acacia' as any
 });
 
 // Use centralized Supabase admin client

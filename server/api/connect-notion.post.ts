@@ -20,7 +20,7 @@ export default defineEventHandler(async (event) => {
       'base64'
     );
 
-    const response: { access_token: string } = await $fetch(
+    const response = await $fetch<{ access_token: string }>(
       'https://api.notion.com/v1/oauth/token',
       {
         method: 'POST',

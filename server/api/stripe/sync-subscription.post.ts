@@ -91,6 +91,6 @@ export default defineEventHandler(async (event) => {
       synced: true
     });
   } catch (error: any) {
-    return handleError(event, error, 'sync subscription');
+    return handleError(event, error);
   }
 });

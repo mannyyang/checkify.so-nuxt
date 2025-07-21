@@ -3,7 +3,7 @@ import pkg from './package.json';
 
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-13',
-  devtools: true,
+  devtools: { enabled: true },
   ssr: true,
   app: {
     head: {
@@ -43,24 +43,7 @@ export default defineNuxtConfig({
     componentDir: './components/ui'
   },
   content: {
-    highlight: {
-      theme: 'one-dark-pro',
-      preload: ['json', 'js', 'ts', 'html', 'css', 'vue', 'typescript', 'javascript', 'bash', 'markdown']
-    },
-    markdown: {
-      anchorLinks: true,
-      toc: {
-        depth: 3,
-        searchDepth: 3
-      }
-    },
-    documentDriven: false,
-    navigation: {
-      fields: ['title', 'description', 'icon', 'order']
-    },
-    experimental: {
-      nativeSqlite: true
-    }
+    // Content module configuration
   },
   css: ['~/assets/css/tailwind.css'],
   vite: {

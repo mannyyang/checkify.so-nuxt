@@ -1,18 +1,18 @@
 <script setup lang="ts">
-// Test queryContent directly
+// Test queryCollection (Nuxt Content v3)
 const { data: allContent } = await useAsyncData(
   'all-content',
-  () => queryContent().find()
+  () => queryCollection('content').all()
 );
 
 const { data: docsContent } = await useAsyncData(
   'docs-content',
-  () => queryContent('docs').find()
+  () => queryCollection('content').where({ _path: { $contains: 'docs' } }).all()
 );
 
 const { data: specificDoc } = await useAsyncData(
   'specific-doc',
-  () => queryContent('docs', 'connect-notion').findOne()
+  () => queryCollection('content').path('/docs/connect-notion').first()
 );
 </script>
 

@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { Client, isFullBlock } from '@notionhq/client';
-import {
+import type {
   PageObjectResponse,
   BlockObjectResponse,
   PartialPageObjectResponse

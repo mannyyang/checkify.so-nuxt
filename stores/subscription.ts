@@ -132,8 +132,12 @@ export const useSubscriptionStore = defineStore('subscription', {
           method: 'GET'
         });
 
-        if (data?.subscription) {
-          this.setSubscription(data.subscription);
+        if (data && 'tier' in data) {
+          // Convert API response to subscription format
+          this.subscription = {
+            tier: data.tier,
+            status: data.status || 'active'
+          } as any;
         } else {
           this.setSubscription(null);
         }
@@ -158,8 +162,12 @@ export const useSubscriptionStore = defineStore('subscription', {
           method: 'POST'
         });
 
-        if (data?.subscription) {
-          this.setSubscription(data.subscription);
+        if (data && 'tier' in data) {
+          // Convert API response to subscription format
+          this.subscription = {
+            tier: data.tier,
+            status: data.status || 'active'
+          } as any;
         }
       } catch (error: any) {
         this.error = error.data?.message || 'Failed to sync subscription';

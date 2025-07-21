@@ -75,7 +75,7 @@ describe('/api/todo-list/[todo_list_id]', () => {
 
   it('should successfully fetch and return todo list with pagination', async () => {
     // Mock Supabase response
-    const mockSupabase = (await import('@supabase/supabase-js')).createClient();
+    const mockSupabase = (await import('@supabase/supabase-js')).createClient('', '');
     vi.mocked(mockSupabase.from).mockReturnValue({
       select: vi.fn().mockReturnValue({
         eq: vi.fn().mockResolvedValue({
@@ -173,7 +173,7 @@ describe('/api/todo-list/[todo_list_id]', () => {
   });
 
   it('should handle pages without checkboxes', async () => {
-    const mockSupabase = (await import('@supabase/supabase-js')).createClient();
+    const mockSupabase = (await import('@supabase/supabase-js')).createClient('', '');
     vi.mocked(mockSupabase.from).mockReturnValue({
       select: vi.fn().mockReturnValue({
         eq: vi.fn().mockResolvedValue({
@@ -226,7 +226,7 @@ describe('/api/todo-list/[todo_list_id]', () => {
   });
 
   it('should handle extraction errors gracefully', async () => {
-    const mockSupabase = (await import('@supabase/supabase-js')).createClient();
+    const mockSupabase = (await import('@supabase/supabase-js')).createClient('', '');
     vi.mocked(mockSupabase.from).mockReturnValue({
       select: vi.fn().mockReturnValue({
         eq: vi.fn().mockResolvedValue({
@@ -281,7 +281,7 @@ describe('/api/todo-list/[todo_list_id]', () => {
   });
 
   it('should throw error when todo list is not found in database', async () => {
-    const mockSupabase = (await import('@supabase/supabase-js')).createClient();
+    const mockSupabase = (await import('@supabase/supabase-js')).createClient('', '');
     vi.mocked(mockSupabase.from).mockReturnValue({
       select: vi.fn().mockReturnValue({
         eq: vi.fn().mockResolvedValue({
@@ -296,7 +296,7 @@ describe('/api/todo-list/[todo_list_id]', () => {
   });
 
   it('should handle Supabase errors', async () => {
-    const mockSupabase = (await import('@supabase/supabase-js')).createClient();
+    const mockSupabase = (await import('@supabase/supabase-js')).createClient('', '');
     vi.mocked(mockSupabase.from).mockReturnValue({
       select: vi.fn().mockReturnValue({
         eq: vi.fn().mockResolvedValue({
@@ -311,7 +311,7 @@ describe('/api/todo-list/[todo_list_id]', () => {
   });
 
   it('should indicate when extraction was limited', async () => {
-    const mockSupabase = (await import('@supabase/supabase-js')).createClient();
+    const mockSupabase = (await import('@supabase/supabase-js')).createClient('', '');
     vi.mocked(mockSupabase.from).mockReturnValue({
       select: vi.fn().mockReturnValue({
         eq: vi.fn().mockResolvedValue({

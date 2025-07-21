@@ -18,7 +18,7 @@ export default defineEventHandler(async (event) => {
   try {
     const user = await serverSupabaseUser(event);
 
-    event.context.user = user;
+    event.context.user = user || undefined;
 
     const { data, error } = await supabase
       .from('notion_access_token_user')
