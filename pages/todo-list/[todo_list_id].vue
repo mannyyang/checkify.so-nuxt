@@ -63,12 +63,12 @@ const extractNotionPageId = (input: string): string => {
   // If it's already a page ID (32 chars without dashes or 36 chars with dashes), return as-is
   const cleanInput = input.trim();
   const withoutDashes = cleanInput.replace(/-/g, '');
-  
+
   // Check if it's already a valid page ID
   if (/^[a-f0-9]{32}$/i.test(withoutDashes) && (cleanInput.length === 32 || cleanInput.length === 36)) {
     return cleanInput;
   }
-  
+
   // Try to extract from Notion URL
   // Look for the last 32-character hex string (with or without dashes)
   // This handles various URL formats including workspace URLs
@@ -78,7 +78,7 @@ const extractNotionPageId = (input: string): string => {
     // Match 32 consecutive hex chars
     /([a-f0-9]{32})/i
   ];
-  
+
   for (const pattern of patterns) {
     const matches = cleanInput.match(new RegExp(pattern, 'gi'));
     if (matches && matches.length > 0) {
@@ -86,7 +86,7 @@ const extractNotionPageId = (input: string): string => {
       return matches[matches.length - 1];
     }
   }
-  
+
   // If no match, return the original input
   console.warn('Could not extract page ID from:', cleanInput);
   return cleanInput;
@@ -219,7 +219,7 @@ const syncToNotion = async () => {
       body: {
         todo_list_id: route.params.todo_list_id,
         parent_page_id: (() => {
-          if (!syncParentPageId.value) return undefined;
+          if (!syncParentPageId.value) { return undefined; }
           const extracted = extractNotionPageId(syncParentPageId.value);
           console.log('Sync parent page ID input:', syncParentPageId.value);
           console.log('Extracted page ID:', extracted);
@@ -410,7 +410,7 @@ const formatDate = (date: Date | null) => {
                       </template>
                     </p>
                     <p v-if="data.metadata.limits?.tier === 'free'" class="text-xs text-yellow-700 mt-1">
-                      Upgrade to Pro for up to 100 pages or Max for unlimited access
+                      Upgrade to Pro for up to 100 pages or Max for up to 500 pages
                     </p>
                   </div>
                   <div v-if="data.metadata.errors.length > 0" class="mt-2 p-2 bg-red-50 rounded-md">
