@@ -6,8 +6,8 @@ export interface SubscriptionLimits {
   maxCheckboxesPerPage: number;
   maxTodoLists: number;
   features: {
-    notionSync: boolean;
-    webhooks: boolean;
+    checkboxSync: boolean;
+    syncFrequency: 'manual' | 'daily' | 'hourly';
     prioritySupport: boolean;
   };
 }
@@ -16,24 +16,24 @@ const SUBSCRIPTION_TIERS: Record<SubscriptionTier, SubscriptionLimits> = {
   free: {
     ...TIER_LIMITS.free,
     features: {
-      notionSync: true,
-      webhooks: false,
+      checkboxSync: true,
+      syncFrequency: 'manual',
       prioritySupport: false
     }
   },
   pro: {
     ...TIER_LIMITS.pro,
     features: {
-      notionSync: true,
-      webhooks: true,
+      checkboxSync: true,
+      syncFrequency: 'daily',
       prioritySupport: true
     }
   },
   max: {
     ...TIER_LIMITS.max,
     features: {
-      notionSync: true,
-      webhooks: true,
+      checkboxSync: true,
+      syncFrequency: 'hourly',
       prioritySupport: true
     }
   }

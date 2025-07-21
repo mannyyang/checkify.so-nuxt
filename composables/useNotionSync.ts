@@ -158,19 +158,6 @@ export function useNotionDatabaseSearch () {
   };
 }
 
-// Hook for Notion webhook handling
-export function useNotionWebhook () {
-  const handleWebhook = useApiMutation('/api/notion-webhook', {
-    method: 'POST'
-  });
-
-  return {
-    processWebhook: handleWebhook.mutate,
-    isProcessing: handleWebhook.loading,
-    error: handleWebhook.error
-  };
-}
-
 // Helper to format Notion database for display
 export function useNotionDatabaseFormatter () {
   const formatDatabase = (database: NotionDatabase) => {

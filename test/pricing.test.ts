@@ -6,8 +6,7 @@ import {
   getTierFeatures,
   getTierLimits,
   formatTierLimit,
-  isFeatureIncluded,
-  type TierName
+  isFeatureIncluded
 } from '../lib/pricing';
 
 describe('Pricing Module', () => {
@@ -31,10 +30,10 @@ describe('Pricing Module', () => {
       expect(proTier?.highlighted).toBe(true);
     });
 
-    it('should have Notion sync available for all tiers', () => {
+    it('should have Sync Checkboxes to Notion Database available for all tiers', () => {
       PRICING_TIERS.forEach((tier) => {
-        const notionSyncFeature = tier.features.find(f => f.text.includes('Notion sync'));
-        expect(notionSyncFeature?.included).toBe(true);
+        const syncFeature = tier.features.find(f => f.text.includes('Sync Checkboxes to Notion Database'));
+        expect(syncFeature?.included).toBe(true);
       });
     });
 
@@ -49,17 +48,17 @@ describe('Pricing Module', () => {
   describe('TIER_LIMITS', () => {
     it('should have correct limits for free tier', () => {
       expect(TIER_LIMITS.free).toEqual({
-        maxPages: 10,
+        maxPages: 25,
         maxCheckboxesPerPage: 25,
-        maxTodoLists: 3
+        maxTodoLists: 2
       });
     });
 
     it('should have correct limits for pro tier', () => {
       expect(TIER_LIMITS.pro).toEqual({
         maxPages: 100,
-        maxCheckboxesPerPage: 200,
-        maxTodoLists: -1 // unlimited
+        maxCheckboxesPerPage: 100,
+        maxTodoLists: 10
       });
     });
 
@@ -67,7 +66,7 @@ describe('Pricing Module', () => {
       expect(TIER_LIMITS.max).toEqual({
         maxPages: 500,
         maxCheckboxesPerPage: 1000,
-        maxTodoLists: -1 // unlimited
+        maxTodoLists: 25
       });
     });
   });
@@ -112,12 +111,12 @@ describe('Pricing Module', () => {
   describe('getTierLimits', () => {
     it('should return correct limits for each tier', () => {
       const freeLimits = getTierLimits('free');
-      expect(freeLimits.maxPages).toBe(10);
+      expect(freeLimits.maxPages).toBe(25);
       expect(freeLimits.maxCheckboxesPerPage).toBe(25);
 
       const proLimits = getTierLimits('pro');
       expect(proLimits.maxPages).toBe(100);
-      expect(proLimits.maxCheckboxesPerPage).toBe(200);
+      expect(proLimits.maxCheckboxesPerPage).toBe(100);
 
       const maxLimits = getTierLimits('max');
       expect(maxLimits.maxPages).toBe(500);
@@ -138,15 +137,15 @@ describe('Pricing Module', () => {
 
   describe('isFeatureIncluded', () => {
     it('should correctly identify included features', () => {
-      expect(isFeatureIncluded('free', 'Notion sync')).toBe(true);
-      expect(isFeatureIncluded('free', 'webhooks')).toBe(false);
-      expect(isFeatureIncluded('pro', 'webhooks')).toBe(true);
-      expect(isFeatureIncluded('max', 'custom integrations')).toBe(true);
+      expect(isFeatureIncluded('free', 'Sync Checkboxes')).toBe(true);
+      expect(isFeatureIncluded('free', 'Daily automatic sync')).toBe(false);
+      expect(isFeatureIncluded('pro', 'Daily automatic sync')).toBe(true);
+      expect(isFeatureIncluded('max', 'Hourly automatic sync')).toBe(true);
     });
 
     it('should be case insensitive', () => {
-      expect(isFeatureIncluded('pro', 'WEBHOOKS')).toBe(true);
-      expect(isFeatureIncluded('pro', 'WebHooks')).toBe(true);
+      expect(isFeatureIncluded('pro', 'DAILY AUTOMATIC SYNC')).toBe(true);
+      expect(isFeatureIncluded('pro', 'Daily Automatic Sync')).toBe(true);
     });
 
     it('should return false for non-existent features', () => {
