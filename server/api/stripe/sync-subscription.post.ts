@@ -63,20 +63,10 @@ export default defineEventHandler(async (event) => {
     const stripePriceIdPro = process.env.STRIPE_PRICE_ID_PRO;
     const stripePriceIdMax = process.env.STRIPE_PRICE_ID_MAX;
 
-    console.log('Sync subscription - Price ID check:', {
-      priceId,
-      stripePriceIdPro,
-      stripePriceIdMax,
-      matchesPro: priceId === stripePriceIdPro,
-      matchesMax: priceId === stripePriceIdMax
-    });
-
     if (priceId === stripePriceIdPro) {
       tier = 'pro';
     } else if (priceId === stripePriceIdMax) {
       tier = 'max';
-    } else {
-      console.warn(`Sync: Unknown price ID: ${priceId}`);
     }
 
     // Update the database

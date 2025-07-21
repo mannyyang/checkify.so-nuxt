@@ -23,7 +23,6 @@ async function updateUserSubscription (customerId: string, subscription: Stripe.
   const stripePriceIdPro = process.env.STRIPE_PRICE_ID_PRO;
   const stripePriceIdMax = process.env.STRIPE_PRICE_ID_MAX;
 
-  consola.info(`Checking price ID: ${priceId} against Pro: ${stripePriceIdPro}, Max: ${stripePriceIdMax}`);
 
   if (priceId === stripePriceIdPro) {
     tier = 'pro';
