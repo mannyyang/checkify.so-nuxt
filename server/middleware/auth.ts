@@ -1,7 +1,5 @@
-import {
-  serverSupabaseServiceRole,
-  serverSupabaseUser
-} from '#supabase/server';
+import { getSupabaseAdmin } from '~/server/utils/supabase';
+import { serverSupabaseUser } from '#supabase/server';
 
 export default defineEventHandler(async (event) => {
   // Redirect on home
@@ -13,7 +11,7 @@ export default defineEventHandler(async (event) => {
   //   return await sendRedirect(event, '/my-todo-lists');
   // }
 
-  const supabase = serverSupabaseServiceRole(event);
+  const supabase = getSupabaseAdmin();
 
   // TODO: build error happens with auth. catch so it doesn't fail at least
   // https://github.com/nuxt-modules/supabase/issues/238

@@ -1,5 +1,5 @@
 import Stripe from 'stripe';
-import { createClient } from '@supabase/supabase-js';
+import { getSupabaseAdmin } from './supabase';
 
 // Get runtime config
 const config = useRuntimeConfig();
@@ -9,11 +9,18 @@ export const stripe = new Stripe(config.stripeSecretKey || '', {
   apiVersion: '2024-12-18.acacia'
 });
 
-// Initialize Supabase with service key (for admin operations)
-export const supabaseAdmin = createClient(
-  process.env.SUPABASE_URL || '',
-  process.env.SUPABASE_SERVICE_KEY || ''
-);
+// Use centralized Supabase admin client
+const supabaseAdmin = getSupabaseAdmin();
+
+// Helper to determine tier from price ID
+export function getTierFromPriceId (priceId: string): 'free' | 'pro' | 'max' {
+  const stripePriceIdPro = config.stripePriceIdPro || process.env.STRIPE_PRICE_ID_PRO;
+  const stripePriceIdMax = config.stripePriceIdMax || process.env.STRIPE_PRICE_ID_MAX;
+
+  if (priceId === stripePriceIdPro) { return 'pro'; }
+  if (priceId === stripePriceIdMax) { return 'max'; }
+  return 'free';
+}
 
 // Helper to get or create Stripe customer
 export async function getOrCreateStripeCustomer (userId: string, email: string) {

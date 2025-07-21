@@ -1,18 +1,17 @@
-import { stripe, supabaseAdmin } from '~/server/utils/stripe';
-import { serverSupabaseUser } from '#supabase/server';
+import { stripe } from '~/server/utils/stripe';
+import { getSupabaseAdmin, getSupabaseUser } from '~/server/utils/supabase';
+import { sendSuccess, sendError, ErrorCodes, handleError } from '~/server/utils/api-response';
 
 export default defineEventHandler(async (event) => {
-  // Get authenticated user
-  const user = await serverSupabaseUser(event);
-
-  if (!user) {
-    throw createError({
-      statusCode: 401,
-      statusMessage: 'Unauthorized'
-    });
-  }
-
   try {
+    const supabaseAdmin = getSupabaseAdmin();
+
+    // Get authenticated user
+    const user = await getSupabaseUser(event);
+
+    if (!user) {
+      return sendError(event, ErrorCodes.UNAUTHORIZED, 'Unauthorized');
+    }
     // Get database data
     const { data: profile } = await supabaseAdmin
       .from('user_profiles')
@@ -53,7 +52,7 @@ export default defineEventHandler(async (event) => {
       }
     }
 
-    return {
+    return sendSuccess(event, {
       user: {
         id: user.id,
         email: user.email
@@ -72,13 +71,8 @@ export default defineEventHandler(async (event) => {
         STRIPE_PRICE_ID_PRO: process.env.STRIPE_PRICE_ID_PRO || 'not set',
         STRIPE_PRICE_ID_MAX: process.env.STRIPE_PRICE_ID_MAX || 'not set'
       }
-    };
-  } catch (error: any) {
-    console.error('Debug error:', error);
-
-    throw createError({
-      statusCode: 500,
-      statusMessage: error.message || 'Failed to get debug data'
     });
+  } catch (error: any) {
+    return handleError(event, error, 'get debug data');
   }
 });

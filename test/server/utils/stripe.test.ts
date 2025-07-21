@@ -58,11 +58,11 @@ describe('Stripe Utils', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    
+
     // Get mocked instances
     const Stripe = require('stripe').default;
     mockStripe = new Stripe();
-    
+
     const { createClient } = require('@supabase/supabase-js');
     mockSupabase = createClient();
   });

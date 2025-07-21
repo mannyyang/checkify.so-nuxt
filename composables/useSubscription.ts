@@ -1,6 +1,5 @@
 import { TIER_LIMITS, type TierName } from '~/lib/pricing';
-
-export type SubscriptionTier = TierName;
+import type { SubscriptionTier } from '~/stores/subscription';
 
 export interface SubscriptionLimits {
   maxPages: number;
@@ -42,10 +41,12 @@ const SUBSCRIPTION_TIERS: Record<SubscriptionTier, SubscriptionLimits> = {
 
 export const useSubscription = () => {
   // Fetch subscription data from API
-  const { data: subscriptionData, refresh } = useFetch('/api/subscription', {
-    default: () => ({ tier: 'free' as SubscriptionTier, status: 'active' })
+  const { data: subscriptionResponse, refresh } = useFetch('/api/subscription', {
+    default: () => ({ success: true, data: { tier: 'free' as SubscriptionTier, status: 'active' } })
   });
 
+  // Extract subscription data from API response
+  const subscriptionData = computed(() => subscriptionResponse.value?.data || subscriptionResponse.value);
   const currentTier = computed(() => subscriptionData.value?.tier || 'free');
   const limits = computed(() => SUBSCRIPTION_TIERS[currentTier.value]);
 

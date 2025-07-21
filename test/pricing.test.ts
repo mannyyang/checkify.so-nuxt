@@ -32,14 +32,14 @@ describe('Pricing Module', () => {
     });
 
     it('should have Notion sync available for all tiers', () => {
-      PRICING_TIERS.forEach(tier => {
+      PRICING_TIERS.forEach((tier) => {
         const notionSyncFeature = tier.features.find(f => f.text.includes('Notion sync'));
         expect(notionSyncFeature?.included).toBe(true);
       });
     });
 
     it('should not have API access feature in any tier', () => {
-      PRICING_TIERS.forEach(tier => {
+      PRICING_TIERS.forEach((tier) => {
         const apiFeature = tier.features.find(f => f.text.toLowerCase().includes('api access'));
         expect(apiFeature).toBeUndefined();
       });

@@ -1,18 +1,18 @@
-import { stripe, supabaseAdmin, verifyAndSyncStripeCustomer } from '~/server/utils/stripe';
-import { serverSupabaseUser } from '#supabase/server';
+import { stripe, verifyAndSyncStripeCustomer } from '~/server/utils/stripe';
+import { getSupabaseAdmin, getSupabaseUser } from '~/server/utils/supabase';
+import { sendSuccess, sendError, ErrorCodes, handleError } from '~/server/utils/api-response';
 
 export default defineEventHandler(async (event) => {
-  // Get authenticated user
-  const user = await serverSupabaseUser(event);
-
-  if (!user || !user.email) {
-    throw createError({
-      statusCode: 401,
-      statusMessage: 'Unauthorized'
-    });
-  }
+  const supabaseAdmin = getSupabaseAdmin();
 
   try {
+    // Get authenticated user
+    const user = await getSupabaseUser(event);
+
+    if (!user.email) {
+      sendError(event, ErrorCodes.VALIDATION_ERROR, 'User email is required', 400);
+    }
+
     // Get user's Stripe customer ID
     const { data: profile } = await supabaseAdmin
       .from('user_profiles')
@@ -21,10 +21,7 @@ export default defineEventHandler(async (event) => {
       .single();
 
     if (!profile?.stripe_customer_id) {
-      throw createError({
-        statusCode: 400,
-        statusMessage: 'No billing account found. Please subscribe to a plan first.'
-      });
+      sendError(event, ErrorCodes.NOT_FOUND, 'No billing account found. Please subscribe to a plan first.', 404);
     }
 
     // Verify customer exists in Stripe before creating portal session
@@ -48,20 +45,8 @@ export default defineEventHandler(async (event) => {
       // configuration: 'bpc_1234567890' // Use a specific portal configuration ID
     });
 
-    return {
-      url: session.url
-    };
+    return sendSuccess(event, { url: session.url });
   } catch (error: any) {
-    console.error('Error creating portal session:', error);
-
-    // Re-throw if it's already a Nuxt error
-    if (error.statusCode) {
-      throw error;
-    }
-
-    throw createError({
-      statusCode: 500,
-      statusMessage: error.message || 'Failed to create billing portal session'
-    });
+    handleError(event, error);
   }
 });

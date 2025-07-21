@@ -1,7 +1,9 @@
 import { serverSupabaseUser } from '#supabase/server';
-import { supabaseAdmin, verifyAndSyncStripeCustomer } from '~/server/utils/stripe';
+import { getSupabaseAdmin } from '~/server/utils/supabase';
+import { verifyAndSyncStripeCustomer } from '~/server/utils/stripe';
 
 export default defineEventHandler(async (event) => {
+  const supabaseAdmin = getSupabaseAdmin();
   // Only run for API routes that need user profiles
   const url = event.node.req.url || '';
 

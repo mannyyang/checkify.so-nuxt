@@ -1,28 +1,25 @@
-import { stripe, getOrCreateStripeCustomer, supabaseAdmin } from '~/server/utils/stripe';
-import { serverSupabaseUser } from '#supabase/server';
+import { stripe, getOrCreateStripeCustomer } from '~/server/utils/stripe';
+import { getSupabaseAdmin, getSupabaseUser } from '~/server/utils/supabase';
+import { sendSuccess, sendError, ErrorCodes, handleError } from '~/server/utils/api-response';
 
 export default defineEventHandler(async (event) => {
-  // Get authenticated user
-  const user = await serverSupabaseUser(event);
-
-  if (!user || !user.email) {
-    throw createError({
-      statusCode: 401,
-      statusMessage: 'Unauthorized'
-    });
-  }
-
-  // Get request body
-  const { priceId, tier } = await readBody(event);
-
-  if (!priceId || !['pro', 'max'].includes(tier)) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Invalid price ID or tier'
-    });
-  }
+  const supabaseAdmin = getSupabaseAdmin();
 
   try {
+    // Get authenticated user
+    const user = await getSupabaseUser(event);
+
+    if (!user.email) {
+      sendError(event, ErrorCodes.VALIDATION_ERROR, 'User email is required', 400);
+    }
+
+    // Get request body
+    const { priceId, tier } = await readBody(event);
+
+    if (!priceId || !['pro', 'max'].includes(tier)) {
+      sendError(event, ErrorCodes.INVALID_INPUT, 'Invalid price ID or tier', 400);
+    }
+
     // Get or create Stripe customer
     const customerId = await getOrCreateStripeCustomer(user.id, user.email);
 
@@ -37,17 +34,11 @@ export default defineEventHandler(async (event) => {
     if (profile && profile.subscription_status === 'active' && profile.subscription_tier !== 'free') {
       // User already has an active subscription
       if (profile.subscription_tier === tier) {
-        throw createError({
-          statusCode: 400,
-          statusMessage: `You already have an active ${tier} subscription`
-        });
+        sendError(event, ErrorCodes.ALREADY_EXISTS, `You already have an active ${tier} subscription`, 400);
       }
 
       // If trying to subscribe to a different tier, they should use the update endpoint
-      throw createError({
-        statusCode: 400,
-        statusMessage: 'You already have an active subscription. Please use the billing portal to change your plan.'
-      });
+      sendError(event, ErrorCodes.VALIDATION_ERROR, 'You already have an active subscription. Please use the billing portal to change your plan.', 400);
     }
 
     // Check if there are any existing subscriptions for this customer
@@ -65,10 +56,7 @@ export default defineEventHandler(async (event) => {
         userId: user.id
       });
 
-      throw createError({
-        statusCode: 400,
-        statusMessage: 'You already have an active subscription. Please contact support if you believe this is an error.'
-      });
+      sendError(event, ErrorCodes.VALIDATION_ERROR, 'You already have an active subscription. Please contact support if you believe this is an error.', 400);
     }
 
     // Create checkout session for new subscription
@@ -89,20 +77,8 @@ export default defineEventHandler(async (event) => {
       }
     });
 
-    return {
-      url: session.url
-    };
+    return sendSuccess(event, { url: session.url });
   } catch (error: any) {
-    console.error('Error creating checkout session:', error);
-
-    // Re-throw if it's already a createError
-    if (error.statusCode) {
-      throw error;
-    }
-
-    throw createError({
-      statusCode: 500,
-      statusMessage: error.message || 'Failed to create checkout session'
-    });
+    handleError(event, error);
   }
 });

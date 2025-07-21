@@ -18,6 +18,7 @@ Checkify.so solves a common problem with Notion: while it's great for organizing
 - **Multi-database Support**: Connect multiple Notion databases
 - **Clean UI**: Focused todo interface without Notion's complexity
 - **Authentication**: Secure login with Google via Supabase
+- **Subscription Tiers**: Free, Pro ($6.99/mo), and Max ($19.99/mo) plans
 - **Responsive Design**: Works on desktop and mobile devices
 - **Multi-language**: English and German support
 
@@ -26,6 +27,7 @@ Checkify.so solves a common problem with Notion: while it's great for organizing
 - **Framework**: [Nuxt 3](https://nuxt.com/) (SSR enabled with client-side data fetching)
 - **UI Library**: [shadcn/ui](https://ui.shadcn.com/) - Modern component library built on Radix UI
 - **Database & Auth**: [Supabase](https://supabase.com/)
+- **Payments**: [Stripe](https://stripe.com/) - Subscription management
 - **State Management**: [Pinia](https://pinia.vuejs.org/)
 - **Styling**: [Tailwind CSS v4](https://tailwindcss.com/)
 - **Icons**: [lucide-vue-next](https://lucide.dev/)
@@ -56,16 +58,27 @@ Checkify.so solves a common problem with Notion: while it's great for organizing
    
    Create a `.env` file in the root directory:
    ```env
+   # Supabase
    SUPABASE_URL=your_supabase_project_url
    SUPABASE_KEY=your_supabase_anon_key
    SUPABASE_SERVICE_KEY=your_supabase_service_key
+   
+   # App
    BASE_URL=http://localhost:3000
+   
+   # Stripe (for subscription features)
+   STRIPE_SECRET_KEY=sk_test_xxxxx
+   STRIPE_PUBLISHABLE_KEY=pk_test_xxxxx
+   STRIPE_WEBHOOK_SECRET=whsec_xxxxx
+   STRIPE_PRICE_ID_PRO=price_xxxxx
+   STRIPE_PRICE_ID_MAX=price_xxxxx
    ```
 
 4. **Set up Supabase**
    
    The app requires the following tables in Supabase:
    - `profiles` - User profiles
+   - `user_profiles` - Subscription and billing data
    - `notion_access_token` - Notion OAuth tokens
    - `notion_access_token_user` - User-token relationships
    - `notion_database` - Connected Notion databases
@@ -105,13 +118,15 @@ pnpm preview
 
 For detailed documentation, see the `.claude/` directory:
 
-- [Architecture Overview](.claude/architecture.md)
-- [Authentication Guide](.claude/authentication.md)
-- [Notion Integration](.claude/notion-integration.md)
-- [API Reference](.claude/api-reference.md)
-- [UI Components](.claude/ui-components.md)
-- [Development Guide](.claude/development.md)
-- [Database Schema](.claude/database-schema.md)
+- [Architecture Overview](.claude/technical/architecture.md)
+- [Authentication Guide](.claude/getting-started/authentication.md)
+- [Notion Integration](.claude/features/notion-integration.md)
+- [Stripe Integration](.claude/features/stripe-integration.md)
+- [API Reference](.claude/technical/api-reference.md)
+- [UI Components](.claude/technical/ui-components.md)
+- [Development Guide](.claude/getting-started/development.md)
+- [Database Schema](.claude/technical/database-schema.md)
+- [Subscription Tiers](.claude/features/subscription-tiers.md)
 
 ## 🚢 Deployment
 

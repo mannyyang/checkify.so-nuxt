@@ -8,7 +8,7 @@ definePageMeta({
 });
 
 const user = useSupabaseUser();
-const { data: subscription, refresh: refreshSubscription, pending: subscriptionLoading } = await useFetch('/api/subscription');
+const { data: subscriptionResponse, refresh: refreshSubscription, pending: subscriptionLoading } = await useFetch('/api/subscription');
 const isLoadingPortal = ref(false);
 const isRefreshing = ref(false);
 const isUpgrading = ref(false);
@@ -27,6 +27,7 @@ const tiers = PRICING_TIERS.map(tier => ({
       : undefined
 }));
 
+const subscription = computed(() => subscriptionResponse.value?.data || subscriptionResponse.value);
 const currentTier = computed(() => subscription.value?.tier || 'free');
 const hasActiveSubscription = computed(() =>
   subscription.value?.status === 'active' &&
@@ -50,7 +51,7 @@ async function manualRefresh () {
 }
 
 // Check for success from Stripe checkout
-onMounted(async () => {
+onMounted(() => {
   const route = useRoute();
   if (route.query.success === 'true') {
     const targetTier = route.query.tier as string;
@@ -106,8 +107,8 @@ async function openBillingPortal () {
       method: 'POST'
     });
 
-    if (data?.url) {
-      window.location.href = data.url;
+    if (data?.data?.url) {
+      window.location.href = data.data.url;
     }
   } catch (error) {
     toast.error('Failed to open billing portal. Please try again.');
@@ -128,99 +129,30 @@ const tierColors = {
   max: 'bg-purple-100 text-purple-800'
 };
 
-// Handle plan upgrade/change
-async function handleUpgrade (tier: string, priceId?: string) {
-  if (!priceId || tier === 'free' || tier === currentTier.value) {
+// Handle initial subscription - redirect to Stripe checkout
+async function handleInitialSubscription (tier: string, priceId?: string) {
+  if (!priceId || tier === 'free') {
     return;
   }
 
   isUpgrading.value = true;
   try {
-    // Check if user has an active subscription
-    if (hasActiveSubscription.value) {
-      // Use update endpoint for existing subscriptions
-      const data = await $fetch('/api/stripe/update-subscription', {
-        method: 'POST',
-        body: {
-          priceId,
-          tier
-        }
-      });
-
-      if (data?.success) {
-        toast.success('Your subscription is being updated. You will receive an email confirmation shortly.');
-        // Refresh the subscription data
-        await refreshSubscription();
-        await refreshNuxtData();
+    // Use create checkout session for new subscriptions
+    const data = await $fetch('/api/stripe/create-checkout-session', {
+      method: 'POST',
+      body: {
+        priceId,
+        tier
       }
+    });
+
+    if (data?.data?.url) {
+      window.location.href = data.data.url;
     } else {
-      // Use create checkout session for new subscriptions
-      const data = await $fetch('/api/stripe/create-checkout-session', {
-        method: 'POST',
-        body: {
-          priceId,
-          tier
-        }
-      });
-
-      if (data?.url) {
-        window.location.href = data.url;
-      } else {
-        toast.error('Invalid response from server');
-      }
+      toast.error('Invalid response from server');
     }
   } catch (error: any) {
     const errorMessage = error.data?.statusMessage || 'Failed to process subscription. Please try again.';
-    toast.error(errorMessage);
-  } finally {
-    isUpgrading.value = false;
-  }
-}
-
-// Handle subscription cancellation
-async function handleCancelSubscription () {
-  const confirmed = confirm('Are you sure you want to cancel your subscription? You will keep access until the end of your current billing period.');
-
-  if (!confirmed) {
-    return;
-  }
-
-  isUpgrading.value = true;
-  try {
-    const result = await $fetch('/api/stripe/cancel-subscription', {
-      method: 'POST'
-    });
-
-    if (result.success) {
-      toast.success(result.message);
-      // Refresh subscription data
-      await refreshSubscription();
-      await refreshNuxtData();
-    }
-  } catch (error: any) {
-    const errorMessage = error.data?.statusMessage || 'Failed to cancel subscription. Please try again.';
-    toast.error(errorMessage);
-  } finally {
-    isUpgrading.value = false;
-  }
-}
-
-// Handle subscription reactivation
-async function handleReactivateSubscription () {
-  isUpgrading.value = true;
-  try {
-    const result = await $fetch('/api/stripe/reactivate-subscription', {
-      method: 'POST'
-    });
-
-    if (result.success) {
-      toast.success(result.message);
-      // Refresh subscription data
-      await refreshSubscription();
-      await refreshNuxtData();
-    }
-  } catch (error: any) {
-    const errorMessage = error.data?.statusMessage || 'Failed to reactivate subscription. Please try again.';
     toast.error(errorMessage);
   } finally {
     isUpgrading.value = false;
@@ -287,10 +219,10 @@ async function fetchDebugData () {
             <span
               :class="[
                 'px-3 py-1 rounded-full text-sm font-medium',
-                tierColors[subscription?.tier || 'free']
+                tierColors[subscription?.tier as keyof typeof tierColors || 'free']
               ]"
             >
-              {{ tierLabels[subscription?.tier || 'free'] }} Plan
+              {{ tierLabels[subscription?.tier as keyof typeof tierLabels || 'free'] }} Plan
             </span>
           </div>
         </div>
@@ -299,7 +231,7 @@ async function fetchDebugData () {
           <div>
             <label class="text-sm text-gray-600">Current Plan</label>
             <p class="font-medium">
-              {{ tierLabels[subscription?.tier || 'free'] }}
+              {{ tierLabels[subscription?.tier as keyof typeof tierLabels || 'free'] }}
               <span v-if="subscription?.tier === 'free'">- $0/month</span>
               <span v-else-if="subscription?.tier === 'pro'">- $6.99/month</span>
               <span v-else-if="subscription?.tier === 'max'">- $19.99/month</span>
@@ -308,15 +240,6 @@ async function fetchDebugData () {
 
           <div v-if="subscription?.expiresAt" class="text-sm text-amber-600">
             Your subscription will expire on {{ new Date(subscription.expiresAt).toLocaleDateString() }}
-            <Button
-              v-if="subscription?.status === 'canceled'"
-              size="sm"
-              variant="link"
-              class="ml-2 text-amber-600 hover:text-amber-700"
-              @click="handleReactivateSubscription"
-            >
-              Reactivate
-            </Button>
           </div>
 
           <div class="flex gap-3 pt-2">
@@ -328,21 +251,12 @@ async function fetchDebugData () {
             >
               <CreditCard class="w-4 h-4 mr-2" />
               <Loader2 v-if="isLoadingPortal" class="w-4 h-4 mr-2 animate-spin" />
-              Manage Billing
-            </Button>
-            <Button
-              v-if="hasActiveSubscription && subscription?.status !== 'canceled'"
-              :disabled="isUpgrading"
-              variant="outline"
-              class="text-red-600 hover:text-red-700"
-              @click="handleCancelSubscription"
-            >
-              Cancel Subscription
+              Manage Subscription
             </Button>
           </div>
 
           <p v-if="subscription?.hasStripeCustomer" class="text-sm text-gray-600 mb-6">
-            Manage your subscription, update payment methods, and download invoices.
+            Manage your subscription, change plans, update payment methods, and download invoices.
           </p>
         </div>
 
@@ -414,9 +328,9 @@ async function fetchDebugData () {
                   class="w-full"
                   size="sm"
                   variant="outline"
-                  @click="handleCancelSubscription"
+                  @click="openBillingPortal"
                 >
-                  Cancel Subscription
+                  Manage Subscription
                 </Button>
                 <Button
                   v-else-if="tier.id === 'free' && !hasActiveSubscription"
@@ -428,18 +342,24 @@ async function fetchDebugData () {
                   Current Plan
                 </Button>
                 <Button
+                  v-else-if="hasActiveSubscription"
+                  class="w-full"
+                  size="sm"
+                  :variant="tier.highlighted ? 'default' : 'outline'"
+                  @click="openBillingPortal"
+                >
+                  Change Plan
+                </Button>
+                <Button
                   v-else
                   class="w-full"
                   size="sm"
                   :variant="tier.highlighted ? 'default' : 'outline'"
                   :disabled="isUpgrading || subscriptionLoading"
-                  @click="handleUpgrade(tier.id, tier.priceId)"
+                  @click="handleInitialSubscription(tier.id, tier.priceId)"
                 >
                   <template v-if="isUpgrading">
                     <Loader2 class="w-4 h-4 animate-spin" />
-                  </template>
-                  <template v-else-if="hasActiveSubscription && tier.id !== 'free'">
-                    Switch to {{ tier.name }}
                   </template>
                   <template v-else>
                     Upgrade to {{ tier.name }}

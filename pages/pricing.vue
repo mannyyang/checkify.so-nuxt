@@ -11,13 +11,14 @@ definePageMeta({
 const user = useSupabaseUser();
 
 // Fetch current subscription only if authenticated
-const { data: subscription, pending: subscriptionLoading } = await useFetch('/api/subscription', {
+const { data: subscriptionResponse, pending: subscriptionLoading } = await useFetch('/api/subscription', {
   // Only fetch if user is authenticated
   immediate: !!user.value,
   watch: [user]
 });
 
 const isLoading = ref(false);
+const subscription = computed(() => subscriptionResponse.value?.data || subscriptionResponse.value);
 const currentTier = computed(() => subscription.value?.tier || 'free');
 const hasActiveSubscription = computed(() =>
   subscription.value?.status === 'active' &&
@@ -60,20 +61,9 @@ async function handleUpgrade (tier: string, priceId?: string) {
   try {
     // Check if user has an active subscription
     if (hasActiveSubscription.value) {
-      // Use update endpoint for existing subscriptions
-      const data = await $fetch('/api/stripe/update-subscription', {
-        method: 'POST',
-        body: {
-          priceId,
-          tier
-        }
-      });
-
-      if (data?.success) {
-        toast.success('Your subscription is being updated. You will receive an email confirmation shortly.');
-        // Refresh the subscription data
-        await refresh();
-      }
+      // Redirect to settings page to use portal
+      await navigateTo('/settings');
+      toast.info('Use the Manage Subscription button to change your plan.');
     } else {
       // Use create checkout session for new subscriptions
       const data = await $fetch('/api/stripe/create-checkout-session', {
@@ -84,8 +74,8 @@ async function handleUpgrade (tier: string, priceId?: string) {
         }
       });
 
-      if (data?.url) {
-        window.location.href = data.url;
+      if (data?.data?.url) {
+        window.location.href = data.data.url;
       } else {
         toast.error('Invalid response from server');
       }
@@ -203,7 +193,7 @@ const refresh = async () => {
                 Loading...
               </template>
               <template v-else-if="hasActiveSubscription && tier.id !== 'free'">
-                Switch to {{ tier.name }}
+                Change Plan
               </template>
               <template v-else>
                 {{ tier.cta }}
@@ -233,7 +223,7 @@ const refresh = async () => {
             Can I change plans anytime?
           </h3>
           <p class="mt-2 text-gray-600">
-            Yes! You can upgrade or downgrade your plan at any time. Changes take effect immediately and we'll prorate any charges.
+            Yes! You can upgrade or downgrade your plan at any time through the customer portal. Changes take effect immediately and we'll prorate any charges.
           </p>
         </div>
 
@@ -260,7 +250,7 @@ const refresh = async () => {
             How do I cancel my subscription?
           </h3>
           <p class="mt-2 text-gray-600">
-            You can cancel your subscription anytime from your account settings. You'll continue to have access to paid features until the end of your billing period.
+            You can cancel your subscription anytime through the customer portal in your account settings. You'll continue to have access to paid features until the end of your billing period.
           </p>
         </div>
       </div>

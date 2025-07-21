@@ -1,18 +1,17 @@
-import { stripe, supabaseAdmin } from '~/server/utils/stripe';
-import { serverSupabaseUser } from '#supabase/server';
+import { stripe } from '~/server/utils/stripe';
+import { getSupabaseAdmin, getSupabaseUser } from '~/server/utils/supabase';
+import { sendSuccess, sendError, ErrorCodes, handleError } from '~/server/utils/api-response';
 
 export default defineEventHandler(async (event) => {
-  // Get authenticated user
-  const user = await serverSupabaseUser(event);
-
-  if (!user) {
-    throw createError({
-      statusCode: 401,
-      statusMessage: 'Unauthorized'
-    });
-  }
-
   try {
+    const supabaseAdmin = getSupabaseAdmin();
+
+    // Get authenticated user
+    const user = await getSupabaseUser(event);
+
+    if (!user) {
+      return sendError(event, ErrorCodes.UNAUTHORIZED, 'Unauthorized');
+    }
     // Get user's profile with Stripe customer ID
     const { data: profile } = await supabaseAdmin
       .from('user_profiles')
@@ -22,11 +21,11 @@ export default defineEventHandler(async (event) => {
 
     if (!profile?.stripe_customer_id) {
       // No Stripe customer, user is on free tier
-      return {
+      return sendSuccess(event, {
         tier: 'free',
         status: 'active',
         synced: true
-      };
+      });
     }
 
     // Get active subscriptions from Stripe
@@ -48,11 +47,11 @@ export default defineEventHandler(async (event) => {
         })
         .eq('user_id', user.id);
 
-      return {
+      return sendSuccess(event, {
         tier: 'free',
         status: 'active',
         synced: true
-      };
+      });
     }
 
     // Get the active subscription
@@ -64,10 +63,20 @@ export default defineEventHandler(async (event) => {
     const stripePriceIdPro = process.env.STRIPE_PRICE_ID_PRO;
     const stripePriceIdMax = process.env.STRIPE_PRICE_ID_MAX;
 
+    console.log('Sync subscription - Price ID check:', {
+      priceId,
+      stripePriceIdPro,
+      stripePriceIdMax,
+      matchesPro: priceId === stripePriceIdPro,
+      matchesMax: priceId === stripePriceIdMax
+    });
+
     if (priceId === stripePriceIdPro) {
       tier = 'pro';
     } else if (priceId === stripePriceIdMax) {
       tier = 'max';
+    } else {
+      console.warn(`Sync: Unknown price ID: ${priceId}`);
     }
 
     // Update the database
@@ -85,18 +94,13 @@ export default defineEventHandler(async (event) => {
       throw error;
     }
 
-    return {
+    return sendSuccess(event, {
       tier,
       status: subscription.status,
       priceId,
       synced: true
-    };
-  } catch (error: any) {
-    console.error('Error syncing subscription:', error);
-
-    throw createError({
-      statusCode: 500,
-      statusMessage: error.message || 'Failed to sync subscription'
     });
+  } catch (error: any) {
+    return handleError(event, error, 'sync subscription');
   }
 });

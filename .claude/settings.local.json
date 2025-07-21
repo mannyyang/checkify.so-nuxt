@@ -51,7 +51,9 @@
       "Bash(say \"Successfully committed and pushed the fix to GitHub. The Railway deployment should now work without the better-sqlite3 build errors.\")",
       "Bash(say \"I''ve enhanced your Nuxt Content configuration with better markdown support, table of contents, navigation fields, and fixed TypeScript errors. Your docs are already properly structured with frontmatter and can be accessed at /docs paths.\")",
       "Bash(git restore:*)",
-      "Bash(say:*)"
+      "Bash(say:*)",
+      "WebFetch(domain:stripe.com)",
+      "WebFetch(domain:docs.stripe.com)"
     ],
     "deny": []
   }

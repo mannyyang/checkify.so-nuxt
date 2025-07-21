@@ -1,32 +1,23 @@
-import { serverSupabaseUser } from '#supabase/server';
+import { getSupabaseUser } from '~/server/utils/supabase';
 import { verifyAndSyncStripeCustomer } from '~/server/utils/stripe';
+import { sendSuccess, sendError, ErrorCodes, handleError } from '~/server/utils/api-response';
 
 export default defineEventHandler(async (event) => {
-  // Get authenticated user
-  const user = await serverSupabaseUser(event);
-
-  if (!user || !user.email) {
-    throw createError({
-      statusCode: 401,
-      statusMessage: 'Unauthorized'
-    });
-  }
-
   try {
+    // Get authenticated user
+    const user = await getSupabaseUser(event);
+
+    if (!user || !user.email) {
+      return sendError(event, ErrorCodes.UNAUTHORIZED, 'Unauthorized');
+    }
     // Verify and sync Stripe customer
     const customerId = await verifyAndSyncStripeCustomer(user.id, user.email);
 
-    return {
-      success: true,
+    return sendSuccess(event, {
       customerId,
       message: 'Stripe customer synced successfully'
-    };
-  } catch (error: any) {
-    console.error('Error syncing Stripe customer:', error);
-
-    throw createError({
-      statusCode: 500,
-      statusMessage: error.message || 'Failed to sync Stripe customer'
     });
+  } catch (error: any) {
+    return handleError(event, error, 'sync Stripe customer');
   }
 });

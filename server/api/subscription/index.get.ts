@@ -1,36 +1,22 @@
-import { serverSupabaseUser } from '#supabase/server';
-import { supabaseAdmin, stripe } from '~/server/utils/stripe';
+import { stripe } from '~/server/utils/stripe';
+import { getSupabaseAdmin, getSupabaseUser, withSupabaseError } from '~/server/utils/supabase';
+import { sendSuccess, handleError } from '~/server/utils/api-response';
 
 export default defineEventHandler(async (event) => {
-  // Get authenticated user
-  const user = await serverSupabaseUser(event);
-
-  if (!user) {
-    // Return free tier for unauthenticated users
-    return {
-      tier: 'free',
-      status: 'active',
-      hasStripeCustomer: false
-    };
-  }
+  const supabaseAdmin = getSupabaseAdmin();
 
   try {
-    // Get user's subscription data
-    const { data: profile, error } = await supabaseAdmin
-      .from('user_profiles')
-      .select('subscription_tier, subscription_status, subscription_expires_at, stripe_customer_id')
-      .eq('user_id', user.id)
-      .single();
+    // Get authenticated user
+    const user = await getSupabaseUser(event);
 
-    if (error) {
-      console.error('Error fetching user profile:', error);
-      // If no profile exists, return free tier
-      return {
-        tier: 'free',
-        status: 'active',
-        hasStripeCustomer: false
-      };
-    }
+    // Get user's subscription data
+    const profile = await withSupabaseError(event, () =>
+      supabaseAdmin
+        .from('user_profiles')
+        .select('subscription_tier, subscription_status, subscription_expires_at, stripe_customer_id')
+        .eq('user_id', user.id)
+        .single()
+    );
 
     // Log the profile data for debugging
     console.log(`Subscription data for user ${user.id}:`, {
@@ -61,13 +47,17 @@ export default defineEventHandler(async (event) => {
           console.log('Syncing subscription from Stripe:', {
             priceId,
             stripePriceIdPro,
-            stripePriceIdMax
+            stripePriceIdMax,
+            priceIdMatchesPro: priceId === stripePriceIdPro,
+            priceIdMatchesMax: priceId === stripePriceIdMax
           });
 
           if (priceId === stripePriceIdPro) {
             tier = 'pro';
           } else if (priceId === stripePriceIdMax) {
             tier = 'max';
+          } else {
+            console.warn(`Unknown price ID: ${priceId}. Pro: ${stripePriceIdPro}, Max: ${stripePriceIdMax}`);
           }
 
           // Update the database
@@ -80,29 +70,33 @@ export default defineEventHandler(async (event) => {
             })
             .eq('user_id', user.id);
 
-          return {
+          return sendSuccess(event, {
             tier,
             status: subscription.status,
             expiresAt: subscription.cancel_at ? new Date(subscription.cancel_at * 1000).toISOString() : null,
             hasStripeCustomer: true
-          };
+          });
         }
       } catch (stripeError) {
         console.error('Failed to check Stripe subscriptions:', stripeError);
       }
     }
 
-    return {
+    return sendSuccess(event, {
       tier: profile.subscription_tier || 'free',
       status: profile.subscription_status || 'active',
       expiresAt: profile.subscription_expires_at,
       hasStripeCustomer: !!profile.stripe_customer_id
-    };
-  } catch (error: any) {
-    console.error('Error fetching subscription:', error);
-    throw createError({
-      statusCode: 500,
-      statusMessage: 'Failed to fetch subscription data'
     });
+  } catch (error) {
+    // If user not authenticated or profile not found, return free tier
+    if (error?.statusCode === 401 || error?.statusCode === 404) {
+      return sendSuccess(event, {
+        tier: 'free',
+        status: 'active',
+        hasStripeCustomer: false
+      });
+    }
+    handleError(event, error);
   }
 });

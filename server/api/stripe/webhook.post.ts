@@ -1,9 +1,11 @@
 import Stripe from 'stripe';
 import { consola } from 'consola';
-import { stripe, supabaseAdmin } from '~/server/utils/stripe';
+import { stripe } from '~/server/utils/stripe';
+import { getSupabaseAdmin } from '~/server/utils/supabase';
 
 // Update user subscription in database
 async function updateUserSubscription (customerId: string, subscription: Stripe.Subscription) {
+  const supabaseAdmin = getSupabaseAdmin();
   // Get user ID from customer metadata
   const customer = await stripe.customers.retrieve(customerId) as Stripe.Customer;
   const userId = customer.metadata?.supabase_user_id;
@@ -138,6 +140,7 @@ export default defineEventHandler(async (event) => {
         const userId = customer.metadata?.supabase_user_id;
 
         if (userId) {
+          const supabaseAdmin = getSupabaseAdmin();
           await supabaseAdmin
             .from('user_profiles')
             .update({

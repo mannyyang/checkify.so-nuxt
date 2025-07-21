@@ -26,7 +26,8 @@ import { CheckSquare, Home } from 'lucide-vue-next'
 const user = useSupabaseUser();
 
 // Fetch subscription data
-const { data: subscription } = await useFetch('/api/subscription');
+const { data: subscriptionResponse } = await useFetch('/api/subscription');
+const subscription = computed(() => subscriptionResponse.value?.data || subscriptionResponse.value);
 
 const tierLabels = {
   free: 'Free',

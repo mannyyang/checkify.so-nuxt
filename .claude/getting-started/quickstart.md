@@ -36,6 +36,7 @@ supabase db push
 # - 20240101000000_initial_schema.sql
 # - 20250709232007_add_sync_database_columns.sql  
 # - 20250710063000_add_sync_tracking_table.sql
+# - 20250720000000_add_user_profiles.sql
 ```
 
 ### 4. Configure Environment Variables
@@ -54,6 +55,13 @@ BASE_URL=http://localhost:3000
 # Notion OAuth (optional for local dev)
 NOTION_CLIENT_ID=your-notion-client-id
 NOTION_CLIENT_SECRET=your-notion-client-secret
+
+# Stripe (required for subscription features)
+STRIPE_SECRET_KEY=sk_test_xxxxx
+STRIPE_PUBLISHABLE_KEY=pk_test_xxxxx
+STRIPE_WEBHOOK_SECRET=whsec_xxxxx
+STRIPE_PRICE_ID_PRO=price_xxxxx
+STRIPE_PRICE_ID_MAX=price_xxxxx
 ```
 
 ### 5. Set Up Notion Integration
@@ -64,7 +72,20 @@ NOTION_CLIENT_SECRET=your-notion-client-secret
    - Redirect URI: `http://localhost:3000/api/connect-notion`
    - Capabilities: Read content, Update content, Read user info
 
-### 6. Configure PostHog (Optional)
+### 6. Set Up Stripe (Required for Subscriptions)
+
+1. Create a [Stripe account](https://stripe.com) (use test mode for development)
+2. Set up products and prices:
+   - Pro: $6.99/month
+   - Max: $19.99/month
+3. Configure webhook endpoint:
+   - URL: `http://localhost:3000/api/stripe/webhook`
+   - Events: subscription.*, invoice.*
+4. Copy the webhook signing secret to `.env`
+
+For detailed Stripe setup, see [Stripe Integration Guide](../features/stripe-integration.md).
+
+### 7. Configure PostHog (Optional)
 
 Update `plugins/posthog.client.ts` with your project key:
 
@@ -75,7 +96,7 @@ posthogLib.init('your-project-key', {
 });
 ```
 
-### 7. Start Development Server
+### 8. Start Development Server
 
 ```bash
 pnpm dev
@@ -167,4 +188,7 @@ pnpm typecheck        # Run TypeScript checks
 # Database
 supabase db push      # Apply migrations
 supabase db reset     # Reset database
+
+# Stripe Testing
+stripe listen --forward-to localhost:3000/api/stripe/webhook
 ```
