@@ -43,18 +43,18 @@ export default defineEventHandler(async (event) => {
   }
 
   const { notion_database_id: notionDb, notion_sync_database_id: syncDatabaseId } = todoListData;
-  
+
   // Check if we have a notion database connection
   // Supabase foreign key expansion returns an object, not an array
   if (!notionDb) {
     throw new Error('No Notion database connected to this todo list');
   }
-  
+
   // Since it's a foreign key expansion, notionDb should be an object
   if (!notionDb.access_token) {
     throw new Error('No access token found for the Notion database');
   }
-  
+
   // Use the access token from the linked notion database
   const notion = new Client({ auth: notionDb.access_token });
 
@@ -90,7 +90,7 @@ export default defineEventHandler(async (event) => {
 
   // Create or update the sync database
   let currentSyncDatabaseId = syncDatabaseId;
-  
+
   if (!currentSyncDatabaseId) {
     // Create new database
     const rawPageId = parentPageId || notionDb.metadata?.parent?.page_id;
@@ -98,10 +98,10 @@ export default defineEventHandler(async (event) => {
     if (!rawPageId) {
       throw new Error('No parent page ID provided for creating sync database');
     }
-    
+
     // The frontend already extracts the page ID from URL, so we can use it directly
     const targetPageId = rawPageId;
-    
+
     consola.info('Target page ID:', targetPageId);
 
     try {
