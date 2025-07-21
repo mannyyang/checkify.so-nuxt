@@ -16,11 +16,14 @@ Welcome to the comprehensive documentation for Checkify.so - a powerful todo man
 - **[Webhook Integration](./features/webhook-integration.md)** - Bidirectional sync setup
 - **[PostHog Integration](./features/posthog-integration.md)** - Analytics and feature flags
 - **[Subscription Tiers](./features/subscription-tiers.md)** - Pricing and limits
+- **[Stripe Integration](./features/stripe-integration.md)** - Payment processing and billing
 
 ### 🔧 Technical Reference
 - **[Architecture](./technical/architecture.md)** - System design and tech stack
 - **[Database Schema](./technical/database-schema.md)** - Tables, relationships, and queries
 - **[API Reference](./technical/api-reference.md)** - Complete endpoint documentation
+- **[API Utilities](./technical/api-utilities.md)** - Server-side utility functions
+- **[TypeScript Setup](./technical/typescript-setup.md)** - TypeScript configuration and best practices
 - **[UI Components](./technical/ui-components.md)** - Component library and patterns
 
 ### 📝 Additional Resources
@@ -119,4 +122,4 @@ Checkify.so is open source software licensed under the MIT license. See the LICE
 
 ---
 
-*Last updated: July 15, 2025*
+*Last updated: January 20, 2025*

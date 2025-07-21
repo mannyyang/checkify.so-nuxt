@@ -34,17 +34,24 @@ This guide covers everything you need to know to develop, test, and deploy Check
    
    Create a `.env` file in the root directory:
    ```env
-   # Supabase Configuration
+   # Supabase Configuration (Required)
    SUPABASE_URL=https://your-project.supabase.co
    SUPABASE_KEY=your-anon-key
    SUPABASE_SERVICE_KEY=your-service-role-key
    
-   # Application
+   # Application (Required)
    BASE_URL=http://localhost:3000
    
-   # Notion OAuth (optional for development)
-   NOTION_CLIENT_ID=your-notion-client-id
-   NOTION_CLIENT_SECRET=your-notion-client-secret
+   # Notion OAuth (Required for Notion integration)
+   NOTION_OAUTH_CLIENT_ID=your-notion-oauth-client-id
+   NOTION_OAUTH_CLIENT_SECRET=your-notion-oauth-client-secret
+   
+   # Stripe (Required for subscription features)
+   STRIPE_SECRET_KEY=sk_test_xxxxx
+   STRIPE_PUBLISHABLE_KEY=pk_test_xxxxx
+   STRIPE_WEBHOOK_SECRET=whsec_xxxxx
+   STRIPE_PRICE_ID_PRO=price_xxxxx     # Price ID for Pro tier ($6.99/mo)
+   STRIPE_PRICE_ID_MAX=price_xxxxx     # Price ID for Max tier ($19.99/mo)
    ```
 
 4. **Database Setup**

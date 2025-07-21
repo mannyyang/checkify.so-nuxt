@@ -223,33 +223,6 @@ Delete a todo list and unlink from Notion.
 
 ### Page & Todo Operations
 
-#### `POST /api/page`
-Fetch and sync pages from a Notion database.
-
-**Request Body:**
-```json
-{
-  "database_id": "notion-database-uuid",
-  "limit": 60
-}
-```
-
-**Response:**
-```json
-{
-  "synced_pages": 25,
-  "synced_todos": 150,
-  "has_more": false
-}
-```
-
-**Error Responses:**
-- `400 Bad Request` - Invalid database_id
-- `401 Unauthorized` - User not authenticated
-- `403 Forbidden` - No access to database
-
----
-
 #### `POST /api/toggle-checkbox`
 Toggle a todo checkbox state in Notion.
 
@@ -662,11 +635,34 @@ All errors follow this format:
 
 ### Application-Specific Error Codes
 
+**Authentication & Authorization:**
+- `UNAUTHORIZED` - User not authenticated
+- `FORBIDDEN` - User authenticated but lacks permission
+- `AUTHENTICATION_FAILED` - Auth token invalid or expired
+
+**Validation & Input:**
+- `VALIDATION_ERROR` - Request validation failed
+- `MISSING_REQUIRED_FIELD` - Required field not provided
+- `INVALID_INPUT` - Input format or value invalid
+- `INVALID_REQUEST` - General request validation failed
+
+**Resources:**
+- `NOT_FOUND` - Resource not found
+- `ALREADY_EXISTS` - Resource already exists (e.g., duplicate subscription)
+
+**External Services:**
+- `NOTION_API_ERROR` - Notion API request failed
+- `STRIPE_API_ERROR` - Stripe API request failed
+- `SUPABASE_ERROR` - Database operation failed
+
+**Server Errors:**
+- `INTERNAL_ERROR` - Unexpected server error
+- `SERVICE_UNAVAILABLE` - Service temporarily unavailable
+
+**Limits & Subscriptions:**
+- `RATE_LIMIT_EXCEEDED` - API rate limit reached
 - `SUBSCRIPTION_REQUIRED` - Feature requires paid subscription
 - `TIER_LIMIT_EXCEEDED` - Subscription tier limit reached
-- `ALREADY_EXISTS` - Resource already exists (e.g., duplicate subscription)
-- `INVALID_REQUEST` - Request validation failed
-- `AUTHENTICATION_FAILED` - Auth token invalid or expired
 
 ### Error Handling Example
 
@@ -727,6 +723,14 @@ This middleware:
 - Creates Stripe customer if missing
 - Syncs email with Stripe
 - Runs on every authenticated request
+
+**Implementation Details:**
+
+1. **Profile Creation**: If no profile exists, creates one with default 'free' tier
+2. **Stripe Integration**: Automatically creates Stripe customer with user's email
+3. **Error Handling**: Continues request even if Stripe customer creation fails
+4. **Performance**: Uses database upsert to minimize queries
+5. **Scope**: Only runs for authenticated API routes (skips public endpoints)
 
 ## Best Practices
 

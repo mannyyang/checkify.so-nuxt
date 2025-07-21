@@ -57,6 +57,40 @@ const showSyncDialog = ref(false);
 const syncParentPageId = ref('');
 const syncLoading = ref(false);
 const lastSyncDate = ref<Date | null>(null);
+
+// Function to extract page ID from Notion URL or return the input as-is
+const extractNotionPageId = (input: string): string => {
+  // If it's already a page ID (32 chars without dashes or 36 chars with dashes), return as-is
+  const cleanInput = input.trim();
+  const withoutDashes = cleanInput.replace(/-/g, '');
+  
+  // Check if it's already a valid page ID
+  if (/^[a-f0-9]{32}$/i.test(withoutDashes) && (cleanInput.length === 32 || cleanInput.length === 36)) {
+    return cleanInput;
+  }
+  
+  // Try to extract from Notion URL
+  // Look for the last 32-character hex string (with or without dashes)
+  // This handles various URL formats including workspace URLs
+  const patterns = [
+    // Match 32 hex chars with optional dashes (36 chars total with dashes)
+    /([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})/i,
+    // Match 32 consecutive hex chars
+    /([a-f0-9]{32})/i
+  ];
+  
+  for (const pattern of patterns) {
+    const matches = cleanInput.match(new RegExp(pattern, 'gi'));
+    if (matches && matches.length > 0) {
+      // Return the last match (most likely to be the page ID)
+      return matches[matches.length - 1];
+    }
+  }
+  
+  // If no match, return the original input
+  console.warn('Could not extract page ID from:', cleanInput);
+  return cleanInput;
+};
 const syncDatabaseId = ref<string | null>(null);
 
 const isNotionSyncEnabled = ref(false);
@@ -184,7 +218,13 @@ const syncToNotion = async () => {
       method: 'POST',
       body: {
         todo_list_id: route.params.todo_list_id,
-        parent_page_id: syncParentPageId.value || undefined
+        parent_page_id: (() => {
+          if (!syncParentPageId.value) return undefined;
+          const extracted = extractNotionPageId(syncParentPageId.value);
+          console.log('Sync parent page ID input:', syncParentPageId.value);
+          console.log('Extracted page ID:', extracted);
+          return extracted;
+        })()
       }
     });
 
@@ -449,20 +489,20 @@ const formatDate = (date: Date | null) => {
         <DialogHeader>
           <DialogTitle>Create Sync Database</DialogTitle>
           <DialogDescription>
-            To create a sync database, please provide the Notion page ID where you want the database to be created.
+            To create a sync database, please provide the Notion page where you want the database to be created.
           </DialogDescription>
         </DialogHeader>
 
         <div class="space-y-4 py-4">
           <div class="space-y-2">
-            <label for="pageId" class="text-sm font-medium">Parent Page ID</label>
+            <label for="pageId" class="text-sm font-medium">Parent Page URL or ID</label>
             <Input
               id="pageId"
               v-model="syncParentPageId"
-              placeholder="Enter Notion page ID"
+              placeholder="Paste Notion page URL or ID"
             />
             <p class="text-xs text-muted-foreground">
-              You can find the page ID in the Notion URL after the workspace name
+              You can paste a Notion page URL (e.g., notion.so/workspace/page-id) or just the page ID
             </p>
           </div>
         </div>

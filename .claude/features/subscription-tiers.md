@@ -10,10 +10,7 @@ Checkify.so offers flexible pricing tiers to match your todo management needs.
 | **Checkboxes per Page** | 25 | 200 | 1000 |
 | **Todo Lists** | 3 | Unlimited | Unlimited |
 | **Notion Sync** | ✅ | ✅ | ✅ |
-| **Webhook Support** | ❌ | ✅ | ✅ |
-| **Support** | Basic | Email | Priority Email |
-| **Real-time Sync** | ❌ | ❌ | ✅ |
-| **Custom Integrations** | ❌ | ❌ | ✅ |
+| **Support** | Community | Email | Priority Email |
 
 ## Free Tier
 
@@ -30,6 +27,9 @@ Perfect for personal use and trying out Checkify.
 - Small projects
 - Testing the platform
 
+### Implementation Note
+When a free user reaches their limits, they'll see upgrade prompts in the UI.
+
 ## Pro Tier
 
 Ideal for power users and professionals.
@@ -41,11 +41,9 @@ Ideal for power users and professionals.
 - **All features** except API access
 
 ### Additional Features
-- Notion database sync (export todos)
-- Webhook support for bidirectional sync
-- Priority email support
-- Advanced filters and sorting
-- Faster sync frequency (15 minutes)
+- Email support
+- No limits on database connections
+- All core features included
 
 ### Use Cases
 - Project management
@@ -65,11 +63,9 @@ Built for power users and teams who need the highest limits.
 
 ### Additional Features
 - Everything in Pro tier
-- Real-time Notion sync
-- Custom integrations
 - Priority email support
-- Advanced analytics (coming soon)
-- Team collaboration features (coming soon)
+- Highest performance tier
+- Maximum limits for power users
 
 ### Use Cases
 - Large teams

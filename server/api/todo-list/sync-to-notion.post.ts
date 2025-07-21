@@ -42,12 +42,25 @@ export default defineEventHandler(async (event) => {
     throw new Error('Todo list not found');
   }
 
-  const { notion_database_id: notionDb } = todoListData;
-  const notion = new Client({ auth: notionDb[0].access_token });
+  const { notion_database_id: notionDb, notion_sync_database_id: syncDatabaseId } = todoListData;
+  
+  // Check if we have a notion database connection
+  // Supabase foreign key expansion returns an object, not an array
+  if (!notionDb) {
+    throw new Error('No Notion database connected to this todo list');
+  }
+  
+  // Since it's a foreign key expansion, notionDb should be an object
+  if (!notionDb.access_token) {
+    throw new Error('No access token found for the Notion database');
+  }
+  
+  // Use the access token from the linked notion database
+  const notion = new Client({ auth: notionDb.access_token });
 
   // Get all checkboxes from the source database
   const databasePages = await notion.databases.query({
-    database_id: notionDb[0].notion_database_id,
+    database_id: notionDb.notion_database_id,
     page_size: 100
   });
 
@@ -75,16 +88,21 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  let syncDatabaseId = todoListData.notion_sync_database_id;
-
   // Create or update the sync database
-  if (!syncDatabaseId) {
+  let currentSyncDatabaseId = syncDatabaseId;
+  
+  if (!currentSyncDatabaseId) {
     // Create new database
-    const targetPageId = parentPageId || notionDb[0].metadata?.parent?.page_id;
+    const rawPageId = parentPageId || notionDb.metadata?.parent?.page_id;
 
-    if (!targetPageId) {
+    if (!rawPageId) {
       throw new Error('No parent page ID provided for creating sync database');
     }
+    
+    // The frontend already extracts the page ID from URL, so we can use it directly
+    const targetPageId = rawPageId;
+    
+    consola.info('Target page ID:', targetPageId);
 
     try {
       const newDatabase: CreateDatabaseResponse = await notion.databases.create({
@@ -125,13 +143,13 @@ export default defineEventHandler(async (event) => {
         }
       });
 
-      syncDatabaseId = newDatabase.id;
+      currentSyncDatabaseId = newDatabase.id;
 
       // Store the sync database ID
       const { error: updateError } = await supabase
         .from('todo_list')
         .update({
-          notion_sync_database_id: syncDatabaseId,
+          notion_sync_database_id: currentSyncDatabaseId,
           last_sync_date: new Date().toISOString()
         })
         .eq('todo_list_id', todoListId);
@@ -147,7 +165,7 @@ export default defineEventHandler(async (event) => {
 
   // Get existing pages in the sync database
   const existingPages = await notion.databases.query({
-    database_id: syncDatabaseId,
+    database_id: currentSyncDatabaseId,
     page_size: 100
   });
 
@@ -167,8 +185,8 @@ export default defineEventHandler(async (event) => {
     errors: [] as Array<{ blockId: string; error: string }>
   };
 
-  // Track synced pages for webhook updates
-  const syncedPages = [];
+  // Track synced pages for webhook updates (disabled for now)
+  // const syncedPages = [];
 
   for (const { checkbox, page } of allCheckboxes) {
     // @ts-ignore
@@ -240,7 +258,7 @@ export default defineEventHandler(async (event) => {
         // Create new page
         const newPage = await notion.pages.create({
           parent: {
-            database_id: syncDatabaseId
+            database_id: currentSyncDatabaseId
           },
           properties
         });
@@ -248,13 +266,13 @@ export default defineEventHandler(async (event) => {
         syncedPageId = newPage.id;
       }
 
-      // Track the synced page for webhook mapping
-      syncedPages.push({
-        todo_list_id: todoListId,
-        sync_database_id: syncDatabaseId,
-        page_id: syncedPageId,
-        block_id: blockId
-      });
+      // Track the synced page for webhook mapping (disabled for now)
+      // syncedPages.push({
+      //   todo_list_id: todoListId,
+      //   sync_database_id: currentSyncDatabaseId,
+      //   page_id: syncedPageId,
+      //   block_id: blockId
+      // });
     } catch (error: any) {
       consola.error(`Error syncing checkbox ${blockId}:`, error);
       syncResults.errors.push({
@@ -264,18 +282,19 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  // Store the page-to-block mappings
-  if (syncedPages.length > 0) {
-    const { error: mappingError } = await supabase
-      .from('notion_sync_pages')
-      .upsert(syncedPages, {
-        onConflict: 'page_id'
-      });
+  // Store the page-to-block mappings (disabled for now)
+  // if (syncedPages.length > 0) {
+  //   const { error: mappingError } = await supabase
+  //     .from('notion_sync_pages')
+  //     .upsert(syncedPages, {
+  //       onConflict: 'page_id'
+  //     });
 
-    if (mappingError) {
-      consola.error('Error storing page mappings:', mappingError);
-    }
-  }
+  //   if (mappingError) {
+  //     consola.error('Error storing page mappings:', JSON.stringify(mappingError, null, 2));
+  //     consola.error('Synced pages data:', JSON.stringify(syncedPages, null, 2));
+  //   }
+  // }
 
   // Update last sync date
   await supabase
@@ -287,7 +306,7 @@ export default defineEventHandler(async (event) => {
 
   return {
     success: true,
-    syncDatabaseId,
+    syncDatabaseId: currentSyncDatabaseId,
     syncResults,
     totalCheckboxes: allCheckboxes.length
   };
