@@ -45,7 +45,10 @@ This document provides a comprehensive overview of Checkify.so's system architec
 ├── stores/            # Pinia state management
 ├── composables/       # Vue composables
 ├── lib/               # Utility functions
-└── plugins/           # Nuxt plugins
+├── plugins/           # Nuxt plugins
+├── content/           # Content management
+│   └── docs/          # Documentation pages
+└── content.config.ts  # Content configuration
 ```
 
 ## Tech Stack Details
@@ -58,6 +61,7 @@ This document provides a comprehensive overview of Checkify.so's system architec
 - **Styling**: Tailwind CSS v4.0.0-beta.6
 - **Icons**: lucide-vue-next
 - **Utilities**: class-variance-authority, clsx
+- **Content Management**: Nuxt Content v3
 
 ### Backend
 - **API Layer**: Nuxt server routes (Nitro)
@@ -98,6 +102,44 @@ const { data, pending, refresh } = useFetch<TodoListData>(
 **Decision**: Dual authentication system
 - Primary: Supabase Auth (Google OAuth)
 - Secondary: Notion OAuth for API access
+
+### 3. Content Management System
+**Decision**: Nuxt Content v3 for documentation and static content
+
+**Implementation**:
+```typescript
+// content.config.ts - Nuxt Content configuration
+import { defineContentConfig } from '@nuxt/content'
+
+export default defineContentConfig({
+  collections: {
+    docs: {
+      type: 'page',
+      source: 'docs/**/*.md'
+    }
+  }
+});
+```
+
+**Features**:
+- File-based content management
+- Markdown with frontmatter support
+- Auto-generated navigation
+- Static site generation for docs
+- Full-text search capabilities
+
+**Content Structure**:
+```
+content/
+└── docs/
+    ├── connect-notion.md    # User guide: Connecting Notion
+    └── create-todo-list.md  # User guide: Creating todo lists
+```
+
+**Rendering**:
+- Dynamic route: `/docs/[...slug].vue`
+- Server-side rendering for SEO
+- Progressive enhancement for interactivity
 
 **Rationale**:
 - Leverages Supabase's robust auth system

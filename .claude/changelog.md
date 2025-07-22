@@ -2,6 +2,93 @@
 
 All notable changes to Checkify.so are documented here.
 
+## [Unreleased] - Latest Development
+
+### Added
+
+- **Enhanced Sidebar Navigation System**
+  - Complete redesign using shadcn/ui sidebar components
+  - Responsive sidebar with mobile sheet overlay
+  - Wider default width (320px) for better text visibility
+  - Collapsible sidebar with icon-only mode (48px)
+  - Keyboard shortcut support (Cmd/Ctrl + S)
+  - Smooth transitions and accessibility compliance
+
+- **Sync-to-Notion Feature**
+  - New "Sync to Notion" functionality for creating aggregated todo databases
+  - Forward-only sync from source databases to centralized view
+  - Rich metadata including page links, block links, and timestamps
+  - Database properties: Title, Status, Page, Page Link, Block Link, Last Updated, Block ID
+  - Support for optional parent page specification
+  - Handles foreign key relationships gracefully
+  - Comprehensive error handling and progress reporting
+
+- **Content Management System**
+  - Nuxt Content v3 integration for documentation
+  - File-based content management with Markdown support
+  - Dynamic documentation routing with `/docs/[...slug].vue`
+  - User guides for connecting Notion and creating todo lists
+  - Server-side rendering for improved SEO
+
+- **Enhanced Test Infrastructure**
+  - Comprehensive test suite with Vitest
+  - API endpoint testing for sync-to-notion functionality
+  - Component testing for sidebar constants
+  - Mock strategies for Notion API and Supabase
+  - Coverage reporting and CI/CD preparation
+  - E2E test scenarios documentation
+
+- **Updated API Documentation**
+  - New endpoints documented: `/api/pageview`, `/api/extract-tags`, `/api/extract-todos`, `/api/get-checkboxes`, `/api/set-checkbox`
+  - Detailed sync-to-notion endpoint documentation with examples
+  - Updated subscription tier limits in API responses
+  - Added comprehensive error handling examples
+
+### Changed
+
+- **Updated Subscription Tiers**
+  - Free tier: 25 pages (was 10), 25 checkboxes per page, 2 todo lists (was 3)
+  - Pro tier: 100 pages, 100 checkboxes per page (was 200), 10 todo lists (was unlimited), daily automatic sync
+  - Max tier: 500 pages, 1000 checkboxes per page, 25 todo lists (was unlimited), hourly automatic sync
+
+- **UI Component Improvements**
+  - Removed outdated PrimeVue migration documentation
+  - Updated component structure to reflect sidebar system
+  - Enhanced responsive design patterns
+  - Improved accessibility throughout the application
+
+- **Code Quality Enhancements**
+  - Applied consistent linting and formatting across codebase
+  - Better error handling in sync operations
+  - Improved TypeScript type definitions
+  - Enhanced debugging capabilities with debug endpoints
+
+### Fixed
+
+- **API Response Accuracy**
+  - Corrected tier limits in API documentation to match implementation
+  - Fixed Supabase foreign key expansion handling (returns objects, not arrays)
+  - Improved error scenarios for missing rich_text in todo items
+
+- **Documentation Consistency**
+  - Updated all documentation to reflect current features and limits
+  - Fixed outdated information in subscription tiers documentation
+  - Corrected API endpoint examples and responses
+
+### Technical Improvements
+
+- **Architecture Updates**
+  - Added content management system to architecture documentation
+  - Documented sidebar component architecture
+  - Enhanced error handling patterns
+  - Improved scalability considerations
+
+- **Testing Coverage**
+  - Added tests for URL parsing integration
+  - Database foreign key handling tests
+  - Forward-only sync behavior verification
+  - Error scenario coverage improvements
+
 ## [2025.07.20] - 2025-07-20
 
 ### Added

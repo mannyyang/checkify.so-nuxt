@@ -6,10 +6,11 @@ Checkify.so offers flexible pricing tiers to match your todo management needs.
 
 | Feature | Free | Pro ($6.99/mo) | Max ($19.99/mo) |
 |---------|------|----------------|------------------|
-| **Pages per Database** | 10 | 100 | 500 |
-| **Checkboxes per Page** | 25 | 200 | 1000 |
-| **Todo Lists** | 3 | Unlimited | Unlimited |
+| **Pages per Database** | 25 | 100 | 500 |
+| **Checkboxes per Page** | 25 | 100 | 1000 |
+| **Todo Lists** | 2 | 10 | 25 |
 | **Notion Sync** | ✅ | ✅ | ✅ |
+| **Automatic Sync** | ❌ | Daily | Hourly |
 | **Support** | Community | Email | Priority Email |
 
 ## Free Tier
@@ -17,10 +18,11 @@ Checkify.so offers flexible pricing tiers to match your todo management needs.
 Perfect for personal use and trying out Checkify.
 
 ### Limits
-- **10 pages** per Notion database
+- **25 pages** per Notion database
 - **25 checkboxes** per page
-- **3 todo lists** maximum
+- **2 todo lists** maximum
 - **Basic support** only
+- **Manual sync** only
 
 ### Use Cases
 - Personal task management
@@ -36,9 +38,9 @@ Ideal for power users and professionals.
 
 ### Limits
 - **100 pages** per Notion database
-- **200 checkboxes** per page
-- **Unlimited todo lists**
-- **All features** except API access
+- **100 checkboxes** per page
+- **10 todo lists** maximum
+- **Daily automatic sync**
 
 ### Additional Features
 - Email support
@@ -58,7 +60,8 @@ Built for power users and teams who need the highest limits.
 ### Limits
 - **500 pages** per Notion database
 - **1000 checkboxes** per page
-- **Unlimited todo lists**
+- **25 todo lists** maximum
+- **Hourly automatic sync**
 - **All features included**
 
 ### Additional Features
@@ -117,19 +120,19 @@ if (isWithinLimits('pages', 50)) {
 ```typescript
 const TIER_LIMITS = {
   free: {
-    maxPages: 10,
+    maxPages: 25,
     maxCheckboxesPerPage: 25,
-    maxTodoLists: 3
+    maxTodoLists: 2
   },
   pro: {
     maxPages: 100,
-    maxCheckboxesPerPage: 200,
-    maxTodoLists: undefined // unlimited
+    maxCheckboxesPerPage: 100,
+    maxTodoLists: 10
   },
   max: {
     maxPages: 500,
     maxCheckboxesPerPage: 1000,
-    maxTodoLists: undefined // unlimited
+    maxTodoLists: 25
   }
 };
 ```

@@ -28,7 +28,7 @@ components/
 │   ├── progress/         # Progress bar component
 │   ├── separator/        # Separator component
 │   ├── sheet/            # Sheet/Drawer components
-│   ├── sidebar/          # Sidebar navigation components
+│   ├── sidebar/          # Sidebar navigation components (see sidebar-components.md)
 │   ├── skeleton/         # Skeleton loader component
 │   ├── sonner/           # Toast notification component
 │   └── tooltip/          # Tooltip components
@@ -458,29 +458,17 @@ Example:
 
 3. **Icon Optimization**: Icons are tree-shaken automatically
 
-## Migration from PrimeVue
+## Sidebar Components
 
-Key differences when migrating from PrimeVue:
+The sidebar navigation system has been completely redesigned using shadcn/ui components. For detailed documentation on the sidebar implementation, including:
 
-1. **Component Names**: 
-   - PrimeVue: `<Button>`, `<Card>`, `<Dialog>`
-   - shadcn/ui: Same names but different props/slots
+- Component architecture
+- Implementation examples
+- Responsive behavior
+- Customization options
+- Migration guide
 
-2. **Styling**:
-   - PrimeVue: CSS classes like `p-button`
-   - shadcn/ui: Tailwind utility classes
-
-3. **Props**:
-   - PrimeVue: `label`, `icon`, `severity`
-   - shadcn/ui: `variant`, `size`, children for content
-
-4. **Icons**:
-   - PrimeVue: PrimeIcons (`pi pi-check`)
-   - shadcn/ui: lucide-vue-next components
-
-5. **Forms**:
-   - PrimeVue: FormKit integration
-   - shadcn/ui: Native v-model with Vue
+Please refer to [sidebar-components.md](./sidebar-components.md).
 
 ## Best Practices
 

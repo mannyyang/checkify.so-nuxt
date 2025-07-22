@@ -11,21 +11,21 @@ describe('Tier Limit Enforcement', () => {
   });
 
   describe('Page Limits', () => {
-    it('should enforce free tier page limit of 10', async () => {
+    it('should enforce free tier page limit of 25', async () => {
       const tierLimits = TIER_LIMITS.free;
-      const mockPages = Array(15).fill({}).map((_, i) => ({ id: `page-${i}` }));
+      const mockPages = Array(30).fill({}).map((_, i) => ({ id: `page-${i}` }));
 
       mockFetchAllDatabasePages.mockResolvedValue({
         pages: mockPages.slice(0, tierLimits.maxPages),
-        totalPages: 15,
+        totalPages: 30,
         wasLimited: true
       });
 
       const result = await mockFetchAllDatabasePages('db-id', tierLimits.maxPages);
 
-      expect(result.pages).toHaveLength(10);
+      expect(result.pages).toHaveLength(25);
       expect(result.wasLimited).toBe(true);
-      expect(result.totalPages).toBe(15);
+      expect(result.totalPages).toBe(30);
     });
 
     it('should enforce pro tier page limit of 100', async () => {
@@ -81,22 +81,22 @@ describe('Tier Limit Enforcement', () => {
       expect(result.wasLimited).toBe(true);
     });
 
-    it('should enforce pro tier checkbox limit of 200 per page', async () => {
+    it('should enforce pro tier checkbox limit of 100 per page', async () => {
       const tierLimits = TIER_LIMITS.pro;
-      const mockCheckboxes = Array(250).fill({}).map((_, i) => ({
+      const mockCheckboxes = Array(150).fill({}).map((_, i) => ({
         id: `checkbox-${i}`,
         type: 'to_do'
       }));
 
       mockFetchAllChildBlocks.mockResolvedValue({
         blocks: mockCheckboxes.slice(0, tierLimits.maxCheckboxesPerPage),
-        totalBlocks: 250,
+        totalBlocks: 150,
         wasLimited: true
       });
 
       const result = await mockFetchAllChildBlocks('page-id', tierLimits.maxCheckboxesPerPage);
 
-      expect(result.blocks).toHaveLength(200);
+      expect(result.blocks).toHaveLength(100);
       expect(result.wasLimited).toBe(true);
     });
 
@@ -121,33 +121,33 @@ describe('Tier Limit Enforcement', () => {
   });
 
   describe('Todo List Limits', () => {
-    it('should enforce free tier todo list limit of 3', () => {
+    it('should enforce free tier todo list limit of 2', () => {
       const tierLimits = TIER_LIMITS.free;
-      expect(tierLimits.maxTodoLists).toBe(3);
+      expect(tierLimits.maxTodoLists).toBe(2);
 
       // Simulate checking if user can create more todo lists
-      const userTodoListCount = 3;
+      const userTodoListCount = 2;
       const canCreateMore = userTodoListCount < tierLimits.maxTodoLists;
       expect(canCreateMore).toBe(false);
     });
 
-    it('should allow unlimited todo lists for pro tier', () => {
+    it('should enforce pro tier todo list limit of 10', () => {
       const tierLimits = TIER_LIMITS.pro;
-      expect(tierLimits.maxTodoLists).toBe(-1); // -1 represents unlimited
+      expect(tierLimits.maxTodoLists).toBe(10);
 
       // Simulate checking if user can create more todo lists
-      const userTodoListCount = 100;
-      const canCreateMore = tierLimits.maxTodoLists === -1 || userTodoListCount < tierLimits.maxTodoLists;
-      expect(canCreateMore).toBe(true);
+      const userTodoListCount = 10;
+      const canCreateMore = userTodoListCount < tierLimits.maxTodoLists;
+      expect(canCreateMore).toBe(false);
     });
 
-    it('should allow unlimited todo lists for max tier', () => {
+    it('should enforce max tier todo list limit of 25', () => {
       const tierLimits = TIER_LIMITS.max;
-      expect(tierLimits.maxTodoLists).toBe(-1);
+      expect(tierLimits.maxTodoLists).toBe(25);
 
-      const userTodoListCount = 500;
-      const canCreateMore = tierLimits.maxTodoLists === -1 || userTodoListCount < tierLimits.maxTodoLists;
-      expect(canCreateMore).toBe(true);
+      const userTodoListCount = 25;
+      const canCreateMore = userTodoListCount < tierLimits.maxTodoLists;
+      expect(canCreateMore).toBe(false);
     });
   });
 
@@ -173,7 +173,7 @@ describe('Tier Limit Enforcement', () => {
       };
 
       expect(metadata.limits.tier).toBe('free');
-      expect(metadata.limits.maxPages).toBe(10);
+      expect(metadata.limits.maxPages).toBe(25);
       expect(metadata.limits.maxCheckboxesPerPage).toBe(25);
       expect(metadata.limits.reachedPageLimit).toBe(true);
     });

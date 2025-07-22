@@ -184,10 +184,10 @@ Get a specific todo list with all pages and todos.
     "errors": [],
     "limits": {
       "tier": "free",
-      "maxPages": 10,
-      "maxCheckboxesPerPage": 50,
+      "maxPages": 25,
+      "maxCheckboxesPerPage": 25,
       "pagesLimited": true,
-      "reachedPageLimit": true
+      "reachedPageLimit": false
     }
   }
 }
@@ -223,6 +223,117 @@ Delete a todo list and unlink from Notion.
 
 ### Page & Todo Operations
 
+#### `GET /api/pageview`
+Log a page view (used by frontend routing).
+
+**Response:**
+```json
+{
+  "success": true
+}
+```
+
+---
+
+#### `POST /api/extract-tags`
+Extract tags from a given text.
+
+**Request Body:**
+```json
+{
+  "text": "Complete #project-alpha task by @john"
+}
+```
+
+**Response:**
+```json
+{
+  "tags": ["#project-alpha"],
+  "mentions": ["@john"]
+}
+```
+
+---
+
+#### `POST /api/extract-todos`
+Extract todo items from Notion pages.
+
+**Request Body:**
+```json
+{
+  "page_ids": ["page-uuid-1", "page-uuid-2"]
+}
+```
+
+**Response:**
+```json
+{
+  "todos": [
+    {
+      "page_id": "page-uuid",
+      "page_title": "Project Alpha",
+      "todos": [
+        {
+          "id": "block-uuid",
+          "text": "Complete design",
+          "checked": false
+        }
+      ]
+    }
+  ]
+}
+```
+
+---
+
+#### `GET /api/get-checkboxes`
+Get all checkboxes for specific pages.
+
+**Query Parameters:**
+- `page_ids` (string, required) - Comma-separated list of page IDs
+
+**Response:**
+```json
+{
+  "checkboxes": [
+    {
+      "page_id": "page-uuid",
+      "checkboxes": [
+        {
+          "id": "block-uuid",
+          "rich_text": [{"plain_text": "Task text"}],
+          "checked": false
+        }
+      ]
+    }
+  ]
+}
+```
+
+---
+
+#### `POST /api/set-checkbox`
+Set a checkbox state in Notion (alternative to toggle-checkbox).
+
+**Request Body:**
+```json
+{
+  "block_id": "notion-block-uuid",
+  "checked": true
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "block_id": "notion-block-uuid",
+  "checked": true
+}
+```
+
+---
+
 #### `POST /api/toggle-checkbox`
 Toggle a todo checkbox state in Notion.
 
@@ -252,13 +363,13 @@ Toggle a todo checkbox state in Notion.
 ---
 
 #### `POST /api/todo-list/sync-to-notion`
-Sync aggregated todos to a Notion database.
+Create or update a Notion database with aggregated todos from all pages in a todo list. This creates a centralized view of all todos in a single Notion database.
 
 **Request Body:**
 ```json
 {
-  "todo_list_id": "uuid",
-  "parent_page_id": "notion-page-id (optional)"
+  "todo_list_id": 123,
+  "parent_page_id": "notion-page-uuid"  // Optional: Parent page for the sync database
 }
 ```
 
@@ -266,21 +377,41 @@ Sync aggregated todos to a Notion database.
 ```json
 {
   "success": true,
-  "syncDatabaseId": "notion-database-id",
+  "syncDatabaseId": "notion-database-uuid",
+  "syncDatabaseUrl": "https://notion.so/...",
   "syncResults": {
     "created": 10,
     "updated": 5,
-    "errors": []
+    "errors": [],
+    "skipped": 0
   },
-  "totalCheckboxes": 15
+  "totalCheckboxes": 15,
+  "pageCount": 8
 }
 ```
 
+**Database Properties Created:**
+- **Title** (title) - The todo text
+- **Status** (checkbox) - Whether the todo is completed
+- **Page** (rich_text) - The page title where the todo is located
+- **Page Link** (url) - Direct link to the source page
+- **Block Link** (url) - Direct link to the specific todo block
+- **Last Updated** (last_edited_time) - When the todo was last synced
+- **Block ID** (rich_text) - The original block ID for reference
+
+**Important Notes:**
+- This is a **forward-only sync** - changes in the sync database don't sync back to source
+- If no `parent_page_id` is provided, the database is created at the workspace root
+- The sync database is cached and reused for subsequent syncs
+- Only creates/updates pages for todos that still exist in source
+- Handles foreign key relationships in Notion databases gracefully
+
 **Error Responses:**
-- `400 Bad Request` - Invalid todo_list_id
+- `400 Bad Request` - Invalid todo_list_id or parent_page_id
 - `401 Unauthorized` - User not authenticated
 - `404 Not Found` - Todo list not found
-- `500 Internal Error` - Notion API error
+- `403 Forbidden` - No permission to create database in specified location
+- `500 Internal Server Error` - Notion API error or sync failure
 
 ---
 
