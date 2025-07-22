@@ -13,11 +13,6 @@ onMounted(() => {
       email: user.value.email
     });
   }
-
-  // Wait for feature flags to load
-  posthog.onFeatureFlags(() => {
-    const isNotionSyncEnabled = posthog.isFeatureEnabled('notion-database-sync');
-  });
 });
 
 watch(user, (newUser) => {

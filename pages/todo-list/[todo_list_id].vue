@@ -50,7 +50,6 @@ definePageMeta({
 });
 
 const route = useRoute();
-const posthog = usePostHog();
 
 const showChecked = ref(true);
 const showSyncDialog = ref(false);
@@ -92,19 +91,6 @@ const extractNotionPageId = (input: string): string => {
   return cleanInput;
 };
 const syncDatabaseId = ref<string | null>(null);
-
-const isNotionSyncEnabled = ref(false);
-
-// Check feature flag when component mounts and when flags load
-onMounted(() => {
-  // Check immediately
-  isNotionSyncEnabled.value = posthog.isFeatureEnabled('notion-database-sync') || false;
-
-  // Also check when flags are loaded
-  posthog.onFeatureFlags(() => {
-    isNotionSyncEnabled.value = posthog.isFeatureEnabled('notion-database-sync') || false;
-  });
-});
 
 const { data, pending, refresh } = useFetch<TodoListData>(
   '/api/todo-list/' + route.params.todo_list_id,
@@ -442,7 +428,7 @@ const formatDate = (date: Date | null) => {
             </div>
 
             <!-- Notion Sync Section -->
-            <div v-if="isNotionSyncEnabled">
+            <div>
               <Separator />
 
               <Card>
