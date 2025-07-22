@@ -59,34 +59,47 @@ const lastSyncDate = ref<Date | null>(null);
 
 // Function to extract page ID from Notion URL or return the input as-is
 const extractNotionPageId = (input: string): string => {
-  // If it's already a page ID (32 chars without dashes or 36 chars with dashes), return as-is
   const cleanInput = input.trim();
   const withoutDashes = cleanInput.replace(/-/g, '');
 
-  // Check if it's already a valid page ID
+  // If it's already a page ID (32 chars without dashes or 36 chars with dashes), return as-is
   if (/^[a-f0-9]{32}$/i.test(withoutDashes) && (cleanInput.length === 32 || cleanInput.length === 36)) {
     return cleanInput;
   }
 
-  // Try to extract from Notion URL
-  // Look for the last 32-character hex string (with or without dashes)
-  // This handles various URL formats including workspace URLs
+  // For Notion URLs, extract the page ID from the path, not from query parameters
+  if (cleanInput.includes('notion.so/')) {
+    // Remove query parameters
+    const urlWithoutQuery = cleanInput.split('?')[0];
+    
+    // Match the last 32-character hex string in the path
+    // This handles URLs like: /workspace/Page-Name-{id} or /Page-Name-{id}
+    const patterns = [
+      /([a-f0-9]{8}-?[a-f0-9]{4}-?[a-f0-9]{4}-?[a-f0-9]{4}-?[a-f0-9]{12})$/i,
+      /([a-f0-9]{32})$/i
+    ];
+
+    for (const pattern of patterns) {
+      const match = urlWithoutQuery.match(pattern);
+      if (match) {
+        return match[1];
+      }
+    }
+  }
+
+  // Fallback: look for any 32-char hex string (but this might match query params)
   const patterns = [
-    // Match 32 hex chars with optional dashes (36 chars total with dashes)
     /([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})/i,
-    // Match 32 consecutive hex chars
     /([a-f0-9]{32})/i
   ];
 
   for (const pattern of patterns) {
     const matches = cleanInput.match(new RegExp(pattern, 'gi'));
     if (matches && matches.length > 0) {
-      // Return the last match (most likely to be the page ID)
-      return matches[matches.length - 1];
+      return matches[0]; // Return first match instead of last
     }
   }
 
-  // If no match, return the original input
   console.warn('Could not extract page ID from:', cleanInput);
   return cleanInput;
 };
@@ -396,7 +409,10 @@ const formatDate = (date: Date | null) => {
                       </template>
                     </p>
                     <p v-if="data.metadata.limits?.tier === 'free'" class="text-xs text-yellow-700 mt-1">
-                      Upgrade to Pro for up to 100 pages or Max for up to 500 pages
+                      Upgrade to Pro for up to 100 pages or Max for up to 500 pages.
+                      <NuxtLink to="/settings" class="underline hover:text-yellow-900">
+                        View plans
+                      </NuxtLink>
                     </p>
                   </div>
                   <div v-if="data.metadata.errors.length > 0" class="mt-2 p-2 bg-red-50 rounded-md">
@@ -489,6 +505,9 @@ const formatDate = (date: Date | null) => {
             />
             <p class="text-xs text-muted-foreground">
               You can paste a Notion page URL (e.g., notion.so/workspace/page-id) or just the page ID
+            </p>
+            <p class="text-xs text-yellow-600 mt-2">
+              ⚠️ Make sure the page is shared with your Notion integration
             </p>
           </div>
         </div>

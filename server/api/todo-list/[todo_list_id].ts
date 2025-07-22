@@ -145,26 +145,37 @@ export default defineEventHandler(async (event) => {
       return block.checkboxes.length > 0;
     });
 
+    // Store extraction metadata in the database
+    const extractionMetadata = {
+      totalPages,
+      totalCheckboxes,
+      pagesWithCheckboxes: pagesWithCheckboxes.length,
+      extractionComplete: !pagesLimited && extractionErrors.length === 0,
+      errors: extractionErrors,
+      limits: {
+        tier: userTier,
+        maxPages: tierLimits.maxPages,
+        maxCheckboxesPerPage: tierLimits.maxCheckboxesPerPage,
+        pagesLimited,
+        reachedPageLimit: pagesLimited && tierLimits.maxPages ? totalPages >= tierLimits.maxPages : false
+      }
+    };
+
+    // Update the todo_list with extraction metadata
+    await supabase
+      .from('todo_list')
+      .update({
+        extraction_metadata: extractionMetadata
+      })
+      .eq('todo_list_id', todoListId);
+
     return {
       pages: pagesWithCheckboxes,
       syncInfo: {
         syncDatabaseId: data[0].notion_sync_database_id,
         lastSyncDate: data[0].last_sync_date
       },
-      metadata: {
-        totalPages,
-        totalCheckboxes,
-        pagesWithCheckboxes: pagesWithCheckboxes.length,
-        extractionComplete: !pagesLimited && extractionErrors.length === 0,
-        errors: extractionErrors,
-        limits: {
-          tier: userTier,
-          maxPages: tierLimits.maxPages,
-          maxCheckboxesPerPage: tierLimits.maxCheckboxesPerPage,
-          pagesLimited,
-          reachedPageLimit: pagesLimited && tierLimits.maxPages ? totalPages >= tierLimits.maxPages : false
-        }
-      }
+      metadata: extractionMetadata
     };
   } catch (error) {
     consola.error('Failed to fetch todo list:', error);

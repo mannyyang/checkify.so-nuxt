@@ -104,6 +104,10 @@ export default defineEventHandler(async (event) => {
 
     consola.info('Target page ID:', targetPageId);
 
+    // Get the original database name
+    const originalDbName = notionDb.metadata?.title?.[0]?.plain_text || 'Unknown Database';
+    const syncDbTitle = `Checkify: ${originalDbName}`;
+
     try {
       const newDatabase: CreateDatabaseResponse = await notion.databases.create({
         parent: {
@@ -114,7 +118,7 @@ export default defineEventHandler(async (event) => {
           {
             type: 'text',
             text: {
-              content: 'Checkify Aggregated Todos'
+              content: syncDbTitle
             }
           }
         ],
@@ -157,9 +161,32 @@ export default defineEventHandler(async (event) => {
       if (updateError) {
         consola.error('Error updating todo list with sync database ID:', updateError);
       }
-    } catch (error) {
+    } catch (error: any) {
       consola.error('Error creating sync database:', error);
-      throw error;
+      
+      // Handle specific Notion API errors
+      if (error.code === 'object_not_found') {
+        throw createError({
+          statusCode: 404,
+          statusMessage: 'Parent page not found or not accessible. Please ensure the page exists and is shared with your Notion integration.'
+        });
+      } else if (error.code === 'insufficient_permissions') {
+        throw createError({
+          statusCode: 403,
+          statusMessage: 'Insufficient permissions. Please ensure your Notion integration has access to create databases in the specified page.'
+        });
+      } else if (error.code === 'validation_error') {
+        throw createError({
+          statusCode: 400,
+          statusMessage: 'Invalid page ID format. Please provide a valid Notion page URL or ID.'
+        });
+      }
+      
+      // Generic error
+      throw createError({
+        statusCode: 500,
+        statusMessage: error.message || 'Failed to create sync database'
+      });
     }
   }
 

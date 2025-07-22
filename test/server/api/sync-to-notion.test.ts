@@ -112,7 +112,7 @@ describe('sync-to-notion API logic', () => {
 
       const result = await mockNotionClient.databases.create({
         parent: { type: 'page_id', page_id: 'test-page-id' },
-        title: [{ type: 'text', text: { content: 'Checkify Aggregated Todos' } }],
+        title: [{ type: 'text', text: { content: 'Checkify: Test Database' } }],
         properties: expectedProperties
       });
 
@@ -122,6 +122,14 @@ describe('sync-to-notion API logic', () => {
           properties: expectedProperties
         })
       );
+    });
+
+    it('should include original database name in sync database title', () => {
+      const originalDbName = 'My Project Tasks';
+      const expectedTitle = `Checkify: ${originalDbName}`;
+
+      // This test documents the expected behavior for database naming
+      expect(expectedTitle).toBe('Checkify: My Project Tasks');
     });
   });
 

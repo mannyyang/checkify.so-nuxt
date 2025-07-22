@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import type { DatabaseObjectResponse } from '@notionhq/client/build/src/api-endpoints';
-import { Trash2, Copy, Plus, Search, Check, FileText, ExternalLink } from 'lucide-vue-next';
+import { Trash2, Copy, Plus, Search, Check, FileText, ExternalLink, RotateCw, Info } from 'lucide-vue-next';
 import { toast } from 'vue-sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
 
 const isConnected = ref(false);
 const searchQuery = ref('');
@@ -16,6 +18,10 @@ const currentTodoList = ref();
 const isSearching = ref(false);
 const isCheckingAuth = ref(true);
 const isLoadingTodoLists = ref(true);
+const syncingLists = ref<Record<string, boolean>>({});
+const showSyncDialog = ref(false);
+const syncParentPageId = ref('');
+const currentSyncTodoList = ref<any>(null);
 
 // Debounce search functionality
 let searchTimeout: NodeJS.Timeout | null = null;
@@ -199,6 +205,109 @@ const deleteTodoList = async () => {
   currentTodoList.value = null;
   fetchTodoLists();
 };
+
+const syncToNotion = async (todoList: any) => {
+  const todoListId = todoList.todo_list_id;
+
+  if (!todoList.notion_sync_database_id && !syncParentPageId.value) {
+    currentSyncTodoList.value = todoList;
+    showSyncDialog.value = true;
+    return;
+  }
+
+  syncingLists.value[todoListId] = true;
+
+  try {
+    const response = await $fetch<{
+      success: boolean;
+      syncDatabaseId?: string;
+      syncResults: {
+        created: number;
+        updated: number;
+        errors: any[];
+      };
+      totalCheckboxes: number;
+    }>('/api/todo-list/sync-to-notion', {
+      method: 'POST',
+      body: {
+        todo_list_id: todoListId,
+        parent_page_id: syncParentPageId.value ? extractNotionPageId(syncParentPageId.value) : undefined
+      }
+    });
+
+    if (response.success) {
+      toast.success('Sync Successful', {
+        description: `Created: ${response.syncResults.created}, Updated: ${response.syncResults.updated}`
+      });
+
+      // Refresh todo lists to get updated sync info
+      await fetchTodoLists();
+      showSyncDialog.value = false;
+      syncParentPageId.value = '';
+      currentSyncTodoList.value = null;
+    }
+  } catch (error: any) {
+    toast.error('Sync Failed', {
+      description: error.message || 'Failed to sync to Notion'
+    });
+  } finally {
+    syncingLists.value[todoListId] = false;
+  }
+};
+
+const formatDate = (date: string | null) => {
+  if (!date) { return 'Never'; }
+  return new Intl.DateTimeFormat('en-US', {
+    dateStyle: 'short',
+    timeStyle: 'short'
+  }).format(new Date(date));
+};
+
+const extractNotionPageId = (input: string): string => {
+  const cleanInput = input.trim();
+  const withoutDashes = cleanInput.replace(/-/g, '');
+
+  // If it's already a page ID (32 chars without dashes or 36 chars with dashes), return as-is
+  if (/^[a-f0-9]{32}$/i.test(withoutDashes) && (cleanInput.length === 32 || cleanInput.length === 36)) {
+    return cleanInput;
+  }
+
+  // For Notion URLs, extract the page ID from the path, not from query parameters
+  if (cleanInput.includes('notion.so/')) {
+    // Remove query parameters
+    const urlWithoutQuery = cleanInput.split('?')[0];
+    
+    // Match the last 32-character hex string in the path
+    // This handles URLs like: /workspace/Page-Name-{id} or /Page-Name-{id}
+    const patterns = [
+      /([a-f0-9]{8}-?[a-f0-9]{4}-?[a-f0-9]{4}-?[a-f0-9]{4}-?[a-f0-9]{12})$/i,
+      /([a-f0-9]{32})$/i
+    ];
+
+    for (const pattern of patterns) {
+      const match = urlWithoutQuery.match(pattern);
+      if (match) {
+        return match[1];
+      }
+    }
+  }
+
+  // Fallback: look for any 32-char hex string (but this might match query params)
+  const patterns = [
+    /([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})/i,
+    /([a-f0-9]{32})/i
+  ];
+
+  for (const pattern of patterns) {
+    const matches = cleanInput.match(new RegExp(pattern, 'gi'));
+    if (matches && matches.length > 0) {
+      return matches[0]; // Return first match instead of last
+    }
+  }
+
+  console.warn('Could not extract page ID from:', cleanInput);
+  return cleanInput;
+};
 </script>
 
 <template>
@@ -306,54 +415,150 @@ const deleteTodoList = async () => {
             </div>
 
             <!-- Todo Lists -->
-            <div v-else-if="todoLists.length > 0" class="mt-6">
-              <div v-for="todoList in todoLists" :key="todoList.todo_list_id" class="mb-4">
-                <div class="flex items-center gap-2 mb-2">
-                  <img
-                    v-if="getIcon(todoList.notion_database_id?.metadata)"
-                    :src="getIcon(todoList.notion_database_id?.metadata)"
-                    :alt="handleTodoListName(todoList)"
-                    class="w-5 h-5"
-                  >
-                  <FileText v-else class="w-5 h-5 text-gray-500" />
-                  <span class="font-medium">{{ handleTodoListName(todoList) }}</span>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    class="h-6 w-6 ml-auto"
-                    @click="handleDeleteModal(todoList)"
-                  >
-                    <Trash2 class="h-4 w-4 text-destructive" />
-                  </Button>
-                </div>
-                <div class="flex gap-2 items-center">
-                  <Input
-                    :model-value="todoListLinks[todoList.todo_list_id]"
-                    readonly
-                    class="flex-1 text-sm cursor-pointer hover:bg-accent/50 transition-colors"
-                    title="Click to open in new tab"
-                    @click="openInNewTab(todoList)"
-                  />
-                  <Button
-                    variant="secondary"
-                    size="icon"
-                    class="shrink-0"
-                    title="Copy link"
-                    @click="handleCopyLink(todoList)"
-                  >
-                    <Copy class="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    size="icon"
-                    class="shrink-0"
-                    title="Open in new tab"
-                    @click="openInNewTab(todoList)"
-                  >
-                    <ExternalLink class="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
+            <div v-else-if="todoLists.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
+              <Card v-for="todoList in todoLists" :key="todoList.todo_list_id">
+                <CardHeader>
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                      <img
+                        v-if="getIcon(todoList.notion_database_id?.metadata)"
+                        :src="getIcon(todoList.notion_database_id?.metadata)"
+                        :alt="handleTodoListName(todoList)"
+                        class="w-5 h-5"
+                      >
+                      <FileText v-else class="w-5 h-5 text-gray-500" />
+                      <CardTitle class="text-lg">{{ handleTodoListName(todoList) }}</CardTitle>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      class="h-8 w-8"
+                      @click="handleDeleteModal(todoList)"
+                    >
+                      <Trash2 class="h-4 w-4 text-destructive" />
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent class="space-y-4">
+                  <!-- Todo List Link -->
+                  <div class="space-y-2">
+                    <Input
+                      :model-value="todoListLinks[todoList.todo_list_id]"
+                      readonly
+                      class="w-full text-sm cursor-pointer hover:bg-accent/50 transition-colors"
+                      title="Click to open in new tab"
+                      @click="openInNewTab(todoList)"
+                    />
+                    <div class="flex gap-2">
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        class="flex-1"
+                        title="Copy link"
+                        @click="handleCopyLink(todoList)"
+                      >
+                        <Copy class="h-4 w-4 mr-2" />
+                        Copy
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        class="flex-1"
+                        title="Open in new tab"
+                        @click="openInNewTab(todoList)"
+                      >
+                        <ExternalLink class="h-4 w-4 mr-2" />
+                        Open
+                      </Button>
+                    </div>
+                  </div>
+
+                  <!-- Sync to Notion -->
+                  <div class="space-y-2">
+                    <Separator />
+                    <Button
+                      size="sm"
+                      class="w-full"
+                      :disabled="syncingLists[todoList.todo_list_id]"
+                      @click="syncToNotion(todoList)"
+                    >
+                      <RotateCw :class="{ 'animate-spin': syncingLists[todoList.todo_list_id] }" class="w-4 h-4 mr-2" />
+                      Sync to Notion
+                    </Button>
+
+                    <div v-if="todoList.last_sync_date" class="text-xs text-muted-foreground text-center">
+                      Last synced: {{ formatDate(todoList.last_sync_date) }}
+                    </div>
+                  </div>
+
+                  <!-- Extraction Info -->
+                  <div v-if="todoList.extraction_metadata" class="space-y-2">
+                    <Separator />
+                    <div class="text-sm space-y-1">
+                      <div class="flex items-center gap-2 mb-1">
+                        <Info class="w-3 h-3 text-muted-foreground" />
+                        <span class="font-medium text-xs">Extraction Info</span>
+                      </div>
+                      <div class="space-y-1 text-xs">
+                        <div class="flex justify-between">
+                          <span class="text-muted-foreground">Pages:</span>
+                          <span class="font-medium">{{ todoList.extraction_metadata.totalPages || 0 }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                          <span class="text-muted-foreground">Checkboxes:</span>
+                          <span class="font-medium">{{ todoList.extraction_metadata.totalCheckboxes || 0 }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                          <span class="text-muted-foreground">With Todos:</span>
+                          <span class="font-medium">{{ todoList.extraction_metadata.pagesWithCheckboxes || 0 }}</span>
+                        </div>
+                        <div v-if="todoList.extraction_metadata.limits" class="mt-2 pt-2 border-t">
+                          <div class="flex justify-between">
+                            <span class="text-muted-foreground">Tier:</span>
+                            <span class="font-medium capitalize">{{ todoList.extraction_metadata.limits.tier }}</span>
+                          </div>
+                          <div v-if="todoList.extraction_metadata.limits.maxPages" class="flex justify-between">
+                            <span class="text-muted-foreground">Limit:</span>
+                            <span class="font-medium">{{ todoList.extraction_metadata.limits.maxPages }} pages</span>
+                          </div>
+                        </div>
+                        <div v-if="!todoList.extraction_metadata.extractionComplete" class="mt-1 p-1 bg-yellow-50 rounded">
+                          <p class="text-xs text-yellow-800">
+                            <template v-if="todoList.extraction_metadata.limits?.reachedPageLimit">
+                              ⚠️ Page limit reached
+                              <NuxtLink v-if="todoList.extraction_metadata.limits?.tier === 'free'" to="/settings" class="underline hover:text-yellow-900">
+                                Upgrade
+                              </NuxtLink>
+                            </template>
+                            <template v-else>
+                              ⚠️ Incomplete extraction
+                            </template>
+                          </p>
+                        </div>
+                        <div v-if="todoList.extraction_metadata.errors && todoList.extraction_metadata.errors.length > 0" class="mt-1 p-1 bg-red-50 rounded">
+                          <p class="text-xs text-red-800">
+                            {{ todoList.extraction_metadata.errors.length }} extraction error(s)
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- View Sync Database Button -->
+                  <div v-if="todoList.notion_sync_database_id">
+                    <Separator />
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      class="w-full"
+                      @click="window.open(`https://notion.so/${todoList.notion_sync_database_id.replace(/-/g, '')}`, '_blank')"
+                    >
+                      <ExternalLink class="w-4 h-4 mr-2" />
+                      View Sync Database
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
 
             <!-- Empty State -->
@@ -383,6 +588,51 @@ const deleteTodoList = async () => {
           </Button>
           <Button variant="destructive" @click="deleteTodoList">
             Delete
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+
+    <!-- Sync Dialog -->
+    <Dialog v-model:open="showSyncDialog">
+      <DialogContent class="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Create Sync Database</DialogTitle>
+          <DialogDescription>
+            To create a sync database for "{{ currentSyncTodoList ? handleTodoListName(currentSyncTodoList) : '' }}", please provide the Notion page where you want the database to be created.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div class="space-y-4 py-4">
+          <div class="space-y-2">
+            <label for="pageId" class="text-sm font-medium">Parent Page URL or ID</label>
+            <Input
+              id="pageId"
+              v-model="syncParentPageId"
+              placeholder="Paste Notion page URL or ID"
+            />
+            <p class="text-xs text-muted-foreground">
+              You can paste a Notion page URL (e.g., notion.so/workspace/page-id) or just the page ID
+            </p>
+            <p class="text-xs text-yellow-600 mt-2">
+              ⚠️ Make sure the page is shared with your Notion integration
+            </p>
+          </div>
+        </div>
+
+        <DialogFooter>
+          <Button
+            variant="outline"
+            @click="showSyncDialog = false"
+          >
+            Cancel
+          </Button>
+          <Button
+            :disabled="!syncParentPageId || syncingLists[currentSyncTodoList?.todo_list_id]"
+            @click="syncToNotion(currentSyncTodoList)"
+          >
+            <RotateCw :class="{ 'animate-spin': syncingLists[currentSyncTodoList?.todo_list_id] }" class="w-4 h-4 mr-2" />
+            Create & Sync
           </Button>
         </DialogFooter>
       </DialogContent>

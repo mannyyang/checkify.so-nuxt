@@ -14,7 +14,7 @@ export default defineEventHandler(async (event) => {
 
   const { data, error } = await supabase
     .from('todo_list')
-    .select('todo_list_id, created_at, notion_database_id(metadata)')
+    .select('todo_list_id, created_at, extraction_metadata, notion_sync_database_id, last_sync_date, notion_database_id(metadata)')
     .eq('user_id', user!.id);
 
   if (error) {

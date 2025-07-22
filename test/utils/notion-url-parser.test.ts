@@ -2,36 +2,47 @@ import { describe, it, expect } from 'vitest';
 
 // Extract the URL parsing logic from the Vue component for testing
 const extractNotionPageId = (input: string): string => {
-  // If it's already a page ID (32 chars without dashes or 36 chars with dashes), return as-is
   const cleanInput = input.trim();
   const withoutDashes = cleanInput.replace(/-/g, '');
 
-  // Check if it's already a valid page ID
+  // If it's already a page ID (32 chars without dashes or 36 chars with dashes), return as-is
   if (/^[a-f0-9]{32}$/i.test(withoutDashes) && (cleanInput.length === 32 || cleanInput.length === 36)) {
     return cleanInput;
   }
 
-  // Try to extract from Notion URL
-  // Look for the last 32-character hex string (with or without dashes)
-  // This handles various URL formats including workspace URLs
+  // For Notion URLs, extract the page ID from the path, not from query parameters
+  if (cleanInput.includes('notion.so/')) {
+    // Remove query parameters
+    const urlWithoutQuery = cleanInput.split('?')[0];
+    
+    // Match the last 32-character hex string in the path
+    // This handles URLs like: /workspace/Page-Name-{id} or /Page-Name-{id}
+    const patterns = [
+      /([a-f0-9]{8}-?[a-f0-9]{4}-?[a-f0-9]{4}-?[a-f0-9]{4}-?[a-f0-9]{12})$/i,
+      /([a-f0-9]{32})$/i
+    ];
+
+    for (const pattern of patterns) {
+      const match = urlWithoutQuery.match(pattern);
+      if (match) {
+        return match[1];
+      }
+    }
+  }
+
+  // Fallback: look for any 32-char hex string (but this might match query params)
   const patterns = [
-    // Match 32 hex chars with optional dashes (36 chars total with dashes) at end of URL
-    /([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})(?:\?|$)/i,
-    // Match 32 consecutive hex chars at end of URL or before query params
-    /([a-f0-9]{32})(?:\?|$)/i,
-    // Fallback: match any 32 hex chars (for IDs in the middle of URLs)
+    /([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})/i,
     /([a-f0-9]{32})/i
   ];
 
   for (const pattern of patterns) {
-    const matches = cleanInput.match(pattern);
+    const matches = cleanInput.match(new RegExp(pattern, 'gi'));
     if (matches && matches.length > 0) {
-      // Return the first captured group
-      return matches[1] || matches[0];
+      return matches[0]; // Return first match instead of last
     }
   }
 
-  // If no match, return the original input
   console.warn('Could not extract page ID from:', cleanInput);
   return cleanInput;
 };
@@ -104,6 +115,24 @@ describe('extractNotionPageId', () => {
     it('should handle malformed URLs gracefully', () => {
       const malformed = 'https://notion.so/this-is-not-a-valid-page';
       expect(extractNotionPageId(malformed)).toBe(malformed);
+    });
+  });
+
+  describe('URLs with View Parameters', () => {
+    it('should extract page ID from URL with view parameter', () => {
+      const url = 'https://www.notion.so/mannyyang/Daily-a9fcea1dcf4644479b098a75578988e3?v=22c4f66a19e2819e9b9c000cd6a2c792&source=copy_link';
+      expect(extractNotionPageId(url)).toBe('a9fcea1dcf4644479b098a75578988e3');
+    });
+
+    it('should not extract view ID from query parameters', () => {
+      const url = 'https://www.notion.so/workspace/Page-8c25175876f44559804acd1e632791f5?v=22c4f66a19e2819e9b9c000cd6a2c792';
+      expect(extractNotionPageId(url)).toBe('8c25175876f44559804acd1e632791f5');
+      expect(extractNotionPageId(url)).not.toBe('22c4f66a19e2819e9b9c000cd6a2c792');
+    });
+
+    it('should handle complex URL with multiple IDs correctly', () => {
+      const url = 'https://www.notion.so/workspace/Database-a9fcea1dcf4644479b098a75578988e3?v=b1234567890abcdef1234567890abcde&pvs=4';
+      expect(extractNotionPageId(url)).toBe('a9fcea1dcf4644479b098a75578988e3');
     });
   });
 });

@@ -12,7 +12,6 @@ const { data: subscriptionResponse, refresh: refreshSubscription, pending: subsc
 const isLoadingPortal = ref(false);
 const isRefreshing = ref(false);
 const isUpgrading = ref(false);
-const showDebug = ref(false);
 
 // Get runtime config for Stripe price IDs
 const config = useRuntimeConfig();
@@ -159,15 +158,6 @@ async function handleInitialSubscription (tier: string, priceId?: string) {
   }
 }
 
-// Add debug data fetch function
-async function fetchDebugData () {
-  try {
-    const debugData = await $fetch('/api/stripe/debug-subscription');
-    alert(JSON.stringify(debugData, null, 2));
-  } catch (error) {
-    toast.error('Failed to fetch debug data');
-  }
-}
 </script>
 
 <template>
@@ -376,36 +366,5 @@ async function fetchDebugData () {
       </div>
     </div>
 
-    <!-- Debug Section (hidden by default) -->
-    <div class="mt-6 text-center">
-      <button
-        class="text-xs text-gray-500 hover:text-gray-700"
-        @click="showDebug = !showDebug"
-      >
-        {{ showDebug ? 'Hide' : 'Show' }} Debug Info
-      </button>
-    </div>
-
-    <div v-if="showDebug" class="bg-gray-100 rounded-lg border shadow-sm mt-4 p-4">
-      <h3 class="font-semibold mb-2">
-        Debug Information
-      </h3>
-      <div class="space-y-2 text-sm font-mono">
-        <div>User ID: {{ user?.id }}</div>
-        <div>Email: {{ user?.email }}</div>
-        <div>Subscription Tier: {{ subscription?.tier }}</div>
-        <div>Subscription Status: {{ subscription?.status }}</div>
-        <div>Has Stripe Customer: {{ subscription?.hasStripeCustomer }}</div>
-        <div>
-          <Button
-            size="sm"
-            variant="outline"
-            @click="fetchDebugData"
-          >
-            Fetch Stripe Debug Data
-          </Button>
-        </div>
-      </div>
-    </div>
   </div>
 </template>
