@@ -96,8 +96,8 @@ describe('sync-to-notion API logic', () => {
   describe('Sync Database Creation', () => {
     it('should create database with correct properties', async () => {
       const expectedProperties = {
-        Title: { title: {} },
         Status: { checkbox: {} },
+        Title: { title: {} },
         Page: { rich_text: {} },
         'Page Link': { url: {} },
         'Block Link': { url: {} },

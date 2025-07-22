@@ -119,11 +119,11 @@ export default defineEventHandler(async (event) => {
           }
         ],
         properties: {
-          Title: {
-            title: {}
-          },
           Status: {
             checkbox: {}
+          },
+          Title: {
+            title: {}
           },
           Page: {
             rich_text: {}
@@ -200,6 +200,9 @@ export default defineEventHandler(async (event) => {
     const blockUrl = `${pageUrl}#${blockId.replace(/-/g, '')}`;
 
     const properties = {
+      Status: {
+        checkbox: 'to_do' in checkboxData && checkboxData.to_do ? (checkboxData as any).to_do.checked : false
+      },
       Title: {
         title: [
           {
@@ -208,9 +211,6 @@ export default defineEventHandler(async (event) => {
             }
           }
         ]
-      },
-      Status: {
-        checkbox: 'to_do' in checkboxData && checkboxData.to_do ? (checkboxData as any).to_do.checked : false
       },
       Page: {
         rich_text: [

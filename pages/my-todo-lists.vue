@@ -14,6 +14,8 @@ const todoLists = ref<any[]>([]);
 const showDeleteDialog = ref(false);
 const currentTodoList = ref();
 const isSearching = ref(false);
+const isCheckingAuth = ref(true);
+const isLoadingTodoLists = ref(true);
 
 // Debounce search functionality
 let searchTimeout: NodeJS.Timeout | null = null;
@@ -23,10 +25,13 @@ onMounted(async () => {
   baseUrl.value = window.location.origin;
 
   // Check if user is connected to Notion
+  isCheckingAuth.value = true;
   const { data } = await useFetch('/api/auth-notion');
   if (data.value?.is_auth) {
     isConnected.value = true;
   }
+  isCheckingAuth.value = false;
+
   await fetchTodoLists();
 });
 
@@ -75,10 +80,12 @@ const addDatabase = async (database: DatabaseObjectResponse) => {
 };
 
 const fetchTodoLists = async () => {
+  isLoadingTodoLists.value = true;
   const { data, error } = await useFetch('/api/todo-list');
 
   if (error.value) {
     console.error(error.value);
+    isLoadingTodoLists.value = false;
     return;
   }
 
@@ -88,6 +95,7 @@ const fetchTodoLists = async () => {
   if (todoLists.value.length > 0) {
     isConnected.value = true;
   }
+  isLoadingTodoLists.value = false;
 };
 
 const handleTodoListName = (todoList: any) => {
@@ -212,7 +220,11 @@ const deleteTodoList = async () => {
               <img src="/notion-logo.svg" alt="Notion" class="w-4 h-4 mr-2">
               Connect Notion
             </Button>
-            <span v-if="isConnected" class="text-green-600 flex items-center gap-2">
+            <div v-if="isCheckingAuth" class="flex items-center gap-2 text-muted-foreground">
+              <div class="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+              <span>Checking connection...</span>
+            </div>
+            <span v-else-if="isConnected" class="text-green-600 flex items-center gap-2">
               <Check class="w-5 h-5" />
               You are connected
             </span>
@@ -285,7 +297,16 @@ const deleteTodoList = async () => {
 
           <!-- Todo Lists Grid -->
           <ClientOnly>
-            <div v-if="todoLists.length > 0" class="mt-6">
+            <!-- Loading State -->
+            <div v-if="isLoadingTodoLists" class="flex items-center justify-center py-8">
+              <div class="flex items-center gap-2 text-muted-foreground">
+                <div class="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                <span>Loading your todo lists...</span>
+              </div>
+            </div>
+
+            <!-- Todo Lists -->
+            <div v-else-if="todoLists.length > 0" class="mt-6">
               <div v-for="todoList in todoLists" :key="todoList.todo_list_id" class="mb-4">
                 <div class="flex items-center gap-2 mb-2">
                   <img
@@ -336,7 +357,7 @@ const deleteTodoList = async () => {
             </div>
 
             <!-- Empty State -->
-            <div v-else class="text-center py-8">
+            <div v-else-if="!isLoadingTodoLists" class="text-center py-8">
               <p class="text-muted-foreground">
                 You haven't created any to-do lists yet.
               </p>
