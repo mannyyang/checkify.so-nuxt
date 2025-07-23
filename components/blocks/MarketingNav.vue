@@ -59,6 +59,11 @@ const handleNavClick = (href: string) => {
               aria-label="home"
               class="flex items-center space-x-2"
             >
+              <img
+                src="/checkify-logo.png"
+                alt="Checkify logo"
+                class="h-8 w-8"
+              />
               <span class="text-xl font-bold">Checkify.so</span>
             </NuxtLink>
 

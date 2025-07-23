@@ -129,12 +129,38 @@ onMounted(() => {
           isVisible ? 'opacity-100 translate-y-0 blur-0' : 'opacity-0 translate-y-4 blur-sm'
         ]"
       >
-        <div class="inset-shadow-2xs ring-background dark:inset-shadow-white/20 bg-background relative mx-auto max-w-6xl overflow-hidden rounded-2xl border p-2 shadow-lg shadow-zinc-950/15 ring-1">
-          <img
-            class="w-full rounded-xl"
-            src="/hero-section.png"
-            alt="Checkify.so - Notion integration interface"
-          />
+        <div class="relative mx-auto max-w-7xl">
+          <div class="flex flex-col lg:flex-row items-center justify-center gap-4 lg:gap-8">
+            <!-- Scattered todos image -->
+            <div class="flex-1 max-w-2xl">
+              <div class="inset-shadow-2xs ring-background dark:inset-shadow-white/20 bg-background relative overflow-hidden rounded-2xl border p-2 shadow-lg shadow-zinc-950/15 ring-1 transform transition-all duration-300 hover:scale-[1.02]">
+                <img
+                  class="w-full rounded-xl"
+                  src="/scattered-todos.png"
+                  alt="Scattered todos across multiple Notion pages"
+                />
+              </div>
+            </div>
+            
+            <!-- Arrow pointing from scattered to aggregated -->
+            <div class="flex items-center justify-center flex-shrink-0">
+              <div class="relative">
+                <div class="absolute inset-0 bg-gradient-to-r from-transparent via-primary/20 to-transparent blur-xl"></div>
+                <ArrowRight class="w-8 h-8 lg:w-12 lg:h-12 text-primary animate-bounce-horizontal" />
+              </div>
+            </div>
+            
+            <!-- Aggregated todos image -->
+            <div class="flex-1 max-w-2xl">
+              <div class="inset-shadow-2xs ring-background dark:inset-shadow-white/20 bg-background relative overflow-hidden rounded-2xl border p-2 shadow-lg shadow-zinc-950/15 ring-1 transform transition-all duration-300 hover:scale-[1.02]">
+                <img
+                  class="w-full rounded-xl"
+                  src="/aggregated-todos.png"
+                  alt="All todos aggregated in one Notion database by Checkify"
+                />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -152,5 +178,20 @@ onMounted(() => {
 
 .h-10\.5 {
   height: 2.625rem;
+}
+
+@keyframes bounce-horizontal {
+  0%, 100% {
+    transform: translateX(-25%);
+    animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
+  }
+  50% {
+    transform: translateX(0);
+    animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+  }
+}
+
+.animate-bounce-horizontal {
+  animation: bounce-horizontal 1s infinite;
 }
 </style>
