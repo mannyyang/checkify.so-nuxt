@@ -49,7 +49,7 @@ export const PRICING_TIERS: PricingTier[] = [
     priceMonthly: 0,
     description: 'Perfect for personal use',
     features: [
-      { text: '15 Notion pages', included: true },
+      { text: '25 Notion pages', included: true },
       { text: '25 checkboxes per page', included: true },
       { text: '2 todo lists', included: true },
       { text: 'Manual sync only', included: true },

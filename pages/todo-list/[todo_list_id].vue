@@ -71,7 +71,7 @@ const extractNotionPageId = (input: string): string => {
   if (cleanInput.includes('notion.so/')) {
     // Remove query parameters
     const urlWithoutQuery = cleanInput.split('?')[0];
-    
+
     // Match the last 32-character hex string in the path
     // This handles URLs like: /workspace/Page-Name-{id} or /Page-Name-{id}
     const patterns = [

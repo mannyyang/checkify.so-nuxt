@@ -365,6 +365,5 @@ async function handleInitialSubscription (tier: string, priceId?: string) {
         </div>
       </div>
     </div>
-
   </div>
 </template>

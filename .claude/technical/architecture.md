@@ -54,11 +54,11 @@ This document provides a comprehensive overview of Checkify.so's system architec
 ## Tech Stack Details
 
 ### Frontend
-- **Framework**: Nuxt 3.8.0 (Vue 3.3.8)
+- **Framework**: Nuxt 3 (Vue 3)
 - **Rendering**: SSR enabled
 - **UI Library**: shadcn/ui (based on Radix UI primitives)
-- **State Management**: Pinia 2.1.7
-- **Styling**: Tailwind CSS v4.0.0-beta.6
+- **State Management**: Pinia
+- **Styling**: Tailwind CSS v4
 - **Icons**: lucide-vue-next
 - **Utilities**: class-variance-authority, clsx
 - **Content Management**: Nuxt Content v3
@@ -68,10 +68,11 @@ This document provides a comprehensive overview of Checkify.so's system architec
 - **Database**: Supabase (PostgreSQL)
 - **Authentication**: Supabase Auth with Google OAuth
 - **External API**: Notion API v2
+- **Payments**: Stripe for subscription billing
 
 ### Development
 - **Package Manager**: pnpm
-- **Testing**: Vitest 0.34.6
+- **Testing**: Vitest
 - **Linting**: ESLint with Nuxt config
 - **Node Version**: 18+
 
@@ -103,48 +104,11 @@ const { data, pending, refresh } = useFetch<TodoListData>(
 - Primary: Supabase Auth (Google OAuth)
 - Secondary: Notion OAuth for API access
 
-### 3. Content Management System
-**Decision**: Nuxt Content v3 for documentation and static content
-
-**Implementation**:
-```typescript
-// content.config.ts - Nuxt Content configuration
-import { defineContentConfig } from '@nuxt/content'
-
-export default defineContentConfig({
-  collections: {
-    docs: {
-      type: 'page',
-      source: 'docs/**/*.md'
-    }
-  }
-});
-```
-
-**Features**:
-- File-based content management
-- Markdown with frontmatter support
-- Auto-generated navigation
-- Static site generation for docs
-- Full-text search capabilities
-
-**Content Structure**:
-```
-content/
-└── docs/
-    ├── connect-notion.md    # User guide: Connecting Notion
-    └── create-todo-list.md  # User guide: Creating todo lists
-```
-
-**Rendering**:
-- Dynamic route: `/docs/[...slug].vue`
-- Server-side rendering for SEO
-- Progressive enhancement for interactivity
-
 **Rationale**:
 - Leverages Supabase's robust auth system
 - Separate Notion OAuth allows granular permissions
 - Users can revoke Notion access without losing account
+
 
 ### 3. Data Synchronization
 **Decision**: Hybrid approach with Notion as source of truth
@@ -153,11 +117,19 @@ content/
 1. Cache Notion data in Supabase for performance
 2. Real-time sync for checkbox states
 3. Direct Notion API calls for updates
+4. Optional bidirectional sync via Notion webhooks (Pro/Max tiers)
+
+**Features**:
+- **Sync to Notion Database**: Creates a dedicated Notion database to track all todos
+- **Automatic Sync**: Manual (Free), Daily (Pro), or Hourly (Max) sync schedules
+- **Real-time Updates**: Checkbox state changes sync immediately
+- **Extraction Metadata**: Tracks pages scanned, checkboxes found, and tier limits
 
 **Rationale**:
 - Balances performance with data accuracy
 - Ensures changes are never lost
 - Allows offline viewing (cached data)
+- Provides flexible sync options based on user needs
 
 ### 4. State Management
 **Decision**: Pinia for global state management
@@ -211,11 +183,27 @@ content/
 ### Todo Sync Flow
 ```
 1. Fetch Notion pages from selected databases
-2. Extract todo blocks from pages
+2. Extract todo blocks from pages with metadata
 3. Store in Supabase for caching
 4. Display in UI with real-time updates
 5. Checkbox changes sync back to Notion
+6. Optional: Sync to Notion database via webhook
 ```
+
+### Sync-to-Notion Feature
+**Decision**: Webhook-based integration for database sync
+
+**Implementation**:
+- User provides Notion database webhook URL
+- System posts checkbox updates to webhook
+- Enables bidirectional sync with Notion databases
+- Supports custom automation workflows
+
+**Flow**:
+1. User configures webhook URL in settings
+2. Checkbox state changes trigger webhook
+3. Webhook payload includes todo metadata
+4. External service updates Notion database
 
 ## Security Architecture
 
@@ -285,6 +273,41 @@ content/
 - Middleware error catching
 - Database transaction rollbacks
 
+## Content Management Architecture
+
+### Nuxt Content Integration
+**Decision**: Nuxt Content v3 for documentation and static content
+
+**Implementation**:
+```typescript
+// content.config.ts - Nuxt Content configuration
+import { defineContentConfig } from '@nuxt/content'
+
+export default defineContentConfig({
+  collections: {
+    docs: {
+      type: 'page',
+      source: 'docs/**/*.md'
+    }
+  }
+});
+```
+
+**Features**:
+- File-based content management
+- Markdown with frontmatter support
+- Auto-generated navigation
+- Static site generation for docs
+- Full-text search capabilities
+
+**Content Structure**:
+```
+content/
+└── docs/
+    ├── connect-notion.md    # User guide: Connecting Notion
+    └── create-todo-list.md  # User guide: Creating todo lists
+```
+
 ## Deployment Architecture
 
 ### Netlify Configuration
@@ -302,6 +325,23 @@ content/
 - Separate dev/staging/prod configs
 - Secrets never in codebase
 - Runtime validation
+
+## Recent Feature Additions
+
+### Enhanced Todo List Dashboard
+- Multi-card layout for better organization
+- Extraction metadata display showing:
+  - Total pages processed
+  - Total checkboxes found
+  - Pages containing todos
+  - Tier limits and warnings
+- Loading states with visual feedback during sync operations
+
+### Sync to Notion Database Feature
+- Creates a dedicated Notion database for todo tracking
+- Bidirectional sync capabilities
+- Customizable database location
+- Automatic sync schedules based on tier
 
 ## Future Architecture Considerations
 

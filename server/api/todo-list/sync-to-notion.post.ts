@@ -163,7 +163,7 @@ export default defineEventHandler(async (event) => {
       }
     } catch (error: any) {
       consola.error('Error creating sync database:', error);
-      
+
       // Handle specific Notion API errors
       if (error.code === 'object_not_found') {
         throw createError({
@@ -181,7 +181,7 @@ export default defineEventHandler(async (event) => {
           statusMessage: 'Invalid page ID format. Please provide a valid Notion page URL or ID.'
         });
       }
-      
+
       // Generic error
       throw createError({
         statusCode: 500,

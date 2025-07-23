@@ -111,7 +111,13 @@ Create a new todo list linked to a Notion database.
 **Error Responses:**
 - `400 Bad Request` - Invalid database_id
 - `401 Unauthorized` - User not authenticated
+- `403 Forbidden` - Todo list limit reached for current tier
 - `404 Not Found` - Database not found
+
+**Note:** Todo list creation is limited by subscription tier:
+- Free: 2 todo lists
+- Pro: 10 todo lists  
+- Max: 25 todo lists
 
 ---
 
@@ -975,3 +981,51 @@ Notion webhooks are handled at `/api/notion-webhook` for bidirectional sync. Thi
 **Security:**
 - Signature validation using `x-notion-signature` header
 - Only available for Pro and Max tiers
+
+## Troubleshooting
+
+### Common Issues
+
+#### Authentication Errors
+**Problem:** Getting 401 Unauthorized errors
+**Solution:** 
+- Ensure cookies are included in requests (`credentials: 'include'`)
+- Check if session has expired
+- Verify Supabase configuration
+
+#### Notion API Errors
+**Problem:** Getting 403 Forbidden when accessing Notion
+**Solution:**
+- User needs to reconnect Notion account
+- Check if Notion integration has correct permissions
+- Verify the database/page is shared with the integration
+
+#### Rate Limiting
+**Problem:** Getting 429 Too Many Requests
+**Solution:**
+- Implement client-side request throttling
+- Use batch operations where available
+- Cache responses when appropriate
+
+#### Subscription Issues
+**Problem:** Features not working despite active subscription
+**Solution:**
+- Run `/api/stripe/sync-subscription` to sync status
+- Check webhook configuration in Stripe dashboard
+- Verify environment variables are set correctly
+
+### Debug Endpoints
+
+In development, you can use these endpoints to debug issues:
+
+- `/api/stripe/debug-subscription` - Check subscription state
+- `/api/auth-notion` - Verify Notion connection status
+- `/api/subscription` - Get current tier and limits
+
+### Support
+
+For additional support:
+- Check the [Architecture Guide](./architecture.md) for system design details
+- Review [Database Schema](./database-schema.md) for data relationships
+- See [Stripe Integration](../features/stripe-integration.md) for billing issues
+- Contact support@checkify.so for unresolved issues

@@ -54,7 +54,8 @@
       "Bash(say:*)",
       "WebFetch(domain:stripe.com)",
       "WebFetch(domain:docs.stripe.com)",
-      "WebFetch(domain:content.nuxt.com)"
+      "WebFetch(domain:content.nuxt.com)",
+      "Bash(git checkout:*)"
     ],
     "deny": []
   }

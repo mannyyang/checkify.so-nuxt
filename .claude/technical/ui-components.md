@@ -39,6 +39,17 @@ components/
 └── TeamSwitcher.vue      # Workspace switcher
 ```
 
+### Sidebar Constants
+
+The sidebar system uses specific width constants defined in `lib/sidebar.ts`:
+
+```typescript
+// Sidebar width constants
+export const SIDEBAR_WIDTH = '20rem' // 320px - expanded state
+export const SIDEBAR_WIDTH_ICON = '3rem' // 48px - collapsed state
+export const SIDEBAR_KEYBOARD_SHORTCUT = 's' // Toggle with Cmd+S
+```
+
 ## Core Components
 
 ### Button
@@ -458,10 +469,207 @@ Example:
 
 3. **Icon Optimization**: Icons are tree-shaken automatically
 
+## Multi-Card Layout System
+
+The application uses a multi-card layout system for better organization and information hierarchy.
+
+### Enhanced Todo List Dashboard
+
+The todo list page now features multiple cards for different information:
+
+```vue
+<template>
+  <div class="space-y-6">
+    <!-- Progress Card -->
+    <Card>
+      <CardHeader>
+        <CardTitle>Progress</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <Progress :value="completionPercentage" />
+        <p class="text-sm text-muted-foreground mt-2">
+          {{ completedTodos }} of {{ totalTodos }} completed
+        </p>
+      </CardContent>
+    </Card>
+
+    <!-- Extraction Info Card -->
+    <Card>
+      <CardHeader>
+        <CardTitle>Extraction Details</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div class="space-y-2">
+          <div class="flex justify-between">
+            <span>Total Pages</span>
+            <span class="font-medium">{{ metadata.totalPages }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span>Total Checkboxes</span>
+            <span class="font-medium">{{ metadata.totalCheckboxes }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span>Pages with Todos</span>
+            <span class="font-medium">{{ metadata.pagesWithCheckboxes }}</span>
+          </div>
+        </div>
+        <div v-if="metadata.limits.reachedPageLimit" class="mt-4">
+          <Alert variant="warning">
+            <AlertDescription>
+              Page limit reached ({{ metadata.limits.maxPages }} pages).
+              <a href="/pricing" class="underline">Upgrade</a> to scan more pages.
+            </AlertDescription>
+          </Alert>
+        </div>
+      </CardContent>
+    </Card>
+
+    <!-- Settings Card -->
+    <Card>
+      <CardHeader>
+        <CardTitle>Settings</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <!-- Sync settings, preferences, etc. -->
+      </CardContent>
+    </Card>
+  </div>
+</template>
+```
+
+### Todo List Cards
+
+The todo list view uses a sophisticated multi-card layout to organize todos by page:
+
+### Layout Structure
+```vue
+<template>
+  <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+    <Card v-for="page in pages" :key="page.id">
+      <CardHeader>
+        <CardTitle>{{ page.title }}</CardTitle>
+        <CardDescription>{{ page.checkboxes.length }} todos</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <!-- Todo items -->
+      </CardContent>
+    </Card>
+  </div>
+</template>
+```
+
+### Responsive Behavior
+- **Mobile**: Single column layout
+- **Tablet**: 2 columns (md:grid-cols-2)
+- **Desktop**: 3 columns (lg:grid-cols-3)
+- **Wide screens**: Automatic grid adjustment
+
+### Card States
+```vue
+<!-- Loading state -->
+<Card v-if="loading" class="animate-pulse">
+  <CardContent class="space-y-2">
+    <Skeleton class="h-4 w-full" />
+    <Skeleton class="h-4 w-3/4" />
+  </CardContent>
+</Card>
+
+<!-- Empty state -->
+<Card v-if="!page.checkboxes.length" class="border-dashed">
+  <CardContent class="text-center py-8">
+    <p class="text-muted-foreground">No todos in this page</p>
+  </CardContent>
+</Card>
+
+<!-- Error state -->
+<Card v-if="error" class="border-destructive">
+  <CardContent class="text-center py-8">
+    <AlertCircle class="w-8 h-8 mx-auto mb-2 text-destructive" />
+    <p>Failed to load todos</p>
+  </CardContent>
+</Card>
+```
+
+## Loading States and Sync Feedback
+
+### Loading Patterns
+```vue
+<template>
+  <!-- Full page loading -->
+  <div v-if="pending" class="flex items-center justify-center min-h-[400px]">
+    <div class="text-center">
+      <Loader2 class="w-8 h-8 animate-spin mx-auto mb-4" />
+      <p class="text-sm text-muted-foreground">Loading todos...</p>
+    </div>
+  </div>
+
+  <!-- Inline loading indicator -->
+  <Button :disabled="syncing">
+    <Loader2 v-if="syncing" class="w-4 h-4 mr-2 animate-spin" />
+    <RefreshCw v-else class="w-4 h-4 mr-2" />
+    {{ syncing ? 'Syncing...' : 'Sync Now' }}
+  </Button>
+
+  <!-- Progress indicator for long operations -->
+  <div v-if="extracting">
+    <Progress :value="extractionProgress" class="w-full" />
+    <p class="text-sm text-muted-foreground mt-2">
+      Extracting {{ extractedPages }} of {{ totalPages }} pages...
+    </p>
+  </div>
+</template>
+```
+
+### Sync Status Indicators
+```vue
+<template>
+  <!-- Last sync time -->
+  <div class="flex items-center gap-2 text-sm text-muted-foreground">
+    <Clock class="w-4 h-4" />
+    <span>Last synced {{ formatRelativeTime(lastSyncTime) }}</span>
+  </div>
+
+  <!-- Sync status badge -->
+  <Badge :variant="syncStatus === 'success' ? 'default' : 'destructive'">
+    {{ syncStatus === 'success' ? 'Synced' : 'Sync Failed' }}
+  </Badge>
+
+  <!-- Real-time sync indicator -->
+  <div v-if="realtimeSync" class="flex items-center gap-2">
+    <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+    <span class="text-sm">Auto-sync enabled</span>
+  </div>
+</template>
+```
+
 ## Sidebar Components
 
-The sidebar navigation system has been completely redesigned using shadcn/ui components. For detailed documentation on the sidebar implementation, including:
+The sidebar navigation system has been completely redesigned using shadcn/ui components. 
 
+### Sidebar Width Constants
+```typescript
+// Default sidebar widths
+export const SIDEBAR_WIDTH = 265 // Collapsed: 265px
+export const SIDEBAR_WIDTH_EXPANDED = 305 // Expanded: 305px
+export const SIDEBAR_KEYBOARD_SHORTCUT = 'b' // Toggle with Cmd+B
+
+// Usage in layouts
+<SidebarProvider defaultOpen={true}>
+  <AppSidebar />
+  <main :style="{ marginLeft: sidebarOpen ? '305px' : '265px' }">
+    <!-- Content -->
+  </main>
+</SidebarProvider>
+```
+
+### Keyboard Shortcuts
+The sidebar supports keyboard navigation:
+- `Cmd/Ctrl + B`: Toggle sidebar open/closed
+- `Arrow Keys`: Navigate between menu items
+- `Enter`: Select current item
+- `Escape`: Close sidebar on mobile
+
+For detailed documentation on the sidebar implementation, including:
 - Component architecture
 - Implementation examples
 - Responsive behavior

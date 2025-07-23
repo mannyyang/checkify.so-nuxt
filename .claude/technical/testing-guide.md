@@ -1,667 +1,438 @@
 # Testing Guide
 
-This document provides comprehensive documentation for the testing infrastructure and approach used in Checkify.so.
+This guide covers the testing approach, tools, and best practices for Checkify.so.
 
 ## Overview
 
-Checkify.so uses a multi-layered testing approach to ensure reliability and maintainability:
-
-- **Unit Tests**: Component and utility function testing
-- **Integration Tests**: API endpoint and feature testing
-- **E2E Tests**: Full user workflow testing
-- **Manual Testing**: User acceptance and exploratory testing
-
-## Testing Stack
-
-### Core Testing Tools
-
-- **Vitest**: Primary test runner and assertion library
-- **@vue/test-utils**: Vue component testing utilities
-- **jsdom**: DOM simulation for component tests
-- **MSW (Mock Service Worker)**: API mocking
-- **Playwright** (planned): E2E testing framework
-
-### Configuration
-
-```typescript
-// vitest.config.ts
-export default defineConfig({
-  test: {
-    environment: 'jsdom',
-    setupFiles: ['./test/setup.ts'],
-    coverage: {
-      provider: 'v8',
-      reporter: ['text', 'json', 'html'],
-      exclude: [
-        'node_modules/',
-        'test/',
-        '.nuxt/',
-        'dist/'
-      ]
-    },
-    globals: true
-  }
-});
-```
+Checkify.so uses **Vitest** as the primary testing framework, providing:
+- Fast test execution
+- Native TypeScript support
+- Compatible with Jest APIs
+- Built-in mocking capabilities
+- UI mode for interactive testing
 
 ## Test Structure
 
-### Directory Organization
-
 ```
 test/
-├── components/           # Component unit tests
-│   ├── sidebar.test.ts  # Sidebar component tests
-│   └── ui/              # UI component tests
-├── server/              # Server-side tests
-│   └── api/             # API endpoint tests
-│       └── sync-to-notion.test.ts
-├── utils/               # Utility function tests
-├── fixtures/            # Test data and mocks
-├── setup.ts             # Test setup and configuration
-└── e2e-test-scenarios.md # E2E test documentation
+├── components/           # Component tests
+│   ├── sidebar.test.ts
+│   └── ...
+├── composables/         # Composable tests
+│   ├── useSubscription.test.ts
+│   └── ...
+├── server/             # Server-side tests
+│   ├── api/           # API endpoint tests
+│   │   ├── sync-to-notion.test.ts
+│   │   └── todo-list-creation.test.ts
+│   └── utils/         # Utility function tests
+├── utils/              # Client utility tests
+│   └── notion-url-parser.test.ts
+├── integration/        # Integration tests
+└── tier-limit-enforcement.test.ts  # Feature tests
 ```
 
-## Component Testing
+## Running Tests
 
-### Basic Component Test
-
-```typescript
-// test/components/ui/Button.test.ts
-import { mount } from '@vue/test-utils';
-import { describe, it, expect } from 'vitest';
-import Button from '@/components/ui/Button.vue';
-
-describe('Button', () => {
-  it('renders with correct text', () => {
-    const wrapper = mount(Button, {
-      slots: {
-        default: 'Click me'
-      }
-    });
-    
-    expect(wrapper.text()).toBe('Click me');
-  });
-
-  it('emits click event', async () => {
-    const wrapper = mount(Button);
-    await wrapper.trigger('click');
-    
-    expect(wrapper.emitted('click')).toHaveLength(1);
-  });
-
-  it('applies variant classes correctly', () => {
-    const wrapper = mount(Button, {
-      props: { variant: 'destructive' }
-    });
-    
-    expect(wrapper.classes()).toContain('bg-destructive');
-  });
-});
-```
-
-### Sidebar Component Tests
-
-```typescript
-// test/components/sidebar.test.ts
-import { describe, it, expect } from 'vitest';
-import { 
-  SIDEBAR_WIDTH, 
-  SIDEBAR_WIDTH_ICON, 
-  SIDEBAR_KEYBOARD_SHORTCUT 
-} from '@/lib/sidebar-constants';
-
-describe('Sidebar Constants', () => {
-  it('has correct width values', () => {
-    expect(SIDEBAR_WIDTH).toBe('20rem');
-    expect(SIDEBAR_WIDTH_ICON).toBe('3rem');
-  });
-
-  it('has correct keyboard shortcut', () => {
-    expect(SIDEBAR_KEYBOARD_SHORTCUT).toBe('s');
-  });
-});
-```
-
-### Complex Component Testing
-
-```typescript
-// test/components/TodoList.test.ts
-import { mount } from '@vue/test-utils';
-import { describe, it, expect, vi } from 'vitest';
-import TodoList from '@/components/TodoList.vue';
-
-describe('TodoList', () => {
-  const mockTodos = [
-    { id: '1', text: 'Task 1', checked: false },
-    { id: '2', text: 'Task 2', checked: true }
-  ];
-
-  it('renders all todos', () => {
-    const wrapper = mount(TodoList, {
-      props: { todos: mockTodos }
-    });
-    
-    expect(wrapper.findAll('[data-testid="todo-item"]')).toHaveLength(2);
-  });
-
-  it('toggles todo when clicked', async () => {
-    const wrapper = mount(TodoList, {
-      props: { todos: mockTodos }
-    });
-    
-    await wrapper.find('[data-testid="todo-checkbox-1"]').trigger('click');
-    
-    expect(wrapper.emitted('toggle')).toEqual([['1']]);
-  });
-});
-```
-
-## API Testing
-
-### Sync-to-Notion API Tests
-
-```typescript
-// test/server/api/sync-to-notion.test.ts
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-
-describe('Sync to Notion API', () => {
-  beforeEach(() => {
-    // Reset mocks
-    vi.clearAllMocks();
-  });
-
-  describe('POST /api/todo-list/sync-to-notion', () => {
-    it('creates new sync database successfully', async () => {
-      const mockTodoList = {
-        id: 123,
-        notion_database_id: 'test-db-id',
-        sync_database_id: null
-      };
-
-      const mockNotionResponse = {
-        id: 'sync-db-id',
-        url: 'https://notion.so/sync-db-id',
-        title: [{ plain_text: 'Sync Database' }]
-      };
-
-      // Mock Notion API calls
-      mockNotionClient.databases.create.mockResolvedValue(mockNotionResponse);
-      
-      const response = await request(app)
-        .post('/api/todo-list/sync-to-notion')
-        .send({
-          todo_list_id: 123,
-          parent_page_id: 'parent-page-id'
-        })
-        .expect(200);
-
-      expect(response.body).toEqual({
-        success: true,
-        syncDatabaseId: 'sync-db-id',
-        syncDatabaseUrl: 'https://notion.so/sync-db-id',
-        syncResults: expect.objectContaining({
-          created: expect.any(Number),
-          updated: expect.any(Number),
-          errors: expect.any(Array)
-        }),
-        totalCheckboxes: expect.any(Number),
-        pageCount: expect.any(Number)
-      });
-    });
-
-    it('handles database creation errors', async () => {
-      mockNotionClient.databases.create.mockRejectedValue(
-        new Error('Permission denied')
-      );
-
-      const response = await request(app)
-        .post('/api/todo-list/sync-to-notion')
-        .send({ todo_list_id: 123 })
-        .expect(403);
-
-      expect(response.body).toEqual({
-        statusCode: 403,
-        statusMessage: expect.stringContaining('Permission denied')
-      });
-    });
-
-    it('updates existing sync database', async () => {
-      const mockTodoList = {
-        id: 123,
-        notion_database_id: 'test-db-id',
-        sync_database_id: 'existing-sync-db-id'
-      };
-
-      mockNotionClient.databases.retrieve.mockResolvedValue({
-        id: 'existing-sync-db-id',
-        url: 'https://notion.so/existing-sync-db-id'
-      });
-
-      const response = await request(app)
-        .post('/api/todo-list/sync-to-notion')
-        .send({ todo_list_id: 123 })
-        .expect(200);
-
-      expect(response.body.syncDatabaseId).toBe('existing-sync-db-id');
-      expect(mockNotionClient.databases.create).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('URL parsing integration', () => {
-    it('extracts parent page ID from Notion URL', () => {
-      const testCases = [
-        {
-          url: 'https://notion.so/workspace/Page-Title-abc123def456',
-          expected: 'abc123def456'
-        },
-        {
-          url: 'https://notion.so/Page-abc123def456?v=view123',
-          expected: 'abc123def456'
-        }
-      ];
-
-      testCases.forEach(({ url, expected }) => {
-        const result = extractPageIdFromUrl(url);
-        expect(result).toBe(expected);
-      });
-    });
-  });
-
-  describe('Foreign key handling', () => {
-    it('handles Supabase foreign key expansion', async () => {
-      // Test that foreign key returns object, not array
-      const mockTodoList = {
-        id: 123,
-        notion_database: {  // Object, not array
-          id: 'db-id',
-          name: 'My Database'
-        }
-      };
-
-      expect(mockTodoList.notion_database).toBeInstanceOf(Object);
-      expect(Array.isArray(mockTodoList.notion_database)).toBe(false);
-    });
-  });
-
-  describe('Error scenarios', () => {
-    it('handles missing rich_text gracefully', async () => {
-      const todosWithMissingText = [
-        { 
-          id: 'block-1',
-          to_do: { 
-            rich_text: undefined,  // Missing rich_text
-            checked: false 
-          }
-        }
-      ];
-
-      const result = await processTodos(todosWithMissingText);
-      
-      expect(result.errors).toHaveLength(0);  // Should handle gracefully
-      expect(result.created).toBe(0);         // Should skip invalid todos
-      expect(result.skipped).toBe(1);
-    });
-
-    it('continues processing after individual failures', async () => {
-      const mixedTodos = [
-        { id: 'valid-1', text: 'Valid todo 1', checked: false },
-        { id: 'invalid', text: null, checked: false },  // Will fail
-        { id: 'valid-2', text: 'Valid todo 2', checked: true }
-      ];
-
-      const result = await syncTodos(mixedTodos);
-      
-      expect(result.created).toBe(2);         // 2 valid todos processed
-      expect(result.errors).toHaveLength(1);  // 1 error recorded
-    });
-  });
-});
-```
-
-### Authentication Testing
-
-```typescript
-// test/server/middleware/auth.test.ts
-describe('Authentication Middleware', () => {
-  it('allows authenticated requests', async () => {
-    const mockUser = { id: 'user-123', email: 'test@example.com' };
-    mockSupabaseAuth.getUser.mockResolvedValue({ user: mockUser });
-
-    const response = await request(app)
-      .get('/api/protected-endpoint')
-      .set('Authorization', 'Bearer valid-token')
-      .expect(200);
-  });
-
-  it('rejects unauthenticated requests', async () => {
-    mockSupabaseAuth.getUser.mockResolvedValue({ user: null });
-
-    await request(app)
-      .get('/api/protected-endpoint')
-      .expect(401);
-  });
-});
-```
-
-## Utility Testing
-
-```typescript
-// test/utils/notion-helpers.test.ts
-import { describe, it, expect } from 'vitest';
-import { extractPageIdFromUrl, formatNotionText } from '@/utils/notion-helpers';
-
-describe('Notion Helpers', () => {
-  describe('extractPageIdFromUrl', () => {
-    it('extracts ID from various URL formats', () => {
-      const testCases = [
-        {
-          url: 'https://notion.so/Page-abc123def456',
-          expected: 'abc123def456'
-        },
-        {
-          url: 'https://notion.so/workspace/Page-Title-abc123def456?v=view123',
-          expected: 'abc123def456'
-        }
-      ];
-
-      testCases.forEach(({ url, expected }) => {
-        expect(extractPageIdFromUrl(url)).toBe(expected);
-      });
-    });
-  });
-
-  describe('formatNotionText', () => {
-    it('converts rich text to plain text', () => {
-      const richText = [
-        { type: 'text', text: { content: 'Hello ' } },
-        { type: 'text', text: { content: 'world' }, annotations: { bold: true } }
-      ];
-
-      expect(formatNotionText(richText)).toBe('Hello world');
-    });
-
-    it('handles empty rich text', () => {
-      expect(formatNotionText([])).toBe('');
-      expect(formatNotionText(undefined)).toBe('');
-    });
-  });
-});
-```
-
-## Mocking Strategies
-
-### Notion API Mocking
-
-```typescript
-// test/mocks/notion.ts
-import { vi } from 'vitest';
-
-export const mockNotionClient = {
-  databases: {
-    create: vi.fn(),
-    retrieve: vi.fn(),
-    query: vi.fn()
-  },
-  pages: {
-    create: vi.fn(),
-    update: vi.fn(),
-    retrieve: vi.fn()
-  },
-  blocks: {
-    children: {
-      list: vi.fn(),
-      append: vi.fn()
-    },
-    update: vi.fn()
-  }
-};
-```
-
-### Supabase Mocking
-
-```typescript
-// test/mocks/supabase.ts
-export const mockSupabase = {
-  from: vi.fn(() => ({
-    select: vi.fn().mockReturnThis(),
-    insert: vi.fn().mockReturnThis(),
-    update: vi.fn().mockReturnThis(),
-    delete: vi.fn().mockReturnThis(),
-    eq: vi.fn().mockReturnThis(),
-    single: vi.fn()
-  })),
-  auth: {
-    getUser: vi.fn()
-  }
-};
-```
-
-## Testing Commands
-
-### Available Scripts
-
-```json
-{
-  "scripts": {
-    "test:unit": "vitest",
-    "test:ui": "vitest --ui",
-    "test:coverage": "vitest run --coverage",
-    "test:watch": "vitest --watch"
-  }
-}
-```
-
-### Running Tests
-
+### Basic Commands
 ```bash
 # Run all tests
 pnpm test:unit
 
 # Run tests in watch mode
-pnpm test:watch
+pnpm test:unit -- --watch
 
-# Run tests with UI interface
+# Run tests with UI
 pnpm test:ui
 
 # Generate coverage report
 pnpm test:coverage
 
 # Run specific test file
-pnpm test:unit test/components/sidebar.test.ts
+pnpm test:unit components/sidebar.test.ts
 
 # Run tests matching pattern
-pnpm test:unit --grep "sync-to-notion"
+pnpm test:unit -- --grep "subscription"
 ```
 
-## Coverage Requirements
+### Test Environments
+- **Unit Tests**: Run in isolation with mocked dependencies
+- **Integration Tests**: Test multiple components together
+- **API Tests**: Test server endpoints with mocked external services
 
-### Current Coverage
+## Writing Tests
 
-- **API Endpoints**: 90%+ coverage for critical paths
-- **Utility Functions**: 100% coverage for pure functions
-- **Components**: 80%+ coverage for core components
-- **Error Handling**: All error scenarios tested
-
-### Coverage Goals
-
+### Component Tests
 ```typescript
-// vitest.config.ts coverage thresholds
-coverage: {
-  statements: 80,
-  branches: 75,
-  functions: 80,
-  lines: 80
-}
-```
+import { mount } from '@vue/test-utils';
+import { describe, it, expect, vi } from 'vitest';
+import AppSidebar from '~/components/AppSidebar.vue';
 
-## E2E Testing
+describe('AppSidebar', () => {
+  it('renders navigation items', () => {
+    const wrapper = mount(AppSidebar, {
+      global: {
+        stubs: ['NuxtLink', 'Icon']
+      }
+    });
+    
+    expect(wrapper.find('[data-testid="nav-home"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="nav-todos"]').exists()).toBe(true);
+  });
 
-### Test Scenarios
-
-Documented in `test/e2e-test-scenarios.md`:
-
-1. **User Registration and Onboarding**
-2. **Notion Connection Flow**
-3. **Todo List Creation**
-4. **Sync-to-Notion Feature**
-5. **Subscription Management**
-
-### Playwright Setup (Planned)
-
-```typescript
-// playwright.config.ts
-export default defineConfig({
-  testDir: './test/e2e',
-  use: {
-    baseURL: 'http://localhost:3000',
-    trace: 'on-first-retry',
-    screenshot: 'only-on-failure'
-  },
-  projects: [
-    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
-    { name: 'webkit', use: { ...devices['Desktop Safari'] } }
-  ]
+  it('toggles sidebar on mobile', async () => {
+    const wrapper = mount(AppSidebar);
+    const toggleButton = wrapper.find('[data-testid="sidebar-toggle"]');
+    
+    await toggleButton.trigger('click');
+    expect(wrapper.emitted('toggle')).toBeTruthy();
+  });
 });
 ```
 
-## Testing Best Practices
-
-### 1. Test Structure
-
+### Composable Tests
 ```typescript
-describe('Feature Name', () => {
+import { describe, it, expect, beforeEach } from 'vitest';
+import { setActivePinia, createPinia } from 'pinia';
+import { useSubscription } from '~/composables/useSubscription';
+
+describe('useSubscription', () => {
   beforeEach(() => {
-    // Setup for each test
+    setActivePinia(createPinia());
   });
 
-  describe('happy path', () => {
-    it('should handle normal case', () => {
-      // Test implementation
-    });
+  it('returns current tier information', () => {
+    const { currentTier, limits } = useSubscription();
+    
+    expect(currentTier.value).toBe('free');
+    expect(limits.value.maxPages).toBe(15);
+    expect(limits.value.maxCheckboxesPerPage).toBe(25);
   });
 
-  describe('error cases', () => {
-    it('should handle invalid input', () => {
-      // Test implementation
-    });
+  it('checks feature access correctly', () => {
+    const { canAccessFeature } = useSubscription();
+    
+    expect(canAccessFeature('basic')).toBe(true);
+    expect(canAccessFeature('automaticSync')).toBe(false);
   });
 });
 ```
 
-### 2. Assertion Patterns
-
+### API Endpoint Tests
 ```typescript
-// Good: Specific assertions
-expect(response.body).toEqual({
-  success: true,
-  data: expect.objectContaining({
-    id: expect.any(String)
+import { describe, it, expect, vi } from 'vitest';
+import { createError, defineEventHandler } from 'h3';
+import handler from '~/server/api/todo-list/[todo_list_id].get';
+
+// Mock Notion client
+vi.mock('@notionhq/client', () => ({
+  Client: vi.fn(() => ({
+    databases: {
+      query: vi.fn().mockResolvedValue({
+        results: mockPages,
+        has_more: false
+      })
+    },
+    blocks: {
+      children: {
+        list: vi.fn().mockResolvedValue({
+          results: mockBlocks
+        })
+      }
+    }
+  }))
+}));
+
+describe('GET /api/todo-list/[id]', () => {
+  it('enforces tier limits', async () => {
+    const event = {
+      context: {
+        params: { todo_list_id: '123' },
+        user: { id: 'user-123' }
+      }
+    };
+
+    const result = await handler(event);
+    
+    expect(result.metadata.limits.tier).toBe('free');
+    expect(result.metadata.limits.maxPages).toBe(15);
+    expect(result.pages.length).toBeLessThanOrEqual(15);
+  });
+});
+```
+
+## Mocking Strategies
+
+### Mocking Nuxt Features
+```typescript
+// Mock useRuntimeConfig
+vi.mock('#app', () => ({
+  useRuntimeConfig: () => ({
+    public: {
+      supabaseUrl: 'http://localhost:54321',
+      stripePublishableKey: 'pk_test_123'
+    }
   })
-});
+}));
 
-// Avoid: Vague assertions
-expect(response.body).toBeTruthy();
-```
-
-### 3. Mock Management
-
-```typescript
-// Reset mocks between tests
-beforeEach(() => {
-  vi.clearAllMocks();
-});
-
-// Mock only what's necessary
-vi.mock('@/utils/notion-client', () => ({
-  createDatabase: vi.fn()
+// Mock navigateTo
+const navigateTo = vi.fn();
+vi.mock('#app', () => ({
+  navigateTo
 }));
 ```
 
-### 4. Test Data
-
+### Mocking External Services
 ```typescript
-// Use factories for consistent test data
+// Mock Supabase
+vi.mock('@supabase/supabase-js', () => ({
+  createClient: vi.fn(() => ({
+    from: vi.fn(() => ({
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      single: vi.fn().mockResolvedValue({ data: mockData })
+    }))
+  }))
+}));
+
+// Mock Stripe
+vi.mock('stripe', () => ({
+  default: vi.fn(() => ({
+    customers: {
+      create: vi.fn().mockResolvedValue({ id: 'cus_test' })
+    },
+    subscriptions: {
+      create: vi.fn().mockResolvedValue({ id: 'sub_test' })
+    }
+  }))
+}));
+```
+
+## Best Practices
+
+### Test Organization
+1. **Describe blocks**: Group related tests
+2. **Clear test names**: Describe what is being tested
+3. **Arrange-Act-Assert**: Structure tests clearly
+4. **One assertion per test**: Keep tests focused
+
+### Test Data
+```typescript
+// Create test fixtures
 const createMockTodoList = (overrides = {}) => ({
   id: 123,
-  notion_database_id: 'test-db-id',
-  created_at: '2024-01-01T00:00:00Z',
+  notion_database_id: 'db-123',
+  created_at: new Date().toISOString(),
   ...overrides
+});
+
+// Use factories for complex data
+const createMockPage = (todos = 5) => ({
+  id: 'page-123',
+  properties: {
+    Name: { title: [{ plain_text: 'Test Page' }] }
+  },
+  checkboxes: Array.from({ length: todos }, (_, i) => ({
+    id: `block-${i}`,
+    type: 'to_do',
+    to_do: {
+      rich_text: [{ plain_text: `Todo ${i + 1}` }],
+      checked: false
+    }
+  }))
+});
+```
+
+### Async Testing
+```typescript
+// Test async operations
+it('loads todos asynchronously', async () => {
+  const { data, pending, refresh } = await useFetch('/api/todos');
+  
+  expect(pending.value).toBe(true);
+  
+  await nextTick();
+  
+  expect(pending.value).toBe(false);
+  expect(data.value).toHaveLength(5);
+});
+
+// Test error handling
+it('handles API errors gracefully', async () => {
+  mockFetch.mockRejectedValueOnce(new Error('Network error'));
+  
+  const { error } = await useFetch('/api/todos');
+  
+  expect(error.value).toBeDefined();
+  expect(error.value.message).toBe('Network error');
+});
+```
+
+### Testing UI States
+```typescript
+// Test loading states
+it('shows loading indicator while fetching', async () => {
+  const wrapper = mount(TodoList, {
+    props: { loading: true }
+  });
+  
+  expect(wrapper.find('[data-testid="loading"]').exists()).toBe(true);
+  expect(wrapper.find('[data-testid="todo-items"]').exists()).toBe(false);
+});
+
+// Test empty states
+it('shows empty state when no todos', () => {
+  const wrapper = mount(TodoList, {
+    props: { todos: [] }
+  });
+  
+  expect(wrapper.find('[data-testid="empty-state"]').exists()).toBe(true);
+  expect(wrapper.text()).toContain('No todos found');
+});
+```
+
+## Coverage Goals
+
+### Target Coverage
+- **Overall**: 80% coverage
+- **Critical paths**: 95% coverage
+- **Utilities**: 100% coverage
+- **API endpoints**: 90% coverage
+
+### Measuring Coverage
+```bash
+# Generate coverage report
+pnpm test:coverage
+
+# View HTML report
+open coverage/index.html
+```
+
+### Coverage Configuration
+```javascript
+// vitest.config.ts
+export default defineConfig({
+  test: {
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'html', 'lcov'],
+      exclude: [
+        'node_modules/',
+        '.nuxt/',
+        'test/',
+        '**/*.d.ts',
+        '**/*.config.*'
+      ]
+    }
+  }
 });
 ```
 
 ## Continuous Integration
 
-### GitHub Actions (Planned)
-
+### GitHub Actions
 ```yaml
-# .github/workflows/test.yml
-name: Test Suite
+name: Tests
 on: [push, pull_request]
 
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v3
+      - uses: pnpm/action-setup@v2
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: 'pnpm'
       - run: pnpm install
+      - run: pnpm test:unit
       - run: pnpm test:coverage
-      - uses: codecov/codecov-action@v3
 ```
 
 ## Debugging Tests
 
-### Debug Techniques
+### VS Code Integration
+```json
+// .vscode/launch.json
+{
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug Tests",
+      "program": "${workspaceFolder}/node_modules/vitest/vitest.mjs",
+      "args": ["--run", "${file}"],
+      "console": "integratedTerminal"
+    }
+  ]
+}
+```
 
-1. **Console Logging**: Use `console.log` in tests (removed in CI)
-2. **Test UI**: Use `pnpm test:ui` for interactive debugging
-3. **Focused Tests**: Use `.only()` for specific test debugging
-4. **Mock Inspection**: Log mock calls to understand behavior
-
+### Interactive Debugging
 ```typescript
-// Debug mock calls
-console.log('Mock calls:', mockFunction.mock.calls);
-
-// Run single test
-it.only('should debug this specific case', () => {
-  // Test implementation
+// Add breakpoints in tests
+it('complex calculation', () => {
+  const input = prepareData();
+  debugger; // Breakpoint here
+  const result = complexCalculation(input);
+  expect(result).toBe(expected);
 });
 ```
 
-## Performance Testing
+## Common Testing Patterns
 
-### Load Testing (Planned)
-
+### Testing Tier Limits
 ```typescript
-// test/performance/sync-load.test.ts
-describe('Sync Performance', () => {
-  it('handles 100 todos within 30 seconds', async () => {
-    const largeTodoList = generateTodos(100);
-    const startTime = Date.now();
-    
-    await syncTodosToNotion(largeTodoList);
-    
-    const duration = Date.now() - startTime;
-    expect(duration).toBeLessThan(30000);
+describe('Tier Limit Enforcement', () => {
+  it.each([
+    ['free', 25, 25, 2],
+    ['pro', 100, 100, 10],
+    ['max', 500, 1000, 25]
+  ])('%s tier has correct limits', (tier, pages, checkboxes, lists) => {
+    const limits = getTierLimits(tier);
+    expect(limits.maxPages).toBe(pages);
+    expect(limits.maxCheckboxesPerPage).toBe(checkboxes);
+    expect(limits.maxTodoLists).toBe(lists);
   });
 });
 ```
 
-## Documentation Testing
-
-### API Documentation Validation
-
+### Testing Webhooks
 ```typescript
-// test/docs/api-docs.test.ts
-describe('API Documentation', () => {
-  it('matches actual API responses', async () => {
-    const response = await request(app).get('/api/todo-list');
-    
-    // Validate response matches documented schema
-    expect(response.body).toMatchSchema(todoListSchema);
-  });
+it('sends webhook on todo update', async () => {
+  const mockWebhook = vi.fn();
+  global.fetch = mockWebhook;
+
+  await updateTodo('todo-123', { checked: true });
+
+  expect(mockWebhook).toHaveBeenCalledWith(
+    'https://webhook.site/example',
+    expect.objectContaining({
+      method: 'POST',
+      body: expect.stringContaining('"checked":true')
+    })
+  );
 });
 ```
 
-This comprehensive testing infrastructure ensures the reliability and maintainability of Checkify.so while providing clear guidelines for future development.
+## Troubleshooting
+
+### Common Issues
+
+**"Cannot find module"**
+- Clear node_modules and reinstall
+- Check import paths use `~` for src directory
+
+**"Timeout exceeded"**
+- Increase timeout for slow tests: `it('slow test', { timeout: 10000 }, ...)`
+- Mock external API calls
+
+**"Memory leak detected"**
+- Clean up after tests with `afterEach`
+- Properly dispose of mounted components
+
+### Getting Help
+- Check Vitest documentation
+- Review existing test examples
+- Ask in team chat for complex scenarios

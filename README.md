@@ -15,10 +15,13 @@ Checkify.so solves a common problem with Notion: while it's great for organizing
 
 - **Notion Integration**: OAuth-based connection to your Notion workspace
 - **Real-time Sync**: Bidirectional checkbox synchronization with Notion
+- **Sync to Notion Database**: Create a centralized Notion database with all your todos
+- **Webhook Integration**: Support for bidirectional sync via webhooks
 - **Multi-database Support**: Connect multiple Notion databases
 - **Clean UI**: Focused todo interface without Notion's complexity
 - **Authentication**: Secure login with Google via Supabase
 - **Subscription Tiers**: Free, Pro ($6.99/mo), and Max ($19.99/mo) plans
+- **Automatic Sync**: Daily (Pro) or hourly (Max) automatic synchronization
 - **Responsive Design**: Works on desktop and mobile devices
 - **Multi-language**: English and German support
 
