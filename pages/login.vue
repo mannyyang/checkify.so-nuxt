@@ -29,7 +29,7 @@ async function signInWithGoogle () {
   >
     <div class="flex flex-col items-center justify-center">
       <img
-        src="/layout/images/logo-green.png"
+        src="/checkify-logo.png"
         alt="Checkify logo"
         class="mb-5 w-24 h-24 flex-shrink-0"
       >

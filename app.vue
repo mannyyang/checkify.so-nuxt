@@ -27,6 +27,13 @@ watch(user, (newUser) => {
 
 useHead({
   title: 'Checkify.so',
+  link: [
+    {
+      rel: 'icon',
+      type: 'image/png',
+      href: '/checkify-logo.png'
+    }
+  ],
   script: [
     {
       src: 'https://umami-production-c952.up.railway.app/script.js',
