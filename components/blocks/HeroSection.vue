@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Button } from '~/components/ui/button';
-import { LogIn, ArrowRight } from 'lucide-vue-next';
+import { LogIn, ArrowRight, Sparkles, Database, RefreshCw, CheckCircle2 } from 'lucide-vue-next';
 import { ref, onMounted } from 'vue';
 import MarketingNav from './MarketingNav.vue';
 
@@ -145,6 +145,66 @@ onMounted(() => {
                   src="/aggregated-todos.png"
                   alt="All todos aggregated in one Notion database by Checkify"
                 />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sync to Notion Database Feature Section -->
+      <div
+        :class="[
+          'relative mt-12 px-4 sm:mt-16 md:mt-20 transition-all duration-1000 delay-700 transform',
+          isVisible ? 'opacity-100 translate-y-0 blur-0' : 'opacity-0 translate-y-4 blur-sm'
+        ]"
+      >
+        <div class="mx-auto max-w-5xl">
+          <div class="rounded-2xl border border-border/50 bg-gradient-to-b from-background to-muted/20 p-8 md:p-12 shadow-sm">
+            <div class="text-center mb-8">
+              <div class="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary mb-4">
+                <Sparkles class="w-4 h-4" />
+                <span>New Feature</span>
+              </div>
+              <h2 class="text-2xl md:text-3xl font-bold mb-4">
+                Sync Your Todos Back to Notion
+              </h2>
+              <p class="text-muted-foreground text-lg max-w-2xl mx-auto">
+                Create a centralized Notion database that automatically syncs all your todos from across different pages. Keep everything organized in one place while maintaining the source of truth.
+              </p>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-6 mt-8">
+              <div class="text-center">
+                <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3">
+                  <Database class="w-6 h-6 text-primary" />
+                </div>
+                <h3 class="font-semibold mb-2">Unified Database</h3>
+                <p class="text-sm text-muted-foreground">
+                  All your todos from different pages collected in one Notion database
+                </p>
+              </div>
+              
+              <div class="text-center">
+                <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3">
+                  <RefreshCw class="w-6 h-6 text-primary" />
+                </div>
+                <h3 class="font-semibold mb-2">Auto Sync</h3>
+                <p class="text-sm text-muted-foreground">
+                  Changes sync automatically based on your subscription tier
+                </p>
+                <p class="text-xs text-muted-foreground/70 mt-1 italic">
+                  (Coming soon)
+                </p>
+              </div>
+              
+              <div class="text-center">
+                <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3">
+                  <CheckCircle2 class="w-6 h-6 text-primary" />
+                </div>
+                <h3 class="font-semibold mb-2">Stay Organized</h3>
+                <p class="text-sm text-muted-foreground">
+                  Track progress and manage all tasks from a single location
+                </p>
               </div>
             </div>
           </div>

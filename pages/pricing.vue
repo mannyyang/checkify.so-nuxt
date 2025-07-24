@@ -144,7 +144,12 @@ const refresh = async () => {
                   feature.included ? 'text-green-500' : 'text-gray-300'
                 ]"
               />
-              <span class="ml-3 text-sm text-gray-700">{{ feature.text }}</span>
+              <span class="ml-3 text-sm text-gray-700">
+                {{ feature.text }}
+                <span v-if="feature.text.includes('automatic sync')" class="text-xs text-gray-500 italic">
+                  (Coming soon)
+                </span>
+              </span>
             </li>
           </ul>
 
