@@ -678,6 +678,33 @@ For detailed documentation on the sidebar implementation, including:
 
 Please refer to [sidebar-components.md](./sidebar-components.md).
 
+## Branding and Visual Identity
+
+### Checkify Logo
+The Checkify logo is a custom design featuring:
+- **Design**: Stylized checkbox icon with brand name
+- **Colors**: Primary brand color with consistent theming
+- **Usage**: Applied across app header, favicon, and marketing materials
+- **Files**: Located in `public/` directory
+
+### Visual Assets
+```vue
+<!-- Logo usage in header -->
+<template>
+  <div class="flex items-center gap-2">
+    <img src="/logo.svg" alt="Checkify" class="h-8 w-8" />
+    <span class="text-xl font-semibold">Checkify</span>
+  </div>
+</template>
+```
+
+### Brand Colors
+- **Primary**: Used for CTAs, links, and active states
+- **Secondary**: Supporting color for accents
+- **Success**: Green for completed states
+- **Warning**: Orange for warnings and limits
+- **Error**: Red for errors and destructive actions
+
 ## Best Practices
 
 1. **Consistent Spacing**: Use Tailwind's spacing scale (p-4, m-2, gap-6)
@@ -685,3 +712,5 @@ Please refer to [sidebar-components.md](./sidebar-components.md).
 3. **Component Composition**: Build complex UIs from simple components
 4. **Accessibility**: Always include proper ARIA labels and keyboard support
 5. **Performance**: Lazy load heavy components and optimize bundle size
+6. **Branding**: Maintain consistent use of Checkify logo and colors
+7. **Visual Hierarchy**: Use card layouts and proper spacing for organization

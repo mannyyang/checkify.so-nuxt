@@ -171,7 +171,7 @@ if (isWithinLimits('pages', 50)) {
 ```typescript
 const TIER_LIMITS = {
   free: {
-    maxPages: 15,
+    maxPages: 25,
     maxCheckboxesPerPage: 25,
     maxTodoLists: 2
   },

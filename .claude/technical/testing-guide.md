@@ -105,7 +105,7 @@ describe('useSubscription', () => {
     const { currentTier, limits } = useSubscription();
     
     expect(currentTier.value).toBe('free');
-    expect(limits.value.maxPages).toBe(15);
+    expect(limits.value.maxPages).toBe(25);
     expect(limits.value.maxCheckboxesPerPage).toBe(25);
   });
 
@@ -155,8 +155,8 @@ describe('GET /api/todo-list/[id]', () => {
     const result = await handler(event);
     
     expect(result.metadata.limits.tier).toBe('free');
-    expect(result.metadata.limits.maxPages).toBe(15);
-    expect(result.pages.length).toBeLessThanOrEqual(15);
+    expect(result.metadata.limits.maxPages).toBe(25);
+    expect(result.pages.length).toBeLessThanOrEqual(25);
   });
 });
 ```

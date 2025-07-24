@@ -34,7 +34,6 @@ Checkify.so solves a common problem with Notion: while it's great for organizing
 - **State Management**: [Pinia](https://pinia.vuejs.org/)
 - **Styling**: [Tailwind CSS v4](https://tailwindcss.com/)
 - **Icons**: [lucide-vue-next](https://lucide.dev/)
-- **Analytics**: [PostHog](https://posthog.com/)
 - **Testing**: [Vitest](https://vitest.dev/)
 
 ## 📋 Prerequisites
@@ -120,6 +119,17 @@ pnpm build
 pnpm preview
 ```
 
+## 🎨 Visual Assets & Branding
+
+Checkify uses custom branding and visual assets to enhance user experience:
+
+- **Logo**: `checkify-logo.png` - Modern checkbox-based logo design
+- **Landing Page Visuals**:
+  - `scattered-todos.png` - Illustrates the problem of scattered todos
+  - `aggregated-todos.png` - Shows the solution with unified view
+  - `hero-section.png` - Hero image for landing page
+- **Documentation Assets**: Various screenshots in `/public/docs/` for user guides
+
 ## 📚 Documentation
 
 For detailed documentation, see the `.claude/` directory:
@@ -150,6 +160,20 @@ Contributions are welcome! Please read our contributing guidelines and submit pu
 ## 📄 License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
+
+## 🎨 Visual Assets
+
+### Logo and Branding
+- **Logo**: Custom Checkify logo featuring a stylized checkbox icon
+- **Colors**: Primary brand color with consistent theming
+- **Icons**: All app icons and favicons updated with new branding
+- **Location**: Visual assets stored in `public/` directory
+
+### Design System
+- Built with shadcn/ui components for consistency
+- Tailwind CSS v4 for styling
+- Light/dark mode support throughout
+- Responsive design for all screen sizes
 
 ## 🙏 Acknowledgments
 

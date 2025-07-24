@@ -30,24 +30,25 @@ Checkify.so is a powerful todo management tool that bridges Notion's organizatio
 - **Automatic Processing**: Webhook handler manages update propagation
 - **Event Tracking**: Logs all webhook events for debugging
 
-### 📊 Analytics & Feature Management
-- **PostHog Integration**: Track user interactions and feature usage
-- **Feature Flags**: Control feature rollout dynamically
-- **User Identification**: Automatic user tracking for authenticated sessions
+### 📊 Privacy-Focused Analytics
+- **No External Tracking**: Your data stays private
+- **Local Analytics Only**: Usage metrics stored in your own database
+- **Privacy First**: No third-party analytics services
 
 ### 💎 Subscription Tiers (NEW)
-- **Free Tier**: 10 pages, 50 checkboxes per page, 3 todo lists
-- **Pro Tier ($9/mo)**: 100 pages, 200 checkboxes per page, unlimited lists
-- **Enterprise Tier ($29/mo)**: Unlimited everything, API access, priority support
+- **Free Tier**: 25 pages, 25 checkboxes per page, 2 todo lists
+- **Pro Tier ($6.99/mo)**: 100 pages, 100 checkboxes per page, 10 todo lists
+- **Max Tier ($19.99/mo)**: 500 pages, 1000 checkboxes per page, 25 todo lists
 - **Smart Limits**: Clear feedback when limits are reached
 - **Upgrade Prompts**: Contextual suggestions for tier upgrades
 
 ## Recent Updates
 
-### PostHog Integration (NEW)
-- Feature flag support for controlled rollouts
-- Analytics tracking for user behavior
-- `notion-database-sync` flag controls sync feature visibility
+### Enhanced Dashboard (NEW)
+- Extraction details card showing processing metadata
+- Loading states with visual feedback
+- Real-time sync status indicators
+- Tier limit warnings and upgrade prompts
 
 ### UI Improvements
 - Collapsible sidebar with settings and sync options
@@ -73,4 +74,4 @@ Checkify.so is a powerful todo management tool that bridges Notion's organizatio
 - [Notion Integration Details](./notion-integration.md)
 - [Database Sync Feature](./notion-sync-feature.md)
 - [Webhook Setup](./webhook-integration.md)
-- [PostHog Integration](./posthog-integration.md)
+- [Sync to Notion Feature](./sync-to-notion-feature.md)

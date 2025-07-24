@@ -144,20 +144,6 @@ const { data, pending, refresh } = useFetch<TodoListData>(
 - DevTools support
 - Clean API compared to Vuex
 
-### 5. Analytics & Feature Management
-**Decision**: PostHog for analytics and feature flags
-
-**Implementation**:
-- Client-side plugin (`plugins/posthog.client.ts`)
-- Composable for easy access (`composables/usePostHog.ts`)
-- Feature flags for controlled rollouts
-- User identification on auth
-
-**Rationale**:
-- Single tool for analytics and feature flags
-- Easy integration with Vue/Nuxt
-- Privacy-focused with self-hosting option
-- Real-time feature flag updates
 
 ## Data Flow Architecture
 
@@ -336,12 +322,28 @@ content/
   - Pages containing todos
   - Tier limits and warnings
 - Loading states with visual feedback during sync operations
+- Real-time sync status indicators
+- Progress tracking with visual progress bars
+
+### Loading States and User Feedback
+- Skeleton loaders for content placeholders
+- Animated sync indicators during operations
+- Progress bars for long-running tasks
+- Toast notifications for action feedback
+- Empty state illustrations and messages
 
 ### Sync to Notion Database Feature
 - Creates a dedicated Notion database for todo tracking
 - Bidirectional sync capabilities
 - Customizable database location
 - Automatic sync schedules based on tier
+
+### Current Analytics Approach
+- No external analytics services
+- Privacy-focused approach
+- Feature flags managed through environment variables
+- Server-side logging for debugging
+- User data remains private
 
 ## Future Architecture Considerations
 

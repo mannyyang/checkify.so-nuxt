@@ -6,6 +6,24 @@ All notable changes to Checkify.so are documented here.
 
 ### Added
 
+- **Enhanced Landing Page with Visual Flow**
+  - Added animated sync visualization showing Notion → Checkify flow
+  - Interactive features demonstration
+  - Improved visual hierarchy with cards and animations
+  - Clear value proposition with step-by-step process
+
+- **New Checkify Branding and Logo**
+  - Created custom Checkify logo with checkbox icon
+  - Updated favicon and app icons
+  - Consistent brand colors throughout the application
+  - Professional visual identity across all pages
+
+- **Extraction Details Dashboard**
+  - New dashboard card showing extraction metadata
+  - Displays total pages processed, checkboxes found, and pages with todos
+  - Real-time sync status indicators
+  - Loading states with visual feedback during sync operations
+
 - **Enhanced Sidebar Navigation System**
   - Complete redesign using shadcn/ui sidebar components
   - Responsive sidebar with mobile sheet overlay
@@ -101,7 +119,7 @@ All notable changes to Checkify.so are documented here.
   - Support for upgrades, downgrades, cancellations, and reactivations
   
 - **Updated Pricing Structure**
-  - Free tier: $0/month (10 pages, 25 checkboxes per page)
+  - Free tier: $0/month (25 pages, 25 checkboxes per page)
   - Pro tier: $6.99/month (100 pages, 200 checkboxes per page, webhooks)
   - Max tier: $19.99/month (500 pages, 1000 checkboxes per page, real-time sync)
   
@@ -165,8 +183,9 @@ All notable changes to Checkify.so are documented here.
 
 - **Subscription Tiers & Extraction Limits**
   - Implemented tier-based limits for todo extraction
-  - Free tier: 10 pages max, 50 checkboxes per page
-  - Pro tier: 100 pages max, 200 checkboxes per page  
+  - Free tier: 25 pages max, 25 checkboxes per page, 2 todo lists
+  - Pro tier: 100 pages max, 100 checkboxes per page, 10 todo lists
+  - Max tier: 500 pages max, 1000 checkboxes per page, 25 todo lists  
   - Enterprise tier: Unlimited pages and checkboxes
   - Created `useSubscription` composable for tier management
   - Added tier information display in extraction metadata
@@ -246,12 +265,11 @@ All notable changes to Checkify.so are documented here.
   - Footer with Privacy Policy and Terms of Use links
   - Fixed login page with proper Google button and logo sizing
 
-### Added
-- **PostHog Integration**: Analytics and feature flag management
-  - User identification and tracking
-  - Feature flag support for controlled rollouts
-  - Custom event tracking for user behavior analysis
-  - `notion-database-sync` feature flag
+### Removed
+- **PostHog Integration**: Removed analytics and feature flag management
+  - Simplified codebase by removing tracking dependencies
+  - Feature flags now managed through environment variables
+  - Improved privacy with no external analytics
 
 ### Removed
 - PrimeVue and all related dependencies
@@ -352,7 +370,7 @@ All notable changes to Checkify.so are documented here.
 - **Frontend**: Nuxt 3, Vue 3, shadcn/ui, Tailwind CSS v4
 - **Backend**: Supabase (Auth, Database, Realtime)
 - **Integration**: Notion API v2
-- **Analytics**: PostHog
+- **Analytics**: Privacy-focused, no external tracking
 - **Deployment**: Vercel/Netlify compatible
 
 ## Migration Guide
@@ -360,7 +378,7 @@ All notable changes to Checkify.so are documented here.
 ### From v1 to v2
 1. Run database migrations for new schema
 2. Update environment variables
-3. Configure PostHog integration
+3. Set up required environment variables
 4. Enable feature flags as needed
 
 ## Known Issues
