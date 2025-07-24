@@ -41,26 +41,13 @@ onMounted(() => {
               isVisible ? 'opacity-100 translate-y-0 blur-0' : 'opacity-0 translate-y-4 blur-sm'
             ]"
           >
-            <NuxtLink
-              to="/blog/launch"
-              class="hover:bg-background dark:hover:border-t-border bg-muted group mx-auto flex w-fit items-center gap-4 rounded-full border p-1 pl-4 shadow-md shadow-black/5 transition-all duration-300 dark:border-t-white/5 dark:shadow-zinc-950"
+            <div
+              class="bg-muted mx-auto flex w-fit items-center gap-4 rounded-full border p-1 px-4 shadow-md shadow-black/5 transition-all duration-300 dark:border-t-white/5 dark:shadow-zinc-950"
             >
               <span class="text-foreground text-sm">
                 New: Notion sync is now live
               </span>
-              <span class="dark:border-background block h-4 w-0.5 border-l bg-white dark:bg-zinc-700"></span>
-              
-              <div class="bg-background group-hover:bg-muted size-6 overflow-hidden rounded-full duration-500">
-                <div class="flex w-12 -translate-x-1/2 duration-500 ease-in-out group-hover:translate-x-0">
-                  <span class="flex size-6">
-                    <ArrowRight class="m-auto size-3" />
-                  </span>
-                  <span class="flex size-6">
-                    <ArrowRight class="m-auto size-3" />
-                  </span>
-                </div>
-              </div>
-            </NuxtLink>
+            </div>
           </div>
 
           <!-- Main headline -->
@@ -105,7 +92,7 @@ onMounted(() => {
               </Button>
             </div>
             
-            <Button
+            <!-- <Button
               as-child
               size="lg"
               variant="ghost"
@@ -117,7 +104,7 @@ onMounted(() => {
               >
                 <span class="text-nowrap">See How It Works</span>
               </a>
-            </Button>
+            </Button> -->
           </div>
         </div>
       </div>

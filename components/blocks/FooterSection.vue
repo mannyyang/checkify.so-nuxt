@@ -54,11 +54,6 @@ const currentYear = new Date().getFullYear();
                   Documentation
                 </NuxtLink>
               </li>
-              <li>
-                <NuxtLink to="/blog" class="text-muted-foreground hover:text-foreground transition-colors">
-                  Blog
-                </NuxtLink>
-              </li>
             </ul>
           </div>
 
@@ -75,11 +70,6 @@ const currentYear = new Date().getFullYear();
                 <NuxtLink to="/contact" class="text-muted-foreground hover:text-foreground transition-colors">
                   Contact
                 </NuxtLink>
-              </li>
-              <li>
-                <a href="/blog" class="text-muted-foreground hover:text-foreground transition-colors">
-                  Updates
-                </a>
               </li>
             </ul>
           </div>

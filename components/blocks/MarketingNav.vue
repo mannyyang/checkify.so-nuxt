@@ -7,7 +7,6 @@ const menuItems = [
   { name: 'Features', href: '#features' },
   { name: 'Pricing', href: '/pricing' },
   { name: 'Docs', href: '/docs' },
-  { name: 'Blog', href: '/blog' },
 ];
 
 const menuState = ref(false);
