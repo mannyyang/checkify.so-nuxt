@@ -57,7 +57,7 @@ onMounted(() => {
               isVisible ? 'opacity-100 translate-y-0 blur-0' : 'opacity-0 translate-y-4 blur-sm'
             ]"
           >
-            Don't Let Your To-Dos Drown in Notion's Digital Depths
+            Scattered Todos Across Notion Pages? Finally Organized
           </h1>
           
           <!-- Subheadline -->
@@ -67,9 +67,8 @@ onMounted(() => {
               isVisible ? 'opacity-100 translate-y-0 blur-0' : 'opacity-0 translate-y-4 blur-sm'
             ]"
           >
-            Tired of hunting for scattered to-dos across countless Notion pages?
-            Simply aggregate all your tasks in one place, gaining instant clarity
-            and control over your workflow.
+            Automatically collect todos from across all your Notion pages and databases. 
+            View, manage, and sync them back to a central Notion database—all from one clean interface.
           </p>
 
           <!-- CTA Buttons -->
@@ -120,12 +119,15 @@ onMounted(() => {
           <div class="flex flex-col lg:flex-row items-center justify-center gap-4 lg:gap-8">
             <!-- Scattered todos image -->
             <div class="flex-1 max-w-2xl">
-              <div class="inset-shadow-2xs ring-background dark:inset-shadow-white/20 bg-background relative overflow-hidden rounded-2xl border p-2 shadow-lg shadow-zinc-950/15 ring-1 transform transition-all duration-300 hover:scale-[1.02]">
-                <img
-                  class="w-full rounded-xl"
-                  src="/scattered-todos.png"
-                  alt="Scattered todos across multiple Notion pages"
-                />
+              <div class="text-center">
+                <p class="text-sm font-medium text-muted-foreground mb-3">Before: Todos scattered across pages</p>
+                <div class="inset-shadow-2xs ring-background dark:inset-shadow-white/20 bg-background relative overflow-hidden rounded-2xl border p-2 shadow-lg shadow-zinc-950/15 ring-1 transform transition-all duration-300 hover:scale-[1.02]">
+                  <img
+                    class="w-full rounded-xl"
+                    src="/scattered-todos.png"
+                    alt="Scattered todos across multiple Notion pages"
+                  />
+                </div>
               </div>
             </div>
             
@@ -139,12 +141,15 @@ onMounted(() => {
             
             <!-- Aggregated todos image -->
             <div class="flex-1 max-w-2xl">
-              <div class="inset-shadow-2xs ring-background dark:inset-shadow-white/20 bg-background relative overflow-hidden rounded-2xl border p-2 shadow-lg shadow-zinc-950/15 ring-1 transform transition-all duration-300 hover:scale-[1.02]">
-                <img
-                  class="w-full rounded-xl"
-                  src="/aggregated-todos.png"
-                  alt="All todos aggregated in one Notion database by Checkify"
-                />
+              <div class="text-center">
+                <p class="text-sm font-medium text-muted-foreground mb-3">After: All todos in one database</p>
+                <div class="inset-shadow-2xs ring-background dark:inset-shadow-white/20 bg-background relative overflow-hidden rounded-2xl border p-2 shadow-lg shadow-zinc-950/15 ring-1 transform transition-all duration-300 hover:scale-[1.02]">
+                  <img
+                    class="w-full rounded-xl"
+                    src="/aggregated-todos.png"
+                    alt="All todos aggregated in one Notion database by Checkify"
+                  />
+                </div>
               </div>
             </div>
           </div>
