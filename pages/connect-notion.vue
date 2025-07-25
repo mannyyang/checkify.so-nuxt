@@ -21,7 +21,7 @@ onMounted(async () => {
     navigateTo('/my-todo-lists');
   } else {
     // Initiate OAuth flow
-    const clientId = '0b008a34-f988-4d35-9ab0-6b73fb3b9d48';
+    const clientId = '2632be3c-842c-4597-b89f-58f60a345ad9';
     const redirectUri = encodeURIComponent(window.location.origin + '/connect-notion');
     const authUrl = `https://api.notion.com/v1/oauth/authorize?client_id=${clientId}&response_type=code&owner=user&redirect_uri=${redirectUri}`;
     window.location.href = authUrl;
