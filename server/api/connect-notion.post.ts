@@ -20,9 +20,9 @@ export default defineEventHandler(async (event) => {
       'base64'
     );
 
-    const response = await $fetch<{ access_token: string }>(
-      'https://api.notion.com/v1/oauth/token',
-      {
+    let response: any;
+    try {
+      response = await $fetch('https://api.notion.com/v1/oauth/token', {
         method: 'POST',
         headers: {
           accept: 'application/json',
@@ -34,22 +34,44 @@ export default defineEventHandler(async (event) => {
           code: body.code,
           redirect_uri: redirectUri
         }
-      }
-    );
+      });
+    } catch (error: any) {
+      console.error('Notion OAuth error:', error.data || error.message);
+      console.error('Request details:', {
+        code: body.code,
+        redirectUri,
+        hasClientId: !!clientId,
+        hasClientSecret: !!clientSecret
+      });
+      throw error;
+    }
 
     console.log('OAUTH_RESPONSE', response);
 
+    // First, store in the notion_access_token table
+    // Based on the errors, it seems this table has individual columns for each field
     const { error: tokenError } = await supabase
       .from('notion_access_token')
-      .upsert(response);
+      .insert({
+        bot_id: response.bot_id,
+        access_token: response // Store the full response as JSONB
+      });
 
     if (tokenError) {
       throw tokenError;
     }
 
+    // Then, store the user's access token
+    // First, delete any existing record for this user
+    await supabase
+      .from('notion_access_token_user')
+      .delete()
+      .eq('user_id', body.user_id);
+
+    // Then insert the new token
     const { error: userTokenError } = await supabase
       .from('notion_access_token_user')
-      .upsert({
+      .insert({
         user_id: body.user_id,
         access_token: response.access_token
       });

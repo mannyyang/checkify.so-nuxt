@@ -26,7 +26,16 @@ const currentSyncTodoList = ref<any>(null);
 // Debounce search functionality
 let searchTimeout: NodeJS.Timeout | null = null;
 
+const route = useRoute();
+
 onMounted(async () => {
+  // Handle query parameters for connection feedback
+  if (route.query.success === 'connected') {
+    toast.success('Successfully connected to Notion!');
+  } else if (route.query.error === 'connection_failed') {
+    toast.error('Failed to connect to Notion. Please try again.');
+  }
+
   // Set base URL for client-side link generation
   baseUrl.value = window.location.origin;
 
