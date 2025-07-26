@@ -74,21 +74,21 @@ onMounted(() => {
                 : 'opacity-0 translate-y-4 blur-sm'
             ]"
           >
-            Scattered Todos Across Notion Pages? Finally Organized
+            Losing Track of All Your Todos in Notion?
           </h1>
 
           <!-- Subheadline -->
           <p
             :class="[
-              'mx-auto mt-8 max-w-2xl text-balance text-lg text-gray-600 dark:text-gray-400 transition-all duration-1000 delay-300 transform',
+              'mx-auto mt-8 max-w-3xl text-balance text-lg text-gray-600 dark:text-gray-400 transition-all duration-1000 delay-300 transform',
               isVisible
                 ? 'opacity-100 translate-y-0 blur-0'
                 : 'opacity-0 translate-y-4 blur-sm'
             ]"
           >
-            Automatically collect todos from across all your Notion pages and
-            databases. View, manage, and sync them back to a central Notion
-            database—all from one clean interface.
+            Stop hunting through pages for scattered checkboxes. Checkify
+            automatically finds and aggregates all your todos into a central
+            Notion database. Never lose track of a task again.
           </p>
 
           <!-- CTA Buttons -->
