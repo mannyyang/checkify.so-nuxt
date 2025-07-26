@@ -557,12 +557,13 @@ const extractNotionPageId = (input: string): string => {
 
                   <!-- View Sync Database Button -->
                   <div v-if="todoList.notion_sync_database_id">
-                    <Separator />
                     <Button
                       size="sm"
                       variant="outline"
                       class="w-full"
-                      @click="window.open(`https://notion.so/${todoList.notion_sync_database_id.replace(/-/g, '')}`, '_blank')"
+                      as="a"
+                      :href="`https://notion.so/${todoList.notion_sync_database_id.replace(/-/g, '')}`"
+                      target="_blank"
                     >
                       <ExternalLink class="w-4 h-4 mr-2" />
                       View Sync Database
