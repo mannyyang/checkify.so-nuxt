@@ -49,12 +49,22 @@ export default defineEventHandler(async (event) => {
     console.log('OAUTH_RESPONSE', response);
 
     // First, store in the notion_access_token table
-    // Based on the errors, it seems this table has individual columns for each field
+    // Based on the CSV data, this table has individual columns for each field
+    // Use upsert to handle reconnections to the same workspace
     const { error: tokenError } = await supabase
       .from('notion_access_token')
-      .insert({
+      .upsert({
         bot_id: response.bot_id,
-        access_token: response // Store the full response as JSONB
+        access_token: response.access_token,
+        token_type: response.token_type,
+        workspace_name: response.workspace_name,
+        workspace_icon: response.workspace_icon,
+        workspace_id: response.workspace_id,
+        request_id: response.request_id,
+        owner: response.owner,
+        duplicated_template_id: response.duplicated_template_id
+      }, {
+        onConflict: 'access_token'
       });
 
     if (tokenError) {
@@ -81,7 +91,9 @@ export default defineEventHandler(async (event) => {
     }
 
     return {
-      connected: true
+      success: true,
+      workspace_name: response.workspace_name,
+      workspace_id: response.workspace_id
     };
   }
 
