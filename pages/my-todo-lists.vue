@@ -34,6 +34,10 @@ onMounted(async () => {
     toast.success('Successfully connected to Notion!');
   } else if (route.query.error === 'connection_failed') {
     toast.error('Failed to connect to Notion. Please try again.');
+  } else if (route.query.error === 'notion_cancelled') {
+    toast.info('Notion connection was cancelled.');
+  } else if (route.query.error === 'notion_error') {
+    toast.error('An error occurred while connecting to Notion.');
   }
 
   // Set base URL for client-side link generation

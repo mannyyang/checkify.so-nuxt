@@ -9,6 +9,18 @@ const response = ref();
 const isProcessing = ref(false);
 
 onMounted(async () => {
+  // Check for error first (user cancelled or denied access)
+  if (query.error) {
+    console.log('Notion connection cancelled or denied:', query.error);
+    // Redirect back to todo lists with appropriate error message
+    if (query.error === 'access_denied') {
+      await navigateTo('/my-todo-lists?error=notion_cancelled');
+    } else {
+      await navigateTo('/my-todo-lists?error=notion_error');
+    }
+    return;
+  }
+
   if (query.code) {
     // Prevent duplicate processing
     if (isProcessing.value) {
