@@ -105,11 +105,25 @@ const extractNotionPageId = (input: string): string => {
 };
 const syncDatabaseId = ref<string | null>(null);
 
-const { data, pending, refresh } = useFetch<TodoListData>(
+const { data, pending, refresh, error } = useFetch<TodoListData>(
   '/api/todo-list/' + route.params.todo_list_id,
   {
     lazy: true,
-    server: false // This ensures the fetch only happens on client side
+    server: false, // This ensures the fetch only happens on client side
+    onResponseError ({ response }) {
+      // Handle API errors
+      if (response._data?.message) {
+        if (response._data.message.includes('Could not find database')) {
+          toast.error('Unable to access this Notion database. Please ensure it\'s shared with your Checkify integration.');
+        } else if (response._data.message.includes('object_not_found')) {
+          toast.error('This Notion database no longer exists or has been deleted.');
+        } else {
+          toast.error(`Error loading todos: ${response._data.message}`);
+        }
+      } else {
+        toast.error('Failed to load todos. Please try refreshing the page.');
+      }
+    }
   }
 );
 
@@ -236,9 +250,9 @@ const syncToNotion = async () => {
         description: `Created: ${response.syncResults.created}, Updated: ${response.syncResults.updated}`
       });
     }
-  } catch (error: any) {
+  } catch (err: any) {
     toast.error('Sync Failed', {
-      description: error.message || 'Failed to sync to Notion'
+      description: err.message || 'Failed to sync to Notion'
     });
   } finally {
     syncLoading.value = false;
@@ -286,6 +300,18 @@ const formatDate = (date: Date | null) => {
         <div class="flex-1 overflow-auto">
           <div v-if="pending" class="text-center py-12 text-muted-foreground">
             Loading todos...
+          </div>
+          <div v-else-if="error" class="text-center py-12">
+            <div class="text-destructive font-semibold mb-2">
+              Error Loading Todos
+            </div>
+            <div class="text-muted-foreground mb-4">
+              Unable to access this Notion database. Please ensure it's shared with your Checkify integration.
+            </div>
+            <Button variant="outline" size="sm" @click="refresh">
+              <RefreshCw class="w-4 h-4 mr-2" />
+              Try Again
+            </Button>
           </div>
           <div v-else-if="checkboxList.length === 0" class="text-center py-12 text-muted-foreground">
             No todos found
