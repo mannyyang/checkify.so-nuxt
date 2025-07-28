@@ -13,6 +13,7 @@ Checkify.so uses Supabase (PostgreSQL) as its database with the following archit
 
 ```mermaid
 erDiagram
+    users ||--|| user_profiles : has
     users ||--o{ notion_access_token_user : has
     users ||--o{ todo_list : owns
     notion_access_token_user ||--|| notion_access_token : references
@@ -25,6 +26,18 @@ erDiagram
         string email
         jsonb raw_user_meta_data
         timestamp created_at
+    }
+    
+    user_profiles {
+        uuid id PK
+        uuid user_id FK
+        string subscription_tier
+        string stripe_customer_id
+        string stripe_subscription_id
+        string stripe_subscription_status
+        timestamp stripe_current_period_end
+        timestamp created_at
+        timestamp updated_at
     }
     
     notion_access_token {
@@ -53,6 +66,9 @@ erDiagram
         bigint todo_list_id PK
         uuid user_id FK
         string notion_database_id FK
+        jsonb extraction_metadata
+        string notion_sync_database_id
+        timestamp last_sync_date
         timestamp created_at
     }
     
@@ -95,7 +111,36 @@ Managed by Supabase Auth - stores user authentication data.
 | created_at | timestamp | Account creation timestamp |
 | updated_at | timestamp | Last update timestamp |
 
-### 2. notion_access_token
+### 2. user_profiles
+
+Stores user profile data, subscription status, and billing information.
+
+```sql
+CREATE TABLE user_profiles (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    subscription_tier TEXT DEFAULT 'free',
+    stripe_customer_id TEXT,
+    stripe_subscription_id TEXT,
+    stripe_subscription_status TEXT,
+    stripe_current_period_end TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    UNIQUE(user_id)
+);
+
+-- Index for user lookups
+CREATE INDEX idx_user_profiles_user_id ON user_profiles(user_id);
+```
+
+**Columns:**
+- `subscription_tier`: Current tier ('free', 'pro', 'max')
+- `stripe_customer_id`: Stripe customer identifier
+- `stripe_subscription_id`: Active subscription ID
+- `stripe_subscription_status`: Status ('active', 'canceled', 'past_due', etc.)
+- `stripe_current_period_end`: When current billing period ends
+
+### 3. notion_access_token
 
 Stores the raw OAuth response from Notion.
 
@@ -182,6 +227,9 @@ CREATE TABLE todo_list (
     todo_list_id BIGSERIAL PRIMARY KEY,
     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
     notion_database_id VARCHAR NOT NULL REFERENCES notion_database(notion_database_id),
+    extraction_metadata JSONB,
+    notion_sync_database_id TEXT,
+    last_sync_date TIMESTAMP WITH TIME ZONE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     UNIQUE(user_id, notion_database_id)
 );
@@ -231,41 +279,6 @@ CREATE INDEX idx_page_parent ON page(notion_parent_id);
 }
 ```
 
-### 7. user_profiles
-
-Stores user subscription and billing information.
-
-```sql
-CREATE TABLE user_profiles (
-    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-    stripe_customer_id TEXT UNIQUE,
-    subscription_tier TEXT NOT NULL DEFAULT 'free' CHECK (subscription_tier IN ('free', 'pro', 'max')),
-    subscription_status TEXT DEFAULT 'active' CHECK (subscription_status IN ('active', 'canceled', 'past_due', 'trialing')),
-    subscription_expires_at TIMESTAMP WITH TIME ZONE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    UNIQUE(user_id)
-);
-```
-
-**Columns:**
-- `id`: Unique identifier
-- `user_id`: Reference to auth.users
-- `stripe_customer_id`: Stripe customer ID for billing
-- `subscription_tier`: Current tier (free, pro, max)
-- `subscription_status`: Stripe subscription status
-- `subscription_expires_at`: When canceled subscription expires
-- `created_at`: Creation timestamp
-- `updated_at`: Last update timestamp
-
-**Indexes:**
-```sql
-CREATE INDEX idx_user_profiles_user_id ON user_profiles(user_id);
-CREATE INDEX idx_user_profiles_stripe_customer_id ON user_profiles(stripe_customer_id);
-CREATE INDEX idx_user_profiles_subscription_tier ON user_profiles(subscription_tier);
-```
-
 ### 8. todo
 
 Individual todo items from Notion blocks.
@@ -307,8 +320,9 @@ CREATE INDEX idx_todo_checked ON todo(checked);
 }
 ```
 
-### notion_sync_pages
-Tracks synced Notion database pages and their original checkbox blocks.
+### 9. notion_sync_pages
+
+Tracks synced Notion database pages and their original checkbox blocks. Used by the sync-to-Notion feature.
 
 ```sql
 CREATE TABLE notion_sync_pages (
@@ -340,24 +354,43 @@ CREATE INDEX idx_sync_pages_todo_list ON notion_sync_pages(todo_list_id);
 
 ## Recent Schema Updates
 
-### todo_list Table Updates
-Added columns for Notion sync and webhook support:
+### todo_list Table Updates (January 2025)
+Added columns for extraction metadata and Notion sync support:
 
 ```sql
+-- Migration: 20250122_add_todo_list_metadata.sql
 ALTER TABLE todo_list
+ADD COLUMN extraction_metadata JSONB,
 ADD COLUMN notion_sync_database_id TEXT,
-ADD COLUMN last_sync_date TIMESTAMP WITH TIME ZONE,
+ADD COLUMN last_sync_date TIMESTAMP WITH TIME ZONE;
+```
+
+**New Columns:**
+- `extraction_metadata`: JSONB field storing extraction details:
+  ```json
+  {
+    "totalPages": 45,
+    "totalCheckboxes": 120,
+    "pagesWithTodos": 15,
+    "errors": [],
+    "tierLimits": {
+      "maxPages": 100,
+      "maxCheckboxesPerPage": 100
+    }
+  }
+  ```
+- `notion_sync_database_id`: ID of the created Notion sync database
+- `last_sync_date`: Timestamp of last successful sync
+
+### Planned: Webhook Support (Future)
+Webhook columns will be added in a future migration:
+```sql
+-- Future migration
+ALTER TABLE todo_list
 ADD COLUMN webhook_id TEXT,
 ADD COLUMN webhook_url TEXT,
 ADD COLUMN webhook_secret TEXT;
 ```
-
-**New Columns:**
-- `notion_sync_database_id`: ID of the created Notion sync database
-- `last_sync_date`: Timestamp of last successful sync
-- `webhook_id`: Notion webhook subscription ID
-- `webhook_url`: URL where Notion sends webhook events
-- `webhook_secret`: Secret for webhook payload validation
 
 ## Relationships
 

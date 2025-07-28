@@ -1,5 +1,7 @@
 # Authentication Guide
 
+*Last updated: January 2025*
+
 This document details the authentication system in Checkify.so, including Supabase auth setup, session management, and route protection.
 
 ## Overview

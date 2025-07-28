@@ -1,6 +1,14 @@
 # Subscription Tiers
 
-Checkify.so offers flexible pricing tiers to match your todo management needs.
+*Last updated: January 2025*
+
+Checkify.so offers flexible pricing tiers to match your todo management needs. All tiers include core features with different limits and capabilities.
+
+## Current Pricing
+
+- **Free**: $0/month - Perfect for personal use
+- **Pro**: $6.99/month - For power users
+- **Max**: $19.99/month - For teams and heavy users
 
 ## Tier Comparison
 
@@ -11,7 +19,7 @@ Checkify.so offers flexible pricing tiers to match your todo management needs.
 | **Todo Lists** | 2 | 10 | 25 |
 | **Notion Sync** | ✅ | ✅ | ✅ |
 | **Sync Checkboxes to Notion Database** | ✅ | ✅ | ✅ |
-| **Automatic Sync** | ❌ | Daily | Hourly |
+| **Automatic Sync** | ❌ | Daily (Planned) | Hourly (Planned) |
 | **Support** | Basic | Priority | Priority Email |
 
 ## Free Tier
@@ -41,12 +49,20 @@ Ideal for power users and professionals.
 - **100 pages** per Notion database
 - **100 checkboxes** per page
 - **10 todo lists** maximum
-- **Daily automatic sync**
+- **Daily automatic sync** (planned feature)
 
 ### Additional Features
-- Email support
-- No limits on database connections
+- Priority email support
+- Higher extraction limits
+- Faster sync performance
 - All core features included
+
+### Extraction Metadata
+Pro users see detailed extraction information:
+- Total pages processed
+- Total checkboxes found
+- Pages containing todos
+- Clear tier limit indicators
 
 ### Use Cases
 - Project management
@@ -62,7 +78,7 @@ Built for power users and teams who need the highest limits.
 - **500 pages** per Notion database
 - **1000 checkboxes** per page
 - **25 todo lists** maximum
-- **Hourly automatic sync**
+- **Hourly automatic sync** (planned feature)
 - **All features included**
 
 ### Additional Features
@@ -77,25 +93,22 @@ Built for power users and teams who need the highest limits.
 - Project managers with complex workflows
 - Organizations with high-volume task management
 
-## Automatic Sync Feature
+## Automatic Sync Feature (Planned)
 
 ### Overview
-Checkify.so offers automatic synchronization with Notion based on your subscription tier:
+**Note: Automatic sync is a planned feature not yet implemented.**
+
+Checkify.so will offer automatic synchronization with Notion based on your subscription tier:
 
 - **Free Tier**: Manual sync only - click the sync button when you want to update
-- **Pro Tier**: Daily automatic sync - todos refresh once every 24 hours
-- **Max Tier**: Hourly automatic sync - todos refresh every hour
+- **Pro Tier**: Daily automatic sync - todos will refresh once every 24 hours
+- **Max Tier**: Hourly automatic sync - todos will refresh every hour
 
-### How It Works
-1. **Background Processing**: Sync happens automatically in the background
-2. **Smart Updates**: Only changed items are updated to minimize API calls
-3. **Notification**: You'll see a sync status indicator when updates occur
-4. **Manual Override**: You can always trigger a manual sync regardless of tier
-
-### Sync Schedule
-- **Daily Sync (Pro)**: Runs at midnight UTC
-- **Hourly Sync (Max)**: Runs at the top of each hour
-- **Manual Sync**: Available anytime via the sync button
+### Planned Implementation
+1. **Background Processing**: Sync will happen automatically via cron jobs
+2. **Smart Updates**: Only changed items will be updated to minimize API calls
+3. **Notification**: Users will see a sync status indicator when updates occur
+4. **Manual Override**: Manual sync will always be available regardless of tier
 
 ## Sync Checkboxes to Notion Database
 
@@ -120,8 +133,10 @@ All tiers can use the "Sync to Notion Database" feature, which creates a central
    - Block Link (direct link to the todo)
    - Last Updated (sync timestamp)
 
-### Webhook Integration
-For advanced users, configure a webhook URL to receive updates when todos change:
+### Planned: Webhook Integration
+**Note: Webhook integration is planned but not yet implemented.**
+
+For advanced users, you'll be able to configure webhooks:
 1. Set up a webhook endpoint (e.g., using Zapier, Make, or custom API)
 2. Add the webhook URL in todo list settings
 3. Checkbox changes will POST to your webhook with todo metadata
@@ -194,12 +209,14 @@ const TIER_LIMITS = {
 - ✅ Stripe payment integration
 - ✅ Subscription management portal
 - ✅ Automatic tier enforcement
-- ✅ Webhook-based subscription sync
+- ✅ Extraction metadata tracking
 - ✅ Sync to Notion Database feature
-- ✅ Webhook integration for bidirectional sync
-- ✅ Daily/hourly automatic sync for paid tiers
+- ✅ Enhanced error handling
+- ✅ Tier-based limit visualization
 
 ### Planned Features
+- Webhook integration for bidirectional sync
+- Daily/hourly automatic sync for paid tiers
 - Usage analytics dashboard
 - Team collaboration features
 - Advanced filtering options

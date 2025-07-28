@@ -1,5 +1,7 @@
 # Development Guide
 
+*Last updated: January 2025*
+
 This guide covers everything you need to know to develop, test, and deploy Checkify.so.
 
 ## Development Setup
@@ -7,7 +9,7 @@ This guide covers everything you need to know to develop, test, and deploy Check
 ### Prerequisites
 
 1. **System Requirements**
-   - Node.js 18+ (LTS recommended)
+   - Node.js 22+ (required by package.json)
    - pnpm 8+ package manager
    - Git
    - A code editor (VS Code recommended)
@@ -16,6 +18,7 @@ This guide covers everything you need to know to develop, test, and deploy Check
    - Supabase account (free tier works)
    - Notion developer account
    - Netlify account (for deployment)
+   - Stripe account (for payment features)
 
 ### Initial Setup
 

@@ -13,11 +13,11 @@ The primary goal is to solve a common Notion pain point: while Notion excels at 
 - **Unified Todo View**: Aggregates todos from multiple Notion databases into one interface
 - **Bidirectional Sync**: Changes made in Checkify sync back to Notion in real-time
 - **Sync to Notion Database**: Create a centralized Notion database with all your todos
-- **Webhook Integration**: Support for bidirectional sync via webhooks
+- **Webhook Integration**: Support for bidirectional sync via webhooks (planned feature)
 - **Distraction-Free**: Provides a minimal UI focused solely on task management
 - **Multi-Database Support**: Connect and manage todos from multiple Notion workspaces
 - **Subscription Tiers**: Free, Pro ($6.99/mo), and Max ($19.99/mo) plans with different limits
-- **Automatic Sync**: Daily (Pro) or hourly (Max) automatic synchronization
+- **Automatic Sync**: Daily (Pro) or hourly (Max) automatic synchronization (planned feature)
 - **Billing Management**: Integrated Stripe payments and subscription management
 
 ### Technical Implementation
@@ -26,6 +26,7 @@ The primary goal is to solve a common Notion pain point: while Notion excels at 
 - **Backend**: Supabase for authentication, database, and user management
 - **Payments**: Stripe for subscription billing and management
 - **Integration**: Notion API v2 for reading and updating todo blocks
+- **Analytics**: PostHog for feature tracking and Umami for privacy-friendly analytics
 
 ## Essential Commands
 

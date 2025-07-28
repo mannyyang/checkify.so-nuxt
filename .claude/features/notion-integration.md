@@ -257,14 +257,87 @@ const toggleCheckbox = async (block) => {
 </script>
 ```
 
+## Sync to Notion Database Feature
+
+### Overview
+
+The sync-to-Notion feature creates a centralized Notion database that aggregates all todos from various pages into a single, organized view. This solves the problem of todos being scattered across different Notion pages.
+
+### How It Works
+
+```mermaid
+graph TD
+    A[User clicks Sync to Notion] --> B[Create/Find Sync Database]
+    B --> C[Fetch all todos from source]
+    C --> D[Create pages in sync database]
+    D --> E[Map properties and links]
+    E --> F[Return sync results]
+```
+
+### Implementation Details
+
+#### 1. Database Creation
+
+The sync database includes these properties:
+- **Title** (title) - The todo text
+- **Status** (checkbox) - Completion status
+- **Page** (rich_text) - Source page title
+- **Page Link** (url) - Direct link to source page
+- **Block Link** (url) - Direct link to specific todo
+- **Last Updated** (last_edited_time) - Sync timestamp
+- **Block ID** (rich_text) - Original block reference
+
+#### 2. Sync Process (`/server/api/todo-list/sync-to-notion.post.ts`)
+
+```typescript
+// Create or update sync database
+const syncDatabase = await createSyncDatabase(notion, parentPageId)
+
+// Sync each todo
+for (const todo of todos) {
+  const pageData = {
+    parent: { database_id: syncDatabase.id },
+    properties: {
+      Title: { title: [{ text: { content: todo.text } }] },
+      Status: { checkbox: todo.checked },
+      Page: { rich_text: [{ text: { content: todo.pageTitle } }] },
+      'Page Link': { url: todo.pageUrl },
+      'Block Link': { url: todo.blockUrl },
+      'Block ID': { rich_text: [{ text: { content: todo.blockId } }] }
+    }
+  }
+  
+  await notion.pages.create(pageData)
+}
+```
+
+#### 3. Update Tracking
+
+- Sync database ID stored in `todo_list.notion_sync_database_id`
+- Last sync date tracked in `todo_list.last_sync_date`
+- Supports incremental updates on subsequent syncs
+
+### User Experience
+
+1. One-click sync from todo list dashboard
+2. Progress indicators during sync
+3. Direct link to created database
+4. Sync results summary (created/updated/errors)
+
+### Limitations
+
+- **Forward-only sync**: Changes in sync database don't reflect back
+- **Notion API limits**: Respects rate limiting
+- **Tier-based limits**: Number of todos synced based on subscription
+
 ## Data Synchronization Strategy
 
-### 1. Initial Sync
+### 1. Initial Extraction
 When a user connects a database:
-- Fetch all pages (up to 60)
+- Fetch all pages (respecting tier limits)
 - Extract todo blocks from each page
-- Store metadata in Supabase
-- Display in UI
+- Store extraction metadata
+- Display in UI with stats
 
 ### 2. Real-time Updates
 For checkbox changes:
@@ -276,7 +349,7 @@ For checkbox changes:
 ### 3. Refresh Strategy
 - Manual refresh button available
 - Automatic refresh on navigation
-- No background polling (to respect rate limits)
+- Planned: Automatic sync (Pro/Max tiers)
 
 ## Error Handling
 
@@ -389,6 +462,54 @@ describe('Notion Integration', () => {
 })
 ```
 
+## Notion URL Parser
+
+### Purpose
+
+The URL parser utility extracts Notion page IDs from various URL formats, handling the complexity of Notion's URL structures.
+
+### Implementation (`/utils/notion-url-parser.ts`)
+
+```typescript
+export function extractNotionPageId(url: string): string | null {
+  // Handle various Notion URL formats:
+  // 1. https://notion.so/Page-Title-abc123
+  // 2. https://notion.so/workspace/Page-Title-abc123
+  // 3. https://notion.so/abc123
+  // 4. https://www.notion.so/workspace/abc123?v=xyz
+  
+  const patterns = [
+    /notion\.so\/(?:.*\/)?(\w{32})(?:\?|$)/,
+    /notion\.so\/(?:.*\/)?([\w-]+)-(\w{32})(?:\?|$)/
+  ]
+  
+  for (const pattern of patterns) {
+    const match = url.match(pattern)
+    if (match) {
+      return match[match.length - 1]
+    }
+  }
+  
+  return null
+}
+```
+
+### Supported URL Formats
+
+- Direct page links
+- Workspace-prefixed URLs
+- URLs with query parameters
+- URLs with view parameters
+- Short links
+- Full page title URLs
+
+### Usage Example
+
+```typescript
+const pageId = extractNotionPageId('https://notion.so/My-Page-abc123def456')
+// Returns: 'abc123def456'
+```
+
 ## Troubleshooting
 
 ### Common Issues
@@ -439,3 +560,29 @@ const notion = new Client({
    - Notion as source of truth
    - No critical data in cache only
    - Handle sync conflicts
+
+## Planned Features
+
+### 1. Webhook Integration
+- Real-time bidirectional sync
+- Notion webhook subscriptions
+- Instant updates from Notion changes
+- Reduced API calls
+
+### 2. Automatic Synchronization
+- Scheduled sync for Pro/Max tiers
+- Daily (Pro) or hourly (Max) updates
+- Background job implementation
+- Smart sync based on activity
+
+### 3. Advanced Filtering
+- Filter todos by properties
+- Custom views and sorting
+- Search across all todos
+- Tag-based organization
+
+### 4. Bulk Operations
+- Mark multiple todos complete
+- Bulk edit properties
+- Mass organization tools
+- Export capabilities

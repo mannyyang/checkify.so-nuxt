@@ -421,8 +421,10 @@ Create or update a Notion database with aggregated todos from all pages in a tod
 
 ---
 
-#### `POST /api/notion-webhook`
+#### `POST /api/notion-webhook` *(Planned - Not Yet Implemented)*
 Handle Notion webhook events for bidirectional sync.
+
+**Note:** This endpoint is planned but not yet implemented. Webhook integration is a future feature.
 
 **Headers:**
 - `x-notion-signature` - Webhook signature for validation

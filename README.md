@@ -16,14 +16,13 @@ Checkify.so solves a common problem with Notion: while it's great for organizing
 - **Notion Integration**: OAuth-based connection to your Notion workspace
 - **Real-time Sync**: Bidirectional checkbox synchronization with Notion
 - **Sync to Notion Database**: Create a centralized Notion database with all your todos
-- **Webhook Integration**: Support for bidirectional sync via webhooks
+- **Webhook Integration**: Support for bidirectional sync via webhooks (planned)
 - **Multi-database Support**: Connect multiple Notion databases
 - **Clean UI**: Focused todo interface without Notion's complexity
 - **Authentication**: Secure login with Google via Supabase
 - **Subscription Tiers**: Free, Pro ($6.99/mo), and Max ($19.99/mo) plans
-- **Automatic Sync**: Daily (Pro) or hourly (Max) automatic synchronization
+- **Automatic Sync**: Daily (Pro) or hourly (Max) automatic synchronization (planned)
 - **Responsive Design**: Works on desktop and mobile devices
-- **Multi-language**: English and German support
 
 ## 🚀 Tech Stack
 
@@ -35,10 +34,11 @@ Checkify.so solves a common problem with Notion: while it's great for organizing
 - **Styling**: [Tailwind CSS v4](https://tailwindcss.com/)
 - **Icons**: [lucide-vue-next](https://lucide.dev/)
 - **Testing**: [Vitest](https://vitest.dev/)
+- **Analytics**: [PostHog](https://posthog.com/) and [Umami](https://umami.is/)
 
 ## 📋 Prerequisites
 
-- Node.js 18+ (LTS recommended)
+- Node.js 22+ (required by package.json)
 - pnpm package manager
 - Supabase account
 - Notion integration app (for OAuth)
@@ -161,19 +161,6 @@ Contributions are welcome! Please read our contributing guidelines and submit pu
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
-## 🎨 Visual Assets
-
-### Logo and Branding
-- **Logo**: Custom Checkify logo featuring a stylized checkbox icon
-- **Colors**: Primary brand color with consistent theming
-- **Icons**: All app icons and favicons updated with new branding
-- **Location**: Visual assets stored in `public/` directory
-
-### Design System
-- Built with shadcn/ui components for consistency
-- Tailwind CSS v4 for styling
-- Light/dark mode support throughout
-- Responsive design for all screen sizes
 
 ## 🙏 Acknowledgments
 

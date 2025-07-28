@@ -27,3 +27,18 @@ connect Notion to Checkify.so. Here's a step-by-step guide to doing it.
 ![Checkify.so Access](/docs/access-pages-notion.png)
 
 That's all! You should now be able to connect your Notion database(s) to Checkify.so.
+
+## Next Steps
+
+After connecting Notion:
+
+1. **Create Todo Lists**: Select databases containing checkboxes to track
+2. **Sync Checkboxes**: Toggle checkboxes in Checkify and they'll update in Notion instantly
+3. **Sync to Notion Database**: Create a centralized database with all your todos (see [Sync to Notion guide](/docs/sync-to-notion))
+
+## Features Available After Connection
+
+- **Real-time Sync**: Changes made in Checkify reflect immediately in Notion
+- **Extraction Metadata**: See how many pages and checkboxes were found
+- **Tier-based Limits**: Free users can track up to 25 pages, Pro users 100, Max users 500
+- **Multiple Databases**: Connect and manage todos from multiple Notion databases

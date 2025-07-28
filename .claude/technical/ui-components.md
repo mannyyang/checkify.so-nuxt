@@ -1,5 +1,7 @@
 # UI Components Documentation
 
+*Last updated: January 2025*
+
 This document provides a comprehensive guide to the UI components used in Checkify.so, built with shadcn/ui and Tailwind CSS v4.
 
 ## Overview
@@ -19,6 +21,7 @@ Checkify.so uses **shadcn/ui**, a modern component library built on top of Radix
 components/
 ├── ui/                    # shadcn/ui components
 │   ├── avatar/           # Avatar components
+│   ├── badge/            # Badge component (Reka UI based)
 │   ├── button/           # Button component
 │   ├── card/             # Card components
 │   ├── checkbox/         # Checkbox component
@@ -84,6 +87,43 @@ import { Button } from '@/components/ui/button'
   <Button size="icon"><X /></Button>
 </template>
 ```
+
+### Badge
+
+Badges are used to display status indicators, labels, or small pieces of information.
+
+```vue
+<script setup lang="ts">
+import { Badge } from '@/components/ui/badge'
+</script>
+
+<template>
+  <!-- Default badge -->
+  <Badge>New</Badge>
+  
+  <!-- With variants -->
+  <Badge variant="secondary">Beta</Badge>
+  <Badge variant="destructive">Error</Badge>
+  <Badge variant="outline">Draft</Badge>
+  
+  <!-- In context -->
+  <div class="flex items-center gap-2">
+    <h3>Todo List</h3>
+    <Badge variant="secondary">{{ todoCount }}</Badge>
+  </div>
+  
+  <!-- Sync status indicator -->
+  <Badge :variant="syncStatus === 'success' ? 'default' : 'destructive'">
+    {{ syncStatus }}
+  </Badge>
+</template>
+```
+
+**Variants:**
+- `default` - Primary color badge
+- `secondary` - Muted color badge
+- `destructive` - Error/danger state
+- `outline` - Border only style
 
 ### Card
 

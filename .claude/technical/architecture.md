@@ -314,36 +314,51 @@ content/
 
 ## Recent Feature Additions
 
-### Enhanced Todo List Dashboard
-- Multi-card layout for better organization
-- Extraction metadata display showing:
-  - Total pages processed
-  - Total checkboxes found
-  - Pages containing todos
-  - Tier limits and warnings
-- Loading states with visual feedback during sync operations
-- Real-time sync status indicators
-- Progress tracking with visual progress bars
+### Sync to Notion Database (New Major Feature)
+- Creates a centralized Notion database aggregating all todos
+- Structured properties for comprehensive todo tracking
+- Maintains links to original Notion pages
+- One-click sync from todo list dashboard
+- Stores sync metadata in database
 
-### Loading States and User Feedback
-- Skeleton loaders for content placeholders
-- Animated sync indicators during operations
-- Progress bars for long-running tasks
-- Toast notifications for action feedback
-- Empty state illustrations and messages
+### Enhanced Error Handling
+- Specific error messages for Notion access issues
+- Toast notifications for database not found/access denied
+- Visual error states with retry capabilities
+- Graceful fallbacks for API failures
 
-### Sync to Notion Database Feature
-- Creates a dedicated Notion database for todo tracking
-- Bidirectional sync capabilities
-- Customizable database location
-- Automatic sync schedules based on tier
+### New UI Components
+- **Badge Component**: Using Reka UI primitives
+- **Enhanced Cards**: Multi-card layout for todo lists
+- **Progress Indicators**: Visual feedback during operations
 
-### Current Analytics Approach
-- No external analytics services
-- Privacy-focused approach
+### Database Schema Updates
+- `extraction_metadata` (JSONB): Stores extraction details
+- `notion_sync_database_id`: References aggregated database
+- `last_sync_date`: Tracks sync timestamps
+
+### Stripe Integration Enhancements
+- Webhook handling for subscription lifecycle
+- Automatic tier updates on payment events
+- Customer portal for self-service management
+- Improved checkout flow
+
+### Updated Subscription Tiers
+- **Free**: 25 pages, 25 checkboxes/page, 2 todo lists
+- **Pro** ($6.99/mo): 100 pages, 100 checkboxes/page, 10 todo lists
+- **Max** ($19.99/mo): 500 pages, 1000 checkboxes/page, 25 todo lists
+
+### Analytics Integration
+- **PostHog**: Feature analytics and user behavior tracking
+  - Track feature usage and adoption
+  - A/B testing capabilities
+  - User journey analysis
+- **Umami**: Privacy-friendly web analytics
+  - Page views and visitor statistics
+  - No cookies, GDPR compliant
+  - Self-hosted option available
 - Feature flags managed through environment variables
 - Server-side logging for debugging
-- User data remains private
 
 ## Future Architecture Considerations
 

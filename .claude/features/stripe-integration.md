@@ -10,6 +10,7 @@ Checkify.so uses Stripe for subscription management, providing:
 - Automatic billing and invoicing
 - Customer portal for self-service
 - Webhook-based real-time updates
+- Automatic tier updates on payment events
 
 ## Prerequisites
 
@@ -191,6 +192,20 @@ export default defineEventHandler(async (event) => {
 });
 ```
 
+### Recent Enhancements
+
+#### Enhanced Webhook Processing
+- Handles checkout session completion
+- Automatic user profile creation/update
+- Subscription status synchronization
+- Payment failure notifications
+
+#### Customer Portal Integration
+- One-click access to billing management
+- Self-service plan changes
+- Invoice history
+- Payment method updates
+
 ### Error Handling
 
 The integration includes comprehensive error handling:
@@ -199,6 +214,7 @@ The integration includes comprehensive error handling:
 2. **State Validation**: Ensures database and Stripe data stay in sync
 3. **Graceful Failures**: User-friendly error messages for payment failures
 4. **Debug Endpoints**: Development tools for troubleshooting
+5. **Retry Logic**: Automatic retry for failed webhook processing
 
 ### Security Considerations
 

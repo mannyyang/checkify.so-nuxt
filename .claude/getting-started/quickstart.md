@@ -1,10 +1,12 @@
 # Quickstart Guide
 
+*Last updated: January 2025*
+
 Get up and running with Checkify.so in 5 minutes.
 
 ## Prerequisites
 
-- Node.js 18+ and pnpm
+- Node.js 22+ and pnpm
 - Supabase account
 - Notion account and integration
 
@@ -34,9 +36,8 @@ supabase db push
 
 # Or manually run migrations in order:
 # - 20240101000000_initial_schema.sql
-# - 20250709232007_add_sync_database_columns.sql  
-# - 20250710063000_add_sync_tracking_table.sql
-# - 20250720000000_add_user_profiles.sql
+# - 20250122_add_todo_list_metadata.sql
+# - Additional migrations as needed
 ```
 
 ### 4. Configure Environment Variables
@@ -118,16 +119,17 @@ STRIPE_PRICE_ID_MAX=price_xxxxx
 
 For detailed Stripe setup, see [Stripe Integration Guide](../features/stripe-integration.md).
 
-### 7. Configure PostHog (Optional)
+### 7. Configure Analytics (Optional)
 
-Update `plugins/posthog.client.ts` with your project key:
-
+**PostHog**: Update `plugins/posthog.client.ts` with your project key
 ```typescript
 posthogLib.init('your-project-key', {
   api_host: 'https://us.i.posthog.com',
   person_profiles: 'identified_only'
 });
 ```
+
+**Umami**: Configure in `nuxt.config.ts` if using self-hosted analytics
 
 ### 8. Start Development Server
 
@@ -154,21 +156,22 @@ Visit http://localhost:3000
 
 ### 4. View Your Todos
 - All checkboxes from selected databases appear
+- See extraction metadata (pages processed, checkboxes found)
 - Click checkboxes to toggle state
 - Changes sync instantly to Notion
+- Use "Sync to Notion" to create aggregated database
 
 ## Using Sync Features
 
-### Enable Feature Flag
-1. In PostHog, enable `notion-database-sync` flag
-2. Refresh the app
+### Sync to Notion Database
+This feature is now available to all users without feature flags.
 
 ### Create Sync Database
 1. Open a todo list
-2. Click settings (gear icon)
-3. Click "Sync to Notion Database"
-4. Provide parent page ID
-5. Click "Create & Sync"
+2. Click "Sync to Notion" button
+3. The system will create a new Notion database
+4. All todos are aggregated with links to sources
+5. View the created database in Notion
 
 ## Common Issues
 
