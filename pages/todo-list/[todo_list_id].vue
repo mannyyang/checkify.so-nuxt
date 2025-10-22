@@ -366,7 +366,7 @@ const formatDate = (date: Date | null) => {
                       <a
                         :href="parseBlockLink(checkbox.id, item.page.id)"
                         target="_blank"
-                        class="text-muted-foreground hover:text-primary inline-flex items-center"
+                        class="text-muted-foreground hover:text-primary inline-flex items-center pt-0.5"
                         @click.stop
                       >
                         <ExternalLink class="w-4 h-4" />
