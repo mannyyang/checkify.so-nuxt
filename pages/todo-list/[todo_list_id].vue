@@ -352,11 +352,11 @@ const formatDate = (date: Date | null) => {
                   {{ item.page.properties['Name']?.title?.[0]?.plain_text }}
                 </h3>
 
-                <div class="space-y-2">
+                <div class="space-y-1">
                   <div
                     v-for="checkbox in item.checkboxes"
                     :key="checkbox.id"
-                    class="flex items-start gap-3 p-2 rounded-lg hover:bg-accent"
+                    class="flex items-start gap-3 px-2 py-1 rounded-lg hover:bg-accent"
                   >
                     <Checkbox
                       :id="checkbox.id"
