@@ -189,17 +189,11 @@ watchEffect(() => {
 });
 
 const onTodoUpdate = async (checkbox: ToDoBlockObjectResponse, checked: boolean) => {
-  console.log('=== TODO UPDATE TRIGGERED ===');
-  console.log('Checkbox ID:', checkbox.id);
-  console.log('New checked state:', checked);
-  console.log('Todo list ID:', route.params.todo_list_id);
-
   // Optimistically update local state
   checkbox.to_do.checked = checked;
 
   try {
-    console.log('Sending request to /api/set-checkbox...');
-    const response = await $fetch('/api/set-checkbox', {
+    await $fetch('/api/set-checkbox', {
       method: 'POST',
       body: {
         checkbox,
@@ -207,11 +201,8 @@ const onTodoUpdate = async (checkbox: ToDoBlockObjectResponse, checked: boolean)
       }
     });
 
-    console.log('Response received:', response);
-    console.log('✅ Todo updated successfully');
     toast.success('Todo updated');
   } catch (error: any) {
-    console.error('Exception caught:', error);
     // Revert on error
     checkbox.to_do.checked = !checked;
     toast.error('Failed to update todo', {
@@ -375,7 +366,7 @@ const formatDate = (date: Date | null) => {
                       <a
                         :href="parseBlockLink(checkbox.id, item.page.id)"
                         target="_blank"
-                        class="text-muted-foreground hover:text-primary inline-flex"
+                        class="text-muted-foreground hover:text-primary inline-flex items-center"
                         @click.stop
                       >
                         <ExternalLink class="w-4 h-4" />
