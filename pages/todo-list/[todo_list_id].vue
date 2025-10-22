@@ -361,7 +361,7 @@ const formatDate = (date: Date | null) => {
                     <Checkbox
                       :id="checkbox.id"
                       :model-value="checkbox.to_do.checked"
-                      class="mt-1 h-5 w-5"
+                      class="h-5 w-5"
                       @update:model-value="(value) => onTodoUpdate(checkbox, value)"
                     />
                     <label :for="checkbox.id" class="flex-1 text-sm leading-relaxed cursor-pointer flex items-start gap-2">
