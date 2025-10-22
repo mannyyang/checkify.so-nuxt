@@ -299,7 +299,7 @@ const formatDate = (date: Date | null) => {
       <div class="flex-1 flex flex-col">
         <!-- Header Toolbar -->
         <div class="flex items-center justify-between bg-background border-b p-4 mb-4">
-          <span class="text-lg font-bold">My Todos</span>
+          <span class="text-lg font-bold pl-2">My Todos</span>
 
           <div class="flex items-center gap-2">
             <Button
