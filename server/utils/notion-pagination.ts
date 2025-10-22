@@ -48,7 +48,7 @@ export async function fetchAllDatabasePages (
         start_cursor: startCursor,
         sorts: [
           {
-            timestamp: 'last_edited_time',
+            timestamp: 'created_time',
             direction: 'descending'
           }
         ]
