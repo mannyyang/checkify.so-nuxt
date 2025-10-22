@@ -298,7 +298,7 @@ const formatDate = (date: Date | null) => {
       <!-- Main Content -->
       <div class="flex-1 flex flex-col">
         <!-- Header Toolbar -->
-        <div class="flex items-center justify-between bg-background border-b p-4">
+        <div class="flex items-center justify-between bg-background border-b px-4 pt-4 pb-8">
           <span class="text-lg font-bold">My Todos</span>
 
           <div class="flex items-center gap-2">
