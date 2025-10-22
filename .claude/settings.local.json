@@ -55,7 +55,8 @@
       "WebFetch(domain:stripe.com)",
       "WebFetch(domain:docs.stripe.com)",
       "WebFetch(domain:content.nuxt.com)",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "Read(//Users/myang/.claude/**)"
     ],
     "deny": []
   }
