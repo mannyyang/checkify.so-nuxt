@@ -45,7 +45,13 @@ export async function fetchAllDatabasePages (
           EXTRACTION_CONFIG.maxPagesPerRequest,
           maxPages ? maxPages - allPages.length : EXTRACTION_CONFIG.maxPagesPerRequest
         ),
-        start_cursor: startCursor
+        start_cursor: startCursor,
+        sorts: [
+          {
+            timestamp: 'last_edited_time',
+            direction: 'descending'
+          }
+        ]
       });
 
       allPages.push(...(response.results as PageObjectResponse[]));

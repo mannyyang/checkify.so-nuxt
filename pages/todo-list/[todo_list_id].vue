@@ -189,11 +189,35 @@ watchEffect(() => {
 });
 
 const onTodoUpdate = async (checkbox: ToDoBlockObjectResponse, checked: boolean) => {
+  console.log('=== TODO UPDATE TRIGGERED ===');
+  console.log('Checkbox ID:', checkbox.id);
+  console.log('New checked state:', checked);
+  console.log('Todo list ID:', route.params.todo_list_id);
+
+  // Optimistically update local state
   checkbox.to_do.checked = checked;
-  await useFetch('/api/set-checkbox', {
-    method: 'POST',
-    body: checkbox
-  });
+
+  try {
+    console.log('Sending request to /api/set-checkbox...');
+    const response = await $fetch('/api/set-checkbox', {
+      method: 'POST',
+      body: {
+        checkbox,
+        todo_list_id: route.params.todo_list_id
+      }
+    });
+
+    console.log('Response received:', response);
+    console.log('✅ Todo updated successfully');
+    toast.success('Todo updated');
+  } catch (error: any) {
+    console.error('Exception caught:', error);
+    // Revert on error
+    checkbox.to_do.checked = !checked;
+    toast.error('Failed to update todo', {
+      description: error.data?.message || error.message || 'Please try again'
+    });
+  }
 };
 
 const parseBlockLink = (blockId: string, parentId: string) => {
@@ -336,9 +360,9 @@ const formatDate = (date: Date | null) => {
                   >
                     <Checkbox
                       :id="checkbox.id"
-                      :checked="checkbox.to_do.checked"
+                      :model-value="checkbox.to_do.checked"
                       class="mt-1 h-5 w-5"
-                      @update:checked="onTodoUpdate(checkbox, $event)"
+                      @update:model-value="(value) => onTodoUpdate(checkbox, value)"
                     />
                     <label :for="checkbox.id" class="flex-1 text-sm leading-relaxed cursor-pointer flex items-start gap-2">
                       <span>
@@ -464,8 +488,7 @@ const formatDate = (date: Date | null) => {
               </label>
               <Checkbox
                 id="show-checked"
-                :checked="showChecked"
-                @update:checked="showChecked = $event"
+                v-model="showChecked"
               />
             </div>
 

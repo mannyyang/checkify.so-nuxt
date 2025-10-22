@@ -140,8 +140,16 @@ export default defineEventHandler(async (event) => {
       }
     );
 
+    // Sort checkboxes by created_time (most recent first)
+    const sortedPagesWithBlocks = pagesWithBlocks.map((pageBlock) => ({
+      ...pageBlock,
+      checkboxes: [...pageBlock.checkboxes].sort((a, b) => {
+        return new Date(b.created_time).getTime() - new Date(a.created_time).getTime();
+      })
+    }));
+
     // Filter out pages without checkboxes
-    const pagesWithCheckboxes = pagesWithBlocks.filter((block) => {
+    const pagesWithCheckboxes = sortedPagesWithBlocks.filter((block) => {
       return block.checkboxes.length > 0;
     });
 
