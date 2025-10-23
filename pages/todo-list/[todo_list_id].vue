@@ -460,6 +460,12 @@ const formatDate = (date: Date | null) => {
                         View plans
                       </NuxtLink>
                     </p>
+                    <p v-if="data.metadata.limits?.tier === 'pro'" class="text-xs text-yellow-700 mt-1">
+                      Upgrade to Max for up to 500 pages.
+                      <NuxtLink to="/settings" class="underline hover:text-yellow-900">
+                        Upgrade
+                      </NuxtLink>
+                    </p>
                   </div>
                   <div v-if="data.metadata.errors.length > 0" class="mt-2 p-2 bg-red-50 rounded-md">
                     <p class="text-xs text-red-800 mb-1">
