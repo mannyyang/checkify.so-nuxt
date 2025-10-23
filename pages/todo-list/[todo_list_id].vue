@@ -58,6 +58,9 @@ const syncParentPageId = ref('');
 const syncLoading = ref(false);
 const lastSyncDate = ref<Date | null>(null);
 
+// Check if progressive loading is enabled
+const useProgressive = computed(() => route.query.progressive === 'true');
+
 // Function to extract page ID from Notion URL or return the input as-is
 const extractNotionPageId = (input: string): string => {
   const cleanInput = input.trim();
@@ -106,11 +109,18 @@ const extractNotionPageId = (input: string): string => {
 };
 const syncDatabaseId = ref<string | null>(null);
 
+// Progressive loading composable
+const progressive = useProgressive.value
+  ? useProgressiveTodos(route.params.todo_list_id as string)
+  : null;
+
+// Traditional loading
 const { data, pending, refresh, error } = useFetch<TodoListData>(
   '/api/todo-list/' + route.params.todo_list_id,
   {
     lazy: true,
     server: false, // This ensures the fetch only happens on client side
+    immediate: !useProgressive.value, // Only fetch immediately if not using progressive
     onResponseError ({ response }) {
       // Handle API errors
       if (response._data?.message) {
@@ -128,7 +138,20 @@ const { data, pending, refresh, error } = useFetch<TodoListData>(
   }
 );
 
+// Start progressive loading if enabled
+if (progressive) {
+  onMounted(() => {
+    progressive.startStreaming();
+  });
+}
+
 const metrics = computed(() => {
+  // Use progressive metrics if available
+  if (progressive) {
+    return progressive.metrics.value;
+  }
+
+  // Otherwise use traditional data
   if (data.value?.pages) {
     return data.value.pages.reduce(
       (acc, page) => {
@@ -155,39 +178,63 @@ const percentage = computed(() => {
 });
 
 const filtered = computed(() => {
-  if (data.value?.pages) {
-    return data.value.pages.map((page) => {
-      return {
-        page: page.page,
-        checkboxes: page.checkboxes.filter((checkbox) => {
-          if (showChecked.value) {
-            return checkbox;
-          }
+  const sourcePages = progressive ? progressive.pages.value : (data.value?.pages || []);
 
-          return !checkbox.to_do.checked;
-        })
-      };
-    });
-  }
+  return sourcePages.map((page) => {
+    return {
+      page: page.page,
+      checkboxes: page.checkboxes.filter((checkbox) => {
+        if (showChecked.value) {
+          return checkbox;
+        }
 
-  return [];
+        return !checkbox.to_do.checked;
+      })
+    };
+  });
 });
 
 const checkboxList = computed(() => {
   if (showChecked.value) {
-    return data.value?.pages || [];
+    return progressive ? progressive.pages.value : (data.value?.pages || []);
   } else {
     return filtered.value;
   }
 });
 
+// Unified loading state
+const isLoading = computed(() => {
+  return progressive ? progressive.isLoading.value : pending.value;
+});
+
+// Unified error state
+const loadError = computed(() => {
+  return progressive ? progressive.error.value : (error.value ? 'Failed to load todos' : null);
+});
+
+// Unified metadata
+const todoMetadata = computed(() => {
+  return progressive ? progressive.metadata.value : data.value?.metadata;
+});
+
 // Set sync info when data loads
 watchEffect(() => {
-  if (data.value?.syncInfo) {
-    syncDatabaseId.value = data.value.syncInfo.syncDatabaseId;
-    lastSyncDate.value = data.value.syncInfo.lastSyncDate ? new Date(data.value.syncInfo.lastSyncDate) : null;
+  const syncInfoSource = progressive ? progressive.syncInfo.value : data.value?.syncInfo;
+
+  if (syncInfoSource) {
+    syncDatabaseId.value = syncInfoSource.syncDatabaseId;
+    lastSyncDate.value = syncInfoSource.lastSyncDate ? new Date(syncInfoSource.lastSyncDate) : null;
   }
 });
+
+// Refresh handler
+const handleRefresh = () => {
+  if (progressive) {
+    progressive.startStreaming();
+  } else {
+    refresh();
+  }
+};
 
 const onTodoUpdate = async (checkbox: ToDoBlockObjectResponse, checked: boolean) => {
   // Optimistically update local state
@@ -223,7 +270,7 @@ const parseBlockLink = (blockId: string, parentId: string) => {
 
 // refresh every 60 minutes
 setTimeout(() => {
-  refresh();
+  handleRefresh();
 }, 3600000);
 
 const syncToNotion = async () => {
@@ -291,16 +338,21 @@ const formatDate = (date: Date | null) => {
       <div class="flex-1 flex flex-col">
         <!-- Header Toolbar -->
         <div class="flex items-center justify-between bg-background border-b p-4 mb-4">
-          <span class="text-lg font-bold pl-2">My Todos</span>
+          <div class="flex items-center gap-2">
+            <span class="text-lg font-bold pl-2">My Todos</span>
+            <span v-if="useProgressive" class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
+              Progressive Mode
+            </span>
+          </div>
 
           <div class="flex items-center gap-2">
             <Button
               variant="outline"
               size="sm"
-              :disabled="pending"
-              @click="refresh"
+              :disabled="isLoading"
+              @click="handleRefresh"
             >
-              <RefreshCw :class="{ 'animate-spin': pending }" class="w-4 h-4 mr-2" />
+              <RefreshCw :class="{ 'animate-spin': isLoading }" class="w-4 h-4 mr-2" />
               Refresh
             </Button>
 
@@ -314,22 +366,35 @@ const formatDate = (date: Date | null) => {
 
         <!-- Todo List Content -->
         <div class="flex-1 overflow-auto">
-          <div v-if="pending" class="text-center py-12 text-muted-foreground">
+          <!-- Progressive Loading Indicator -->
+          <div v-if="progressive && progressive.isLoading.value && progressive.progress.value.totalPages > 0" class="mx-4 mb-4">
+            <div class="bg-accent rounded-lg p-4">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-sm font-medium">{{ progressive.loadingMessage.value }}</span>
+                <span class="text-sm text-muted-foreground">
+                  {{ progressive.progress.value.totalCheckboxes }} todos found
+                </span>
+              </div>
+              <Progress :value="progressive.progress.value.percentComplete || 0" class="w-full" />
+            </div>
+          </div>
+
+          <div v-if="isLoading && checkboxList.length === 0" class="text-center py-12 text-muted-foreground">
             Loading todos...
           </div>
-          <div v-else-if="error" class="text-center py-12">
+          <div v-else-if="loadError" class="text-center py-12">
             <div class="text-destructive font-semibold mb-2">
               Error Loading Todos
             </div>
             <div class="text-muted-foreground mb-4">
-              Unable to access this Notion database. Please ensure it's shared with your Checkify integration.
+              {{ loadError }}
             </div>
-            <Button variant="outline" size="sm" @click="refresh">
+            <Button variant="outline" size="sm" @click="handleRefresh">
               <RefreshCw class="w-4 h-4 mr-2" />
               Try Again
             </Button>
           </div>
-          <div v-else-if="checkboxList.length === 0" class="text-center py-12 text-muted-foreground">
+          <div v-else-if="!isLoading && checkboxList.length === 0" class="text-center py-12 text-muted-foreground">
             No todos found
           </div>
 
@@ -354,7 +419,7 @@ const formatDate = (date: Date | null) => {
                       :id="checkbox.id"
                       :model-value="checkbox.to_do.checked"
                       class="h-5 w-5"
-                      @update:model-value="(value) => onTodoUpdate(checkbox, value)"
+                      @update:model-value="(value) => onTodoUpdate(checkbox, value as boolean)"
                     />
                     <label :for="checkbox.id" class="flex-1 text-sm leading-relaxed cursor-pointer flex items-start gap-2">
                       <span>
@@ -413,7 +478,7 @@ const formatDate = (date: Date | null) => {
             </Card>
 
             <!-- Extraction Info Card -->
-            <Card v-if="data?.metadata">
+            <Card v-if="todoMetadata">
               <CardHeader>
                 <CardTitle>Extraction Info</CardTitle>
               </CardHeader>
@@ -421,58 +486,58 @@ const formatDate = (date: Date | null) => {
                 <div class="space-y-2 text-sm">
                   <div class="flex justify-between">
                     <span class="text-muted-foreground">Total Pages:</span>
-                    <span class="font-medium">{{ data.metadata.totalPages }}</span>
+                    <span class="font-medium">{{ todoMetadata.totalPages }}</span>
                   </div>
                   <div class="flex justify-between">
                     <span class="text-muted-foreground">Total Checkboxes:</span>
-                    <span class="font-medium">{{ data.metadata.totalCheckboxes }}</span>
+                    <span class="font-medium">{{ todoMetadata.totalCheckboxes }}</span>
                   </div>
                   <div class="flex justify-between">
                     <span class="text-muted-foreground">Pages with Todos:</span>
-                    <span class="font-medium">{{ data.metadata.pagesWithCheckboxes }}</span>
+                    <span class="font-medium">{{ todoMetadata.pagesWithCheckboxes }}</span>
                   </div>
-                  <div v-if="data.metadata.limits" class="mt-3 pt-3 border-t">
+                  <div v-if="todoMetadata.limits" class="mt-3 pt-3 border-t">
                     <div class="flex justify-between">
                       <span class="text-muted-foreground">Tier:</span>
-                      <span class="font-medium capitalize">{{ data.metadata.limits.tier }}</span>
+                      <span class="font-medium capitalize">{{ todoMetadata.limits.tier }}</span>
                     </div>
-                    <div v-if="data.metadata.limits.tierSource" class="flex justify-between">
+                    <div v-if="todoMetadata.limits.tierSource" class="flex justify-between">
                       <span class="text-muted-foreground text-xs">Source:</span>
-                      <span class="text-xs font-mono">{{ data.metadata.limits.tierSource }}</span>
+                      <span class="text-xs font-mono">{{ todoMetadata.limits.tierSource }}</span>
                     </div>
-                    <div v-if="data.metadata.limits.maxPages" class="flex justify-between">
+                    <div v-if="todoMetadata.limits.maxPages" class="flex justify-between">
                       <span class="text-muted-foreground">Page Limit:</span>
-                      <span class="font-medium">{{ data.metadata.limits.maxPages }}</span>
+                      <span class="font-medium">{{ todoMetadata.limits.maxPages }}</span>
                     </div>
                   </div>
-                  <div v-if="!data.metadata.extractionComplete" class="mt-2 p-2 bg-yellow-50 rounded-md">
+                  <div v-if="!todoMetadata.extractionComplete" class="mt-2 p-2 bg-yellow-50 rounded-md">
                     <p class="text-xs text-yellow-800">
-                      <template v-if="data.metadata.limits?.reachedPageLimit">
-                        ⚠️ Page limit reached ({{ data.metadata.limits.tier }} tier: {{ data.metadata.limits.maxPages }} pages max)
+                      <template v-if="todoMetadata.limits?.reachedPageLimit">
+                        ⚠️ Page limit reached ({{ todoMetadata.limits.tier }} tier: {{ todoMetadata.limits.maxPages }} pages max)
                       </template>
                       <template v-else>
                         ⚠️ Some data may be missing due to extraction limits
                       </template>
                     </p>
-                    <p v-if="data.metadata.limits?.tier === 'free'" class="text-xs text-yellow-700 mt-1">
+                    <p v-if="todoMetadata.limits?.tier === 'free'" class="text-xs text-yellow-700 mt-1">
                       Upgrade to Pro for up to 100 pages or Max for up to 500 pages.
                       <NuxtLink to="/settings" class="underline hover:text-yellow-900">
                         View plans
                       </NuxtLink>
                     </p>
-                    <p v-if="data.metadata.limits?.tier === 'pro'" class="text-xs text-yellow-700 mt-1">
+                    <p v-if="todoMetadata.limits?.tier === 'pro'" class="text-xs text-yellow-700 mt-1">
                       Upgrade to Max for up to 500 pages.
                       <NuxtLink to="/settings" class="underline hover:text-yellow-900">
                         Upgrade
                       </NuxtLink>
                     </p>
                   </div>
-                  <div v-if="data.metadata.errors.length > 0" class="mt-2 p-2 bg-red-50 rounded-md">
+                  <div v-if="todoMetadata.errors.length > 0" class="mt-2 p-2 bg-red-50 rounded-md">
                     <p class="text-xs text-red-800 mb-1">
                       Extraction errors:
                     </p>
                     <ul class="text-xs text-red-700 list-disc list-inside">
-                      <li v-for="(error, index) in data.metadata.errors" :key="index">
+                      <li v-for="(error, index) in todoMetadata.errors" :key="index">
                         {{ error }}
                       </li>
                     </ul>

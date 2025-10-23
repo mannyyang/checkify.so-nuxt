@@ -10,8 +10,8 @@ import { consola } from 'consola';
 export const EXTRACTION_CONFIG = {
   maxPagesPerRequest: 100, // Notion API limit
   maxBlocksPerRequest: 100, // Notion API limit
-  maxConcurrentRequests: 5, // Prevent rate limiting
-  requestDelayMs: 100 // Add delay between requests
+  maxConcurrentRequests: 15, // Increased for better performance
+  requestDelayMs: 50 // Reduced delay for faster processing
 };
 
 /**

@@ -94,7 +94,7 @@ export default defineEventHandler(async (event) => {
     // Process pages in batches to get checkboxes
     const pagesWithBlocks = await processPagesInBatches(
       pages,
-      5, // Process 5 pages at a time
+      20, // Process 20 pages at a time for better performance
       async (pageBlock) => {
         try {
           // Fetch child blocks with tier-based limit
