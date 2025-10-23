@@ -11,6 +11,7 @@ import {
   processPagesInBatches
 } from '~/server/utils/notion-pagination';
 import { TIER_LIMITS, type TierName } from '~/lib/pricing';
+import { getUserTier } from '~/server/utils/get-user-tier';
 
 const supabase = createClient(
   process.env.SUPABASE_URL || '',
@@ -29,25 +30,25 @@ export default defineEventHandler(async (event) => {
   // Get user context
   const user = event.context.user;
 
-  // Fetch user's subscription tier from database
+  // Fetch user's subscription tier with Stripe fallback
   let userTier: TierName = 'free';
+  let tierSource: string = 'default';
 
   if (user?.id) {
-    const { data: profile } = await supabase
-      .from('user_profiles')
-      .select('subscription_tier')
-      .eq('user_id', user.id)
-      .single();
-
-    if (profile?.subscription_tier && ['free', 'pro', 'max'].includes(profile.subscription_tier)) {
-      userTier = profile.subscription_tier as TierName;
-    }
+    const tierResult = await getUserTier(user.id);
+    userTier = tierResult.tier;
+    tierSource = tierResult.source;
+    consola.info(`Todo list fetch: Using ${userTier} tier from ${tierSource} for user ${user.id}`);
+  } else {
+    consola.warn('Todo list fetch: No user context available, defaulting to free tier');
   }
 
   // Allow tier override for testing (remove in production)
   const testTier = getQuery(event).tier as string;
   if (testTier && ['free', 'pro', 'max'].includes(testTier)) {
+    consola.info(`Todo list fetch: Overriding tier to ${testTier} for testing`);
     userTier = testTier as TierName;
+    tierSource = 'test-override';
   }
 
   const tierLimits = TIER_LIMITS[userTier];
@@ -154,6 +155,7 @@ export default defineEventHandler(async (event) => {
       errors: extractionErrors,
       limits: {
         tier: userTier,
+        tierSource, // Track where the tier came from (database/stripe/default/test-override)
         maxPages: tierLimits.maxPages,
         maxCheckboxesPerPage: tierLimits.maxCheckboxesPerPage,
         pagesLimited,

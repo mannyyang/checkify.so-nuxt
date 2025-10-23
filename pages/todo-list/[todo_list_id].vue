@@ -37,6 +37,7 @@ interface TodoListData {
     errors: string[];
     limits?: {
       tier: string;
+      tierSource?: string;
       maxPages?: number;
       maxCheckboxesPerPage?: number;
       pagesLimited: boolean;
@@ -434,6 +435,10 @@ const formatDate = (date: Date | null) => {
                     <div class="flex justify-between">
                       <span class="text-muted-foreground">Tier:</span>
                       <span class="font-medium capitalize">{{ data.metadata.limits.tier }}</span>
+                    </div>
+                    <div v-if="data.metadata.limits.tierSource" class="flex justify-between">
+                      <span class="text-muted-foreground text-xs">Source:</span>
+                      <span class="text-xs font-mono">{{ data.metadata.limits.tierSource }}</span>
                     </div>
                     <div v-if="data.metadata.limits.maxPages" class="flex justify-between">
                       <span class="text-muted-foreground">Page Limit:</span>
