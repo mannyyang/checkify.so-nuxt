@@ -56,8 +56,24 @@
       "WebFetch(domain:docs.stripe.com)",
       "WebFetch(domain:content.nuxt.com)",
       "Bash(git checkout:*)",
-      "Read(//Users/myang/.claude/**)"
+      "Read(//Users/myang/.claude/**)",
+      "WebSearch",
+      "WebFetch(domain:*)",
+      "WebFetch(domain:www.eesel.ai)",
+      "WebFetch(domain:github.com)",
+      "SlashCommand(/domain model_U9_email_communication.md)",
+      "mcp__brevo_contacts__create_contact",
+      "mcp__brevo_contacts__get_contacts",
+      "Read(//private/tmp/**)",
+      "mcp__brevo_email_campaigns__update_email_campaign",
+      "mcp__brevo_email_campaigns__get_campaign_details"
     ],
     "deny": []
-  }
+  },
+  "enabledMcpjsonServers": [
+    "brevo_contacts",
+    "brevo_email_campaigns",
+    "brevo_templates",
+    "brevo_campaign_analytics"
+  ]
 }

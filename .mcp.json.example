@@ -1,0 +1,36 @@
+{
+  "mcpServers": {
+    "brevo_contacts": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-remote",
+        "https://mcp.brevo.com/v1/brevo_contacts/mcp/YOUR_BREVO_MCP_API_KEY"
+      ]
+    },
+    "brevo_email_campaigns": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-remote",
+        "https://mcp.brevo.com/v1/brevo_email_campaign_management/mcp/YOUR_BREVO_MCP_API_KEY"
+      ]
+    },
+    "brevo_templates": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-remote",
+        "https://mcp.brevo.com/v1/brevo_templates/mcp/YOUR_BREVO_MCP_API_KEY"
+      ]
+    },
+    "brevo_campaign_analytics": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-remote",
+        "https://mcp.brevo.com/v1/brevo_campaign_analytics/mcp/YOUR_BREVO_MCP_API_KEY"
+      ]
+    }
+  }
+}
